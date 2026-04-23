@@ -1,0 +1,139 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - المنصة الأكاديمية</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-academic py-2">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                <i class="bi bi-building-columns me-2"></i> المنصة الأكاديمية
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="تبديل القائمة">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">
+                               لوحة التحكم
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button">
+                               إدارة شؤون الأفراد
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Persons" asp-action="Index"> الموظفين</a></li>
+                                <li><a class="dropdown-item" asp-controller="Students" asp-action="Index"> الطلاب</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="Relatives" asp-action="Index"> الأقارب</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button">
+                                إعداد الامتحان
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Halls" asp-action="Index"> القاعات</a></li>
+                                <li><a class="dropdown-item" asp-controller="Blocks" asp-action="Index"> الأقسام</a></li>
+                                <li><a class="dropdown-item" asp-controller="Committees" asp-action="Index"> اللجان</a></li>
+                                <li><a class="dropdown-item" asp-controller="Exams" asp-action="Index"> الامتحانات</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="CommitteesAssignments" asp-action="Index">
+                                 التوزيعات
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Reports" asp-action="Index">
+                                 التقارير
+                            </a>
+                        </li>
+                    }
+                </ul>
+
+                <div class="d-flex align-items-center">
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <div class="dropdown d-inline-block">
+                            <button class="btn btn-outline-light dropdown-toggle px-3 btn-sm border-0 d-flex align-items-center gap-1"
+                                    type="button"
+                                    id="userDropdown"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                <i class="bi bi-person-circle fs-5"></i>
+                                <span class="user-name">@User.Identity?.Name</span>
+                            </button>
+
+                            <ul class="dropdown-menu dropdown-menu-end mt-2" aria-labelledby="userDropdown">
+                                <li>
+                                    <div class="dropdown-header text-dark fw-bold border-bottom mb-1 pb-2">
+                                        <small class="text-muted d-block">مرحباً بك،</small>
+                                        @User.Identity?.Name
+                                    </div>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="#">
+                                        <i class="bi bi-gear text-secondary"></i> الإعدادات
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="px-2">
+                                        <button type="submit" class="dropdown-item text-danger py-2 d-flex align-items-center gap-2 rounded-2">
+                                            <i class="bi bi-box-arrow-right"></i> تسجيل الخروج
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="btn btn-light btn-sm px-4 me-2" asp-controller="Account" asp-action="Login">تسجيل دخول</a>
+                        <a class="btn btn-outline-light px-4 btn-sm" asp-controller="Account" asp-action="Register">انشاء حساب</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main role="main" class="container py-4">
+        @RenderBody()
+    </main>
+
+    <footer class="footer-academic py-3 mt-auto">
+        <div class="container text-center">
+            <span class="text-muted small fw-semibold">
+                &copy; @DateTime.Now.Year - نظام إدارة لجنة الامتحانات الأكاديمية
+            </span>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

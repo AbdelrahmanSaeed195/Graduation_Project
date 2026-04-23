@@ -1,0 +1,40 @@
+/* Layout-scoped styles — using CSS variables */
+
+a.navbar-brand {
+  white-space: normal;
+  text-align: center;
+  word-break: break-all;
+}
+
+a {
+  color: var(--accent-blue);
+}
+
+.btn-primary {
+  color: var(--surface-white);
+  background-color: var(--primary-navy);
+  border-color: var(--primary-navy);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-blue);
+  border-color: var(--accent-blue);
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+  color: var(--surface-white);
+  background-color: var(--primary-navy);
+  border-color: var(--primary-navy);
+}
+
+.border-top {
+  border-top: 1px solid var(--border-color);
+}
+.border-bottom {
+  border-bottom: 1px solid var(--border-color);
+}
+
+button.accept-policy {
+  font-size: 1rem;
+  line-height: inherit;
+}
