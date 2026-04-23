@@ -1,0 +1,76 @@
+@model projectweb.Models.Block
+
+@{
+    ViewData["Title"] = "تأكيد حذف بلوك";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-xl-6">
+        <div class="card academic-card shadow-sm">
+            <div class="card-body p-4 bg-white">
+                <div class="text-center mb-4">
+                    <i class="bi bi-exclamation-octagon text-danger" style="font-size: 4rem;"></i>
+                    <h3 class="academic-heading fw-bold mt-2">تأكيد الحذف</h3>
+                </div>
+
+                @if (Model.Committees != null && Model.Committees.Any())
+                {
+                    <div class="alert alert-danger border-0 mb-4 shadow-sm">
+                        <i class="bi bi-x-circle-fill fs-5 me-2"></i>
+                        <strong>عفواً، لا يمكن حذف هذا البلوك.</strong>
+                        <p class="mb-0 small opacity-90 mt-1">
+                            النظام يمنع حذف أي بلوك يحتوي على لجان مسجلة. يرجى إزالة الارتباط أو حذف اللجان أولاً.
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning border-0 d-flex gap-2 align-items-center mb-4 shadow-sm">
+                        <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                        <div>
+                            <strong>تأكيد عملية الحذف!</strong><br />
+                            <span class="small">أنت على وشك حذف البلوك "<strong>@Model.BlockName</strong>" نهائياً. هل أنت متأكد؟</span>
+                        </div>
+                    </div>
+                }
+
+                <div class="row g-3 mb-4 text-center">
+                    <div class="col-6">
+                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
+                            <div class="small academic-label mb-1">الصالة التابع لها</div>
+                            <div class="fw-bold mt-1" style="color: var(--text-main);">صالة رقم @Model.HallId</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
+                            <div class="small academic-label mb-1">اللجان المرتبطة</div>
+                            <div class="fw-bold mt-1 @(Model.Committees != null && Model.Committees.Any() ? "text-danger" : "text-success")">
+                                @(Model.Committees?.Count ?? 0) لجنة
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="BlockID" />
+                    <div class="d-flex justify-content-center gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+                        @if (Model.Committees == null || !Model.Committees.Any())
+                        {
+                            <button type="submit" class="btn btn-danger px-4 fw-bold">
+                                <i class="bi bi-trash me-1"></i> تأكيد الحذف
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-secondary px-4 fw-bold" disabled>
+                                <i class="bi bi-lock-fill me-1"></i> الحذف غير متاح
+                            </button>
+                        }
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">تراجع والعودة</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

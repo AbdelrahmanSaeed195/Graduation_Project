@@ -7,11 +7,11 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - المنصة الأكاديمية</title>
+    <title>@ViewData["Title"] - إدارة لجان الامتحانات</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
@@ -22,7 +22,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark navbar-academic py-2">
         <div class="container-fluid">
             <a class="navbar-brand text-white d-flex align-items-center" asp-controller="Home" asp-action="Index">
-                <i class="bi bi-building-columns me-2"></i> المنصة الأكاديمية
+                <i class="bi bi-building-columns me-2"></i> إدارة لجان الامتحانات
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="تبديل القائمة">
@@ -89,16 +89,9 @@
                             <ul class="dropdown-menu dropdown-menu-end mt-2" aria-labelledby="userDropdown">
                                 <li>
                                     <div class="dropdown-header text-dark fw-bold border-bottom mb-1 pb-2">
-                                        <small class="text-muted d-block">مرحباً بك،</small>
                                         @User.Identity?.Name
                                     </div>
                                 </li>
-                                <li>
-                                    <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="#">
-                                        <i class="bi bi-gear text-secondary"></i> الإعدادات
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form asp-controller="Account" asp-action="Logout" method="post" class="px-2">
                                         <button type="submit" class="dropdown-item text-danger py-2 d-flex align-items-center gap-2 rounded-2">

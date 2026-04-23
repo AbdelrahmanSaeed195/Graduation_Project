@@ -1,0 +1,20 @@
+@{
+    ViewData["Title"] = "لا توجد لجنة";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-lg-6">
+        <div class="card academic-card text-center">
+            <div class="card-body p-5" style="background-color: var(--surface-white);">
+                <i class="bi bi-exclamation-circle text-warning mb-3" style="font-size: 5rem;"></i>
+                <h3 class="fw-bold academic-heading mb-3">تنبيه النظام</h3>
+                <p class="text-muted fs-5 mb-4">@ViewBag.Message</p>
+
+                <a asp-action="Index" class="btn btn-academic-primary px-4 py-2 fw-bold">
+                    العودة للقائمة الرئيسية
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,64 @@
+@model projectweb.ViewModel.RegisterViewModel
+
+@{
+    ViewData["Title"] = "إنشاء حساب";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="auth-shell d-flex justify-content-center align-items-center">
+    <div class="card academic-card" style="max-width:560px; width:100%;">
+        <div class="card-header academic-card-header text-white text-center py-4">
+            <h5 class="mb-1 fw-bold text-white">إنشاء حساب جديد</h5>
+            <p class="mb-0 small opacity-75">اختر نوع الحساب ثم أدخل بياناتك الأساسية</p>
+        </div>
+        <div class="card-body p-4" style="background-color: var(--surface-white);">
+            <form asp-action="Register" method="post" novalidate>
+                @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="text-danger small mb-3"></div>        
+
+                <div class="mb-3">
+                    <label asp-for="FullName" class="form-label academic-label required">الاسم الكامل</label>
+                    <input asp-for="FullName" class="form-control academic-input" placeholder="مثال: محمد أحمد علي" autocomplete="name" />
+                    <span asp-validation-for="FullName" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="PhoneNumber" class="form-label academic-label required">رقم الهاتف</label>
+                    <input asp-for="PhoneNumber" class="form-control academic-input" placeholder="أدخل رقم الهاتف" type="tel" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label academic-label required">البريد الإلكتروني</label>
+                    <input asp-for="Email" class="form-control academic-input" placeholder="example@email.com" type="email" autocomplete="email" />
+                    <span asp-validation-for="Email" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label academic-label required">كلمة المرور</label>
+                    <input asp-for="Password" type="password" class="form-control academic-input" placeholder="8 أحرف على الأقل" autocomplete="new-password" />
+                    <span asp-validation-for="Password" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="ConfirmPassword" class="form-label academic-label required">تأكيد كلمة المرور</label>
+                    <input asp-for="ConfirmPassword" type="password" class="form-control academic-input" placeholder="أعد كتابة كلمة المرور" autocomplete="new-password" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-academic-primary fw-semibold py-2"><i class="bi bi-check-circle me-1"></i> إنشاء الحساب</button>
+                </div>
+
+                <div class="text-center">
+                    <span class="text-muted small">لديك حساب بالفعل؟</span>
+                    <a asp-action="Login" class="small fw-semibold me-1 text-decoration-none academic-heading">سجل دخولك</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

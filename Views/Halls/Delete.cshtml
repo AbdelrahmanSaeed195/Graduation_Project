@@ -1,0 +1,43 @@
+@model projectweb.Models.Hall
+
+@{
+    ViewData["Title"] = "تأكيد حذف الصالة";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-xl-6">
+        <div class="card academic-card">
+            <div class="card-body p-5 text-center" style="background-color: var(--surface-white);">
+                <div class="mb-4">
+                    <i class="bi bi-exclamation-octagon text-danger" style="font-size: 5rem;"></i>
+                </div>
+
+                <h3 class="fw-bold academic-heading mb-3">تأكيد عملية الحذف!</h3>
+                <p class="text-muted fs-6 mb-4">
+                    أنت على وشك حذف الصالة "<strong>@Model.HallName</strong>" (الدور @Model.Floor) نهائياً من النظام.
+                </p>
+
+                @if (Model.Blocks != null && Model.Blocks.Any())
+                {
+                    <div class="alert alert-danger border-0 text-start d-flex gap-2 align-items-center mb-4">
+                        <i class="bi bi-x-circle-fill fs-5"></i>
+                        <div>
+                            <strong>انتباه:</strong> هذه الصالة مرتبطة بـ (@Model.Blocks.Count) بلوكات. قد يمنع النظام الحذف ما لم تقم بنقل أو حذف البلوكات التابعة أولاً.
+                        </div>
+                    </div>
+                }
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="HallId" />
+                    <div class="d-flex justify-content-center gap-2 mt-2">
+                        <button type="submit" class="btn btn-danger px-4 fw-bold">
+                            <i class="bi bi-trash"></i> تأكيد عملية الحذف
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">تراجع والعودة</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

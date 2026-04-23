@@ -1,0 +1,63 @@
+@model projectweb.ViewModel.StudentCreateViewModel
+
+@{
+    ViewData["Title"] = "تعديل بيانات الطالب";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-xl-8">
+        <div class="card academic-card">
+            <div class="card-header academic-card-header text-white p-4">
+                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-pencil-square me-2"></i> تعديل بيانات الطالب</h4>
+            </div>
+            <div class="card-body p-4" style="background-color: var(--surface-white);">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" name="id" value="@ViewBag.StudentId" />
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <div class="row g-4">
+                        <div class="col-md-12">
+                            <label asp-for="FullName" class="form-label academic-label required">اسم الطالب بالكامل</label>
+                            <input asp-for="FullName" class="form-control academic-input" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NationalId" class="form-label academic-label required">الرقم القومي</label>
+                            <input asp-for="NationalId" class="form-control academic-input" maxlength="14" />
+                            <span asp-validation-for="NationalId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="AcademicYear" class="form-label academic-label required">السنة الدراسية</label>
+                            <select asp-for="AcademicYear" class="form-select academic-input">
+                                <option value="1">المستوى الأول</option>
+                                <option value="2">المستوى الثاني</option>
+                                <option value="3">المستوى الثالث</option>
+                                <option value="4">المستوى الرابع</option>
+                            </select>
+                            <span asp-validation-for="AcademicYear" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning mt-4 small border-0">
+                        <i class="bi bi-exclamation-triangle me-1"></i> تغيير السنة الدراسية سيؤدي إلى إعادة توزيع الطالب على لجنة جديدة وتغيير رقم الجلوس.
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+                        <button type="submit" class="btn btn-academic-primary px-4 fw-bold">
+                            <i class="bi bi-check2-circle"></i> حفظ التعديلات
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

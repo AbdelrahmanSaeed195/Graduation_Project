@@ -1,0 +1,107 @@
+@model IEnumerable<projectweb.Models.Committee>
+
+@{
+    ViewData["Title"] = "إدارة اللجان";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-body" dir="rtl">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-clipboard-check-fill me-2"></i> إدارة اللجان</h1>
+        <a asp-action="Create" class="btn btn-academic-primary px-4">
+            <i class="bi bi-plus-circle me-1"></i> إضافة لجنة
+        </a>
+    </div>
+
+    <div class="academic-card">
+        <div class="table-responsive">
+            <table class="table academic-table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">رقم اللجنة</th>
+                        <th>المكان (القاعة / البلوك)</th>
+                        <th class="text-center">السعة الطلابية</th>
+                        <th class="text-center">الطاقم المطلوب (رؤساء/مراقبين/معاونين)</th>
+                        <th class="text-center">الحالة</th>
+                        <th class="text-center pe-4">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold fs-5" style="color: var(--text-main);">@item.CommitteeNumber</td>
+                                <td>
+                                    <span class="fw-medium" style="color: var(--primary-navy);">
+                                        @(item.Block != null ? $"قاعة {item.Block.HallId} / بلوك {item.Block.BlockID}" : "غير محدد")
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge px-3 py-2" style="background-color: var(--bg-light); color: var(--text-main); border: 1px solid var(--border-color);">
+                                        <i class="bi bi-people-fill me-1"></i> @item.NumberOfStudent
+                                    </span>
+                                </td>
+                                <td class="text-center text-muted small">
+                                    <span class="badge bg-secondary">@item.RequiredHeads</span> /
+                                    <span class="badge bg-info text-dark">@item.RequiredObservers</span> /
+                                    <span class="badge px-2 py-1" style="background-color: var(--bg-light); color: var(--text-main); border: 1px solid var(--border-color);">@item.RequiredMentors</span>
+                                </td>
+                                <td class="text-center">
+                                    @if (item.StatusOfCommittee == "نشطة")
+                                    {
+                                        <span class="badge bg-success px-3 py-2">@item.StatusOfCommittee</span>
+                                    }
+                                    else if (item.StatusOfCommittee == "مغلقة")
+                                    {
+                                        <span class="badge bg-danger px-3 py-2">@item.StatusOfCommittee</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark px-3 py-2">@item.StatusOfCommittee</span>
+                                    }
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="d-flex justify-content-center gap-1">
+                                        <a asp-action="Details" asp-route-id="@item.CommitteeID" class="btn btn-sm btn-outline-info" title="التفاصيل">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.CommitteeID" class="btn btn-sm btn-outline-academic" title="تعديل">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.CommitteeID" class="btn btn-sm btn-outline-danger" title="حذف">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">لا توجد لجان مسجلة</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

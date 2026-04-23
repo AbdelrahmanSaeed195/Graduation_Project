@@ -1,0 +1,60 @@
+@model projectweb.Models.Block
+
+@{
+    ViewData["Title"] = "تكوين بلوك جديد";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-xl-8">
+        <div class="card academic-card">
+            <div class="card-header academic-card-header text-white p-4">
+                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-plus-square-fill me-2"></i> تكوين بلوك (جزء) جديد</h4>
+            </div>
+            <div class="card-body p-4 bg-white">
+
+                <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4">
+                    <i class="bi bi-info-circle-fill fs-3 me-3 text-primary"></i>
+                    <div>
+                        <strong class="d-block mb-1">توضيح آليات النظام:</strong>
+                        <ul class="mb-0 ps-3 small opacity-90">
+                            <li>عند حفظ البلوك، سيقوم النظام تلقائياً باختيار (4 إلى 5) لجان عشوائية غير موزعة وربطها بهذا البلوك.</li>
+                            <li>سيتم سحب عدد مماثل من الموظفين بدور "ملاحظ" وتعيينهم على هذه اللجان تلقائياً.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="BlockName" class="form-label academic-label required">اسم البلوك (الجزء)</label>
+                            <input asp-for="BlockName" class="form-control academic-input" placeholder="مثال: بلوك (أ) أو الجزء الأول" />
+                            <span asp-validation-for="BlockName" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="HallId" class="form-label academic-label required">الصالة / القاعة التابع لها</label>
+                            <select asp-for="HallId" asp-items="ViewBag.HallId" class="form-select academic-input">
+                                <option value="">-- اختر الصالة --</option>
+                            </select>
+                            <span asp-validation-for="HallId" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+                        <button type="submit" class="btn btn-academic-primary px-4 fw-bold">
+                            <i class="bi bi-gear-wide-connected me-1"></i> إنشاء البلوك وتوزيع اللجان
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

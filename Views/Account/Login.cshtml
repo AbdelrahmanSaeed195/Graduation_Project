@@ -1,0 +1,63 @@
+@model projectweb.ViewModel.LoginViewModel
+@{
+    ViewData["Title"] = "تسجيل الدخول";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="auth-shell d-flex justify-content-center align-items-center">
+    <div class="card academic-card" style="max-width:460px; width:100%;">
+        <div class="card-header academic-card-header text-white text-center py-4">
+            <h4 class="mb-1 fw-bold text-white">تسجيل الدخول</h4>
+            <p class="mb-0 small opacity-75">منصة إدارة لجان الامتحانات الجامعية</p>
+        </div>
+        <div class="card-body p-4" style="background-color: var(--surface-white);">
+            <form asp-action="Login" method="post" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+                    <label asp-for="Email" class="form-label academic-label required">البريد الإلكتروني</label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="background-color: var(--bg-light); border-color: var(--border-color);"><i class="bi bi-envelope"></i></span>
+                        <input asp-for="Email" class="form-control academic-input" placeholder="example@email.com" type="email" autocomplete="email" />
+                    </div>
+                    <span asp-validation-for="Email" class="text-danger small mt-1 d-block"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label academic-label required">كلمة المرور</label>
+                    <div class="input-group">
+                        <button type="button" class="btn btn-outline-secondary" id="togglePassBtn" onclick="togglePass()" style="border-color: var(--border-color);"><i id="eyeIcon" class="bi bi-eye"></i></button>
+                        <input asp-for="Password" class="form-control academic-input" placeholder="password" id="passInput" type="password" dir="ltr" />
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger small mt-1 d-block"></span>
+                </div>
+                <div class="form-check mb-4">
+                    <input asp-for="IsPrisist" class="form-check-input" style="border-color: var(--border-color);" />
+                    <label asp-for="IsPrisist" class="form-check-label academic-label">تذكرني</label>
+                </div>
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-academic-primary py-2 fw-semibold"><i class="bi bi-box-arrow-in-left me-1"></i> دخول</button>
+                </div>
+                <div class="text-center small">
+                    <span class="text-muted">لا تملك حسابًا؟</span> <a asp-action="Register" class="fw-bold text-decoration-none academic-heading">إنشاء حساب جديد</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function togglePass() {
+            var input = document.getElementById('passInput');
+            var icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'bi bi-eye';
+            }
+        }
+    </script>
+}

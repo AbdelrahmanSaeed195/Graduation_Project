@@ -1,0 +1,71 @@
+@model projectweb.Models.Student
+
+@{
+    ViewData["Title"] = "بطاقة الطالب";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-lg-8">
+        <div class="card academic-card">
+            <div class="card-header academic-card-header text-white p-4">
+                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-person-vcard me-2"></i> البطاقة الأكاديمية للطالب</h4>
+            </div>
+            <div class="card-body p-4" style="background-color: var(--surface-white);">
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <div class="data-panel">
+                            <div class="panel-label">الاسم الكامل</div>
+                            <div class="panel-value fs-5">@Model.FullName</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="data-panel">
+                            <div class="panel-label">الرقم القومي</div>
+                            <div class="panel-value">@Model.NationalId</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="data-panel">
+                            <div class="panel-label">السنة الدراسية</div>
+                            <span class="badge px-3 py-2" style="background-color: var(--primary-navy); color: var(--surface-white);">المستوى @Model.AcademicYear</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="data-panel">
+                            <div class="panel-label">رقم الجلوس</div>
+                            <div class="panel-value fs-5" style="color: var(--accent-blue);">@(Model.SeatNumber > 0 ? Model.SeatNumber.ToString() : "لم يحدد بعد")</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="data-panel">
+                            <div class="panel-label">اللجنة التابع لها</div>
+                            <div class="panel-value fs-5 text-success">
+                                @(Model.Committee != null ? $"لجنة {Model.Committee.CommitteeNumber}" : "غير موزع")
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.Relatives != null && Model.Relatives.Any())
+                    {
+                        <div class="col-12 mt-3">
+                            <div class="alert alert-warning border-0">
+                                <i class="bi bi-diagram-2-fill me-2"></i> <strong>تنبيه:</strong> يوجد صلات قرابة مسجلة لهذا الطالب مع أعضاء هيئة التدريس.
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+                    <a asp-action="Edit" asp-route-id="@Model.StudentId" class="btn btn-academic-primary px-4 fw-bold">
+                        <i class="bi bi-pencil-square"></i> تعديل البيانات
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.StudentId" class="btn btn-outline-danger px-4" onclick="return confirm('تأكيد مسح بيانات الطالب؟');">
+                        <i class="bi bi-trash"></i> حذف
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

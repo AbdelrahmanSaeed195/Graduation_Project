@@ -1,0 +1,98 @@
+@model projectweb.Models.Committee
+
+@{
+    ViewData["Title"] = "تفاصيل اللجنة";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-lg-9">
+        <div class="card academic-card">
+            <div class="card-header academic-card-header text-white p-4 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-info-circle-fill me-2"></i> تفاصيل اللجنة رقم (@Model.CommitteeNumber)</h4>
+                @if (Model.StatusOfCommittee == "نشطة")
+                {
+                    <span class="badge bg-success fs-6">نشطة</span>
+                }
+                else if (Model.StatusOfCommittee == "مغلقة")
+                {
+
+                    <span class="badge bg-danger fs-6">مغلقة</span>
+                }
+                else
+                {
+
+                    <span class="badge bg-warning text-dark fs-6">@Model.StatusOfCommittee</span>
+                }
+            </div>
+
+            <div class="card-body p-4" style="background-color: var(--surface-white);">
+                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3" style="border-color: var(--border-color) !important;">المعلومات الأساسية</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="data-panel">
+                            <div class="panel-label">الموقع (القاعة / البلوك)</div>
+                            <div class="panel-value">
+                                @(Model.Block != null ? $"قاعة {Model.Block.HallId} / بلوك {Model.Block.BlockID}" : "غير محدد")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="data-panel">
+                            <div class="panel-label">السعة الطلابية</div>
+                            <div class="panel-value" style="color: var(--accent-blue);">@Model.NumberOfStudent طالب</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="data-panel">
+                            <div class="panel-label">عدد الطلاب الموزعين فعلياً</div>
+                            <div class="panel-value text-success">@(Model.Students?.Count ?? 0) طالب</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 mt-4" style="border-color: var(--border-color) !important;">احتياجات الطاقم الإداري</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="data-panel text-center">
+                            <div class="panel-label">رؤساء لجان مطلوبين</div>
+                            <div class="panel-value fs-4">@Model.RequiredHeads</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="data-panel text-center">
+                            <div class="panel-label">مراقبين مطلوبين</div>
+                            <div class="panel-value fs-4">@Model.RequiredObservers</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="data-panel text-center">
+                            <div class="panel-label">معاونين مطلوبين</div>
+                            <div class="panel-value fs-4">@Model.RequiredMentors</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="alert alert-secondary border-0" style="background-color: var(--bg-light);">
+                            <i class="bi bi-calendar-check me-2"></i> يوجد <strong>@(Model.ExamSchedules?.Count ?? 0)</strong> امتحان مجدول في هذه اللجنة.
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-info border-0">
+                            <i class="bi bi-person-lines-fill me-2"></i> تم تعيين <strong>@(Model.CommitteesAssignments?.Count ?? 0)</strong> من الطاقم الرقابي.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+                    <a asp-action="Edit" asp-route-id="@Model.CommitteeID" class="btn btn-academic-primary px-4 fw-bold">
+                        <i class="bi bi-pencil-square"></i> تعديل البيانات
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

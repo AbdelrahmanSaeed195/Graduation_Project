@@ -1,0 +1,326 @@
+:root {
+    --primary-navy: #0c2340;
+    --accent-blue: #1d4f91;
+    --main-gradient: linear-gradient(120deg, #0c2340, #1d4f91);
+    --bg-light: #f4f6f9;
+    --surface-white: #ffffff;
+    --text-main: #1a1a1a;
+    --border-color: #dee2e6;
+    --text-muted: #6c757d;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --transition-base: 0.2s ease-in-out;
+}
+
+/* ── Global Reset & Body ── */
+body {
+    font-family: 'Cairo', 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* ── Typography ── */
+.academic-heading,
+.section-title {
+    color: var(--primary-navy);
+    font-weight: 700;
+}
+
+.text-navy {
+    color: var(--primary-navy) !important;
+}
+
+/* ── Navbar ── */
+.navbar-academic {
+    background: var(--main-gradient);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+.navbar-academic .navbar-brand {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--surface-white);
+}
+
+.navbar-academic .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color var(--transition-base);
+}
+
+.navbar-academic .nav-link:hover,
+.navbar-academic .nav-link:focus {
+    color: var(--surface-white);
+}
+
+.navbar-academic .dropdown-menu {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background-color: var(--surface-white);
+}
+
+.navbar-academic .dropdown-item:hover {
+    background-color: var(--bg-light);
+    color: var(--primary-navy);
+}
+
+.user-name {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-right: 15px;
+}
+
+/* Navbar button overrides */
+.btn-check:checked+.btn,
+.btn.active,
+.btn.show,
+.btn:first-child:active,
+:not(.btn-check)+.btn:active {
+    background-color: var(--accent-blue) !important;
+    color: var(--surface-white) !important;
+    border-color: var(--accent-blue) !important;
+}
+
+.btn-outline-light:hover {
+    background-color: var(--accent-blue) !important;
+    color: var(--surface-white) !important;
+    border-color: var(--accent-blue) !important;
+}
+
+/* ── Card & Surface Styling ── */
+.academic-card {
+    background-color: var(--surface-white);
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+    overflow: hidden;
+}
+
+.academic-card-header {
+    background: var(--main-gradient);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--surface-white);
+}
+
+/* Generic app-card used across many views */
+.app-card {
+    background-color: var(--surface-white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+    overflow: hidden;
+}
+
+/* ── Form Design ── */
+.academic-label {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.academic-input,
+.academic-card .form-control,
+.academic-card .form-select,
+.app-card .form-control,
+.app-card .form-select {
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    border-radius: var(--radius-sm);
+    transition: box-shadow var(--transition-base);
+}
+
+.academic-input:focus,
+.academic-card .form-control:focus,
+.academic-card .form-select:focus,
+.app-card .form-control:focus,
+.app-card .form-select:focus {
+    box-shadow: 0 0 0 0.2rem rgba(29, 79, 145, 0.15);
+}
+
+.form-label.required::after {
+    content: " *";
+    color: #dc3545;
+    font-weight: 700;
+}
+
+/* ── Primary Buttons ── */
+.btn-academic-primary {
+    background-color: var(--primary-navy);
+    border-color: var(--primary-navy);
+    color: var(--surface-white);
+    border-radius: var(--radius-md);
+    transition: background-color var(--transition-base), border-color var(--transition-base);
+}
+
+.btn-academic-primary:hover,
+.btn-academic-primary:focus {
+    background-color: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: var(--surface-white);
+}
+
+/* ── Outline Buttons (For toggles / academic outline) ── */
+.btn-outline-academic {
+    color: var(--primary-navy);
+    border-color: var(--primary-navy);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+}
+
+.btn-outline-academic:hover,
+.btn-check:checked+.btn-outline-academic {
+    background-color: var(--primary-navy);
+    color: var(--surface-white);
+}
+
+/* ── Table Styling ── */
+.academic-table {
+    background-color: var(--surface-white);
+    border: 1px solid var(--border-color);
+    margin-bottom: 0;
+}
+
+.academic-table thead {
+    background-color: var(--primary-navy);
+    color: var(--surface-white);
+}
+
+.academic-table thead th {
+    font-weight: 600;
+    border: none;
+    padding: 0.85rem 1rem;
+    white-space: nowrap;
+}
+
+.academic-table th,
+.academic-table td {
+    border: 1px solid var(--border-color);
+    padding: 0.85rem 1rem;
+    vertical-align: middle;
+}
+
+.academic-table tbody tr {
+    transition: background-color var(--transition-base);
+}
+
+.academic-table tbody tr:hover {
+    background-color: var(--bg-light);
+}
+
+/* .table-clean: used in views that define their own inline styles */
+.table-clean thead {
+    background-color: var(--primary-navy);
+    color: var(--surface-white);
+}
+
+.table-clean thead th {
+    font-weight: 600;
+    border: none;
+    padding: 0.85rem 1rem;
+    white-space: nowrap;
+}
+
+.table-clean td {
+    vertical-align: middle;
+    padding: 0.85rem 1rem;
+    border-color: var(--border-color);
+}
+
+.table-clean tbody tr {
+    transition: background-color var(--transition-base);
+}
+
+.table-clean tbody tr:hover {
+    background-color: var(--bg-light);
+}
+
+/* ── Dashboard Cards ── */
+.dash-card {
+    background-color: var(--surface-white);
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg);
+}
+
+.icon-box {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    margin: 0 auto 1.25rem;
+}
+
+.btn-enter {
+    border-radius: var(--radius-md);
+    padding: 8px 24px;
+    font-weight: 600;
+}
+
+/* ── Auth Shell (Login/Register) ── */
+.auth-shell {
+    min-height: 60vh;
+    padding: 2rem 0;
+}
+
+/* ── Data Display Panels ── */
+.data-panel {
+    background-color: var(--bg-light);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+}
+
+.data-panel .panel-label {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.data-panel .panel-value {
+    color: var(--text-main);
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+/* ── Footer ── */
+.footer-academic {
+    background-color: var(--surface-white);
+    border-top: 1px solid var(--border-color);
+}
+
+/* ── Section Dividers ── */
+.section-divider {
+    width: 50px;
+    height: 3px;
+    background: var(--primary-navy);
+    opacity: 1;
+    margin: 0 auto;
+}
+
+/* ── Status Badges (preserve Bootstrap standard) ── */
+/* text-danger, alert-danger, alert-success, alert-warning — kept as-is */
+
+/* ── RTL Adjustments ── */
+[dir="rtl"] .me-1 {
+    margin-left: 0.25rem !important;
+    margin-right: 0 !important;
+}
+
+[dir="rtl"] .me-2 {
+    margin-left: 0.5rem !important;
+    margin-right: 0 !important;
+}
+
+[dir="rtl"] .ms-1 {
+    margin-right: 0.25rem !important;
+    margin-left: 0 !important;
+}

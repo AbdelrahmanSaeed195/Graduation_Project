@@ -1,0 +1,83 @@
+@model IEnumerable<projectweb.Models.Hall>
+
+@{
+    ViewData["Title"] = "إدارة الصالات والقاعات";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-body" dir="rtl">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-building me-2"></i> إدارة الصالات والقاعات</h1>
+        <a asp-action="Create" class="btn btn-academic-primary px-4">
+            <i class="bi bi-plus-circle me-1"></i> إضافة صالة جديدة
+        </a>
+    </div>
+
+    <div class="academic-card">
+        <div class="table-responsive">
+            <table class="table academic-table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">كود الصالة</th>
+                        <th>اسم الصالة / القاعة</th>
+                        <th class="text-center">الدور</th>
+                        <th>المشرف المسؤول</th>
+                        <th class="text-center">البلوكات التابعة</th>
+                        <th class="text-center pe-4">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-muted">#@item.HallId</td>
+                                <td class="fw-bold" style="color: var(--text-main);">@item.HallName</td>
+                                <td class="text-center">
+                                    <span class="badge px-3 py-2" style="background-color: var(--bg-light); color: var(--primary-navy); border: 1px solid var(--border-color);">
+                                        الدور @item.Floor
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (item.HallSupervisor != null)
+                                    {
+                                        <span style="color: var(--accent-blue);" class="fw-medium"><i class="bi bi-person-badge me-1"></i> @item.HallSupervisor.FullName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">لم يتم التحديد</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @(item.Blocks != null && item.Blocks.Any() ? "bg-success" : "bg-secondary") px-3 py-2">
+                                        @(item.Blocks?.Count ?? 0) بلوك
+                                    </span>
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a asp-action="Details" asp-route-id="@item.HallId" class="btn btn-sm btn-outline-info" title="عرض التفاصيل">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.HallId" class="btn btn-sm btn-outline-academic" title="تعديل">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.HallId" class="btn btn-sm btn-outline-danger" title="حذف">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">لا توجد صالات مسجلة في النظام.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

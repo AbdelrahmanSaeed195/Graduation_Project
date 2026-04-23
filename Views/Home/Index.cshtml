@@ -1,0 +1,106 @@
+@{
+    ViewData["Title"] = "لوحة التحكم الرئيسية";
+}
+
+<div class="container py-5" dir="rtl">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-navy">بوابة الإدارة المركزية</h2>
+        <p class="text-muted">نظام إدارة لجان الامتحانات وتوزيع المراقبين</p>
+        <div class="d-flex justify-content-center">
+            <hr class="section-divider">
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-4">
+            <div class="card dash-card text-center p-4">
+                <div class="card-body">
+                    <div class="icon-box bg-primary bg-opacity-10 text-primary"><i class="bi bi-people-fill fs-1"></i></div>
+                    <h5 class="card-title fw-bold text-navy">إدارة الموظفين</h5>
+                    <p class="text-muted small mb-4">تسجيل بيانات أعضاء هيئة التدريس والمراقبين وتحديد تخصصاتهم.</p>
+                    <a asp-controller="Persons" asp-action="Index" class="btn btn-academic-primary btn-enter">دخول النظام</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card dash-card text-center p-4">
+                <div class="card-body">
+                    <div class="icon-box bg-success bg-opacity-10 text-success"><i class="bi bi-mortarboard-fill fs-1"></i></div>
+                    <h5 class="card-title fw-bold text-navy">إدارة الطلاب</h5>
+                    <p class="text-muted small mb-4">إضافة وتعديل بيانات الطلاب، أرقام الجلوس، والمستويات الدراسية.</p>
+                    <a asp-controller="Students" asp-action="Index" class="btn btn-academic-primary btn-enter">دخول النظام</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card dash-card text-center p-4">
+                <div class="card-body">
+                    <div class="icon-box bg-warning bg-opacity-10 text-warning"><i class="bi bi-diagram-2-fill fs-1"></i></div>
+                    <h5 class="card-title fw-bold text-navy">صلات القرابة</h5>
+                    <p class="text-muted small mb-4">إدارة قواعد منع المراقبة بناءً على صلات القرابة بين الموظف والطالب.</p>
+                    <a asp-controller="Relatives" asp-action="Index" class="btn btn-academic-primary btn-enter">دخول النظام</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card dash-card text-center p-4">
+                <div class="card-body">
+                    <div class="icon-box bg-info bg-opacity-10 text-info"><i class="bi bi-building-fill fs-1"></i></div>
+                    <h5 class="card-title fw-bold text-navy">إدارة القاعات</h5>
+                    <p class="text-muted small mb-4">تعريف القاعات والمدرجات، تحديد السعة الاستيعابية لكل قاعة.</p>
+                    <a asp-controller="Halls" asp-action="Index" class="btn btn-academic-primary btn-enter">دخول النظام</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card dash-card text-center p-4">
+                <div class="card-body">
+                    <div class="icon-box bg-secondary bg-opacity-10 text-secondary"><i class="bi bi-collection-fill fs-1"></i></div>
+                    <h5 class="card-title fw-bold text-navy">إدارة المجموعات</h5>
+                    <p class="text-muted small mb-4">تقسيم اللجان إلى مجموعات (Blocks) لتسهيل عملية التوزيع الجغرافي.</p>
+                    <a asp-controller="Blocks" asp-action="Index" class="btn btn-academic-primary btn-enter">دخول النظام</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card dash-card text-center p-4">
+                <div class="card-body">
+                    <div class="icon-box bg-danger bg-opacity-10 text-danger"><i class="bi bi-clipboard-check-fill fs-1"></i></div>
+                    <h5 class="card-title fw-bold text-navy">إدارة اللجان</h5>
+                    <p class="text-muted small mb-4">إنشاء لجان الامتحانات وربطها بالقاعات وتوزيع الطلاب عليها.</p>
+                    <a asp-controller="Committees" asp-action="Index" class="btn btn-academic-primary btn-enter">دخول النظام</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card dash-card text-center p-4">
+                <div class="card-body">
+                    <div class="icon-box bg-dark bg-opacity-10 text-dark"><i class="bi bi-journal-text fs-1"></i></div>
+                    <h5 class="card-title fw-bold text-navy">إدارة الامتحانات</h5>
+                    <p class="text-muted small mb-4">جدولة مواعيد الامتحانات، تحديد الفترات الزمنية والمواد الدراسية.</p>
+                    <a asp-controller="Exams" asp-action="Index" class="btn btn-academic-primary btn-enter">دخول النظام</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card dash-card text-center p-4" style="background: linear-gradient(145deg, var(--surface-white), var(--bg-light));">
+                <div class="card-body">
+                    <div class="icon-box" style="background-color: var(--primary-navy); color: var(--surface-white);"><i class="bi bi-cpu-fill fs-1"></i></div>
+                    <h5 class="card-title fw-bold text-navy">التوزيع الذكي</h5>
+                    <p class="text-muted small mb-4">خوارزمية التوزيع التلقائي للمراقبين على اللجان مع مراعاة القواعد.</p>
+                    <a asp-controller="CommitteesAssignments" asp-action="Index" class="btn btn-outline-academic btn-enter fw-bold border-2">بدء التوزيع</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card dash-card text-center p-4">
+                <div class="card-body">
+                    <div class="icon-box border" style="background-color: var(--bg-light); color: var(--primary-navy);"><i class="bi bi-bar-chart-fill fs-1"></i></div>
+                    <h5 class="card-title fw-bold text-navy">مركز التقارير</h5>
+                    <p class="text-muted small mb-4">توليد كشوفات الندب، كشوف حضور الطلاب، وجداول المراقبة النهائية.</p>
+                    <a asp-controller="Reports" asp-action="Index" class="btn btn-outline-academic btn-enter border-2">عرض التقارير</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
