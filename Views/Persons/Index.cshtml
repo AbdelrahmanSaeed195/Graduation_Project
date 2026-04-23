@@ -1,0 +1,149 @@
+@model IEnumerable<projectweb.Models.Person>
+
+@{
+    ViewData["Title"] = "Persons Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style>
+        /* ستايلاتك الأصلية */
+        .btn-action {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+        }
+        .btn-details { color: #0dcaf0; border: 1px solid #0dcaf0; }
+        .btn-details:hover { background-color: #0dcaf0; color: white; }
+        
+        .btn-edit { color: #0d6efd; border: 1px solid #0d6efd; }
+        .btn-edit:hover { background-color: #0d6efd; color: white; }
+        
+        .btn-delete { color: #dc3545; border: 1px solid #dc3545; }
+        .btn-delete:hover { background-color: #dc3545; color: white; }
+
+        .badge-role { font-weight: 500; padding: 0.5em 0.8em; border-radius: 6px; }
+        .search-container { background-color: #f8f9fa; border-radius: 12px; padding: 1.5rem; border: 1px solid #e9ecef; }
+
+        /* ستايل الحالة اللي أضفناه */
+        .status-indicator {
+            height: 8px;
+            width: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 5px;
+        }
+        .status-active { background-color: #198754; }
+        .status-inactive { background-color: #dc3545; }
+    </style>
+}
+
+<div class="content-body">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 fw-bold">ادارة الاشخاص والموظفين</h1>
+        <a asp-action="Create" class="btn btn-primary px-4 shadow-sm">
+            <i class="bi bi-person-plus-fill me-1"></i> اضافة شخص
+        </a>
+    </div>
+
+    <div class="search-container mb-4 shadow-sm bg-white">
+        <form method="get" class="row g-3">
+            <div class="col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="ابحث بالاسم او الرقم القومي .." value="@ViewBag.Search">
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-dark w-100"> ابحث</button>
+                <a asp-action="Index" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center text-decoration-none">اعادة تعيين</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">الاسم الكامل</th>
+                        <th>الرقم القومي</th>
+                        <th>رقم المحمول</th>
+                        <th>الدور/الوظيفة</th>
+                        <th class="text-center">الحالة</th> @* عمود الحالة الجديد *@
+                        <th class="text-center pe-4">العمليات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var p in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-medium text-dark">@p.FullName</td>
+                                <td class="text-muted small">@p.NationalId</td>
+                                <td class="small">@p.Phone</td>
+                                <td>
+                                    @{
+                                        var roleEnum = p.Role?.RoleName;
+                                        var badgeClass = "bg-light text-dark border-dark-subtle";
+                                        
+                                        switch (roleEnum)
+                                        {
+                                            case projectweb.Models.StaffPosition.HallManager: badgeClass = "bg-danger-subtle text-danger border-danger-subtle"; break;
+                                            case projectweb.Models.StaffPosition.BlockGroupLeader: badgeClass = "bg-warning-subtle text-warning-emphasis border-warning-subtle"; break;
+                                            case projectweb.Models.StaffPosition.CommitteeObserver: badgeClass = "bg-primary-subtle text-primary border-primary-subtle"; break;
+                                            case projectweb.Models.StaffPosition.Doctor: badgeClass = "bg-success-subtle text-success border-success-subtle"; break;
+                                            case projectweb.Models.StaffPosition.Nurse: badgeClass = "bg-info-subtle text-info-emphasis border-info-subtle"; break;
+                                        }
+                                    }
+                                    <span class="badge badge-role @badgeClass">
+                                        @Html.DisplayFor(model => p.Role.RoleName)
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @if (p.IsActiveForAssignment)
+                                    {
+                                        <span class="text-success small fw-bold">
+                                            <span class="status-indicator status-active"></span> نشط
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger small fw-bold">
+                                            <span class="status-indicator status-inactive"></span> متوقف
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a asp-action="Details" asp-route-id="@p.PersonId" class="btn-action btn-details">
+                                            <i class="bi bi-eye"></i> تفاصيل
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@p.PersonId" class="btn-action btn-edit">
+                                            <i class="bi bi-pencil"></i> تعديل
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@p.PersonId" class="btn-action btn-delete">
+                                            <i class="bi bi-trash3"></i> حذف
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">لا توجد نتائج </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,84 @@
+@model projectweb.Models.Person
+
+@{
+    ViewData["Title"] = "Person Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="main-content">
+    <div class="container-fluid py-4">
+        
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold mb-0">Person Profile Details</h4>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> ارجع الى القائمة
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                
+                <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                    <div class="card-body p-4">
+                        
+                        <h5 class="text-primary fw-bold mb-4 border-bottom pb-2">
+                            <i class="bi bi-person-badge me-2"></i> تفاصيل المعلومات الشخصية
+                        </h5>
+
+                        <div class="mb-3">
+                            <label class="small text-muted d-block">الاسم الكامل</label>
+                            <div class="p-2 bg-light rounded fw-medium">@Model.FullName</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="small text-muted d-block">الرقم القومي</label>
+                                <div class="p-2 bg-light rounded">@Model.NationalId</div>
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-muted d-block">رقم المحمول</label>
+                                <div class="p-2 bg-light rounded">@Model.Phone</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="small text-muted d-block">البريد الالكتروني</label>
+                            <div class="p-2 bg-light rounded">@(Model.Email ?? "غير متوفر")</div>
+                        </div>
+
+                        @* الجزء المدمج الجديد الخاص بالدور الوظيفي الملون *@
+                        <div class="mb-4">
+                            <label class="small text-muted fw-bold d-block mb-1">المسمى الوظيفي / الدور</label>
+                            @{
+                                var roleColor = "primary";
+                                switch (Model.Role?.RoleName)
+                                {
+                                    case projectweb.Models.StaffPosition.HallManager: roleColor = "danger"; break;
+                                    case projectweb.Models.StaffPosition.Doctor: roleColor = "success"; break;
+                                    case projectweb.Models.StaffPosition.BlockGroupLeader: roleColor = "warning"; break;
+                                    case projectweb.Models.StaffPosition.Nurse: roleColor = "info"; break;
+                                    case projectweb.Models.StaffPosition.CommitteeObserver: roleColor = "primary"; break;
+                                }
+                            }
+                            <div class="p-3 border border-@roleColor-subtle bg-@roleColor-subtle rounded-3">
+                                <span class="fw-bold text-@roleColor-emphasis fs-6">
+                                    <i class="bi bi-briefcase me-2"></i>@Html.DisplayFor(m => m.Role.RoleName)
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 pt-3 border-top mt-4">
+                            <a asp-action="Edit" asp-route-id="@Model.PersonId" class="btn btn-primary w-100 py-2 fw-bold">
+                                <i class="bi bi-pencil-square me-2"></i> تعديل الصفحة الشخصية
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@Model.PersonId" class="btn btn-outline-danger w-50 py-2">
+                                <i class="bi bi-trash me-2"></i> حذف
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

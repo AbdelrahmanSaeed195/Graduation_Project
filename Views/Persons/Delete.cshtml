@@ -1,0 +1,78 @@
+@model projectweb.Models.Person
+
+@{
+    ViewData["Title"] = "Delete Person";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="main-content">
+    <div class="content-body" style="max-width: 750px; margin: 50px auto;">
+        
+        <div class="mb-4">
+            <a asp-action="Index" class="text-secondary text-decoration-none small">
+                <i class="bi bi-chevron-left"></i> ارجع الى القائمة
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+            <div class="alert alert-danger border-0 m-3 d-flex align-items-center" style="background-color: #fff5f5; color: #c53030;">
+                <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                <div>
+                    <h6 class="fw-bold mb-1">Confirm Deletion</h6>
+                    <p class="mb-0 small">هل أنت متأكد من رغبتك في حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء.</p>
+                </div>
+            </div>
+
+            <div class="card-body px-4 pb-4">
+                <h6 class="text-muted fw-bold mb-3 small text-uppercase">Person Profile</h6>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small d-block">الاسم الكامل</label>
+                        <span class="fw-medium text-dark">@Model.FullName</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small d-block">الرقم القومي</label>
+                        <span class="text-dark">@Model.NationalId</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small d-block">رقم المحمول</label>
+                        <span class="text-dark">@Model.Phone</span>
+                    </div>
+
+                    @* الجزء المدمج الجديد الخاص بالدور الوظيفي الملون *@
+                    <div class="col-md-6">
+                        <label class="text-muted small d-block mb-1">الدور الوظيفي</label>
+                        @{
+                            var roleColor = "primary";
+                            switch (Model.Role?.RoleName)
+                            {
+                                case projectweb.Models.StaffPosition.HallManager: roleColor = "danger"; break;
+                                case projectweb.Models.StaffPosition.Doctor: roleColor = "success"; break;
+                                case projectweb.Models.StaffPosition.BlockGroupLeader: roleColor = "warning"; break;
+                                case projectweb.Models.StaffPosition.Nurse: roleColor = "info"; break;
+                                case projectweb.Models.StaffPosition.CommitteeObserver: roleColor = "primary"; break;
+                            }
+                        }
+                        <span class="badge bg-@roleColor-subtle text-@roleColor-emphasis border border-@roleColor-subtle px-3 py-2">
+                            @Html.DisplayFor(m => m.Role.RoleName)
+                        </span>
+                    </div>
+                </div>
+
+                <hr class="my-4 opacity-25">
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="PersonId" />
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-light px-4 border">الغاء</a>
+                        <button type="submit" class="btn btn-danger px-4 fw-bold shadow-sm">
+                            تأكيد الحذف
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

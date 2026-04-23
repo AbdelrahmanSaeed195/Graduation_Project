@@ -1,0 +1,24 @@
+@model projectweb.Models.Relative
+
+@{
+    ViewData["Title"] = "حذف علاقة";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center py-5">
+    <div class="col-lg-6">
+        <div class="app-card bg-white p-4">
+            <div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill"></i> سيتم حذف العلاقة نهائيًا.</div>
+            <div class="bg-light rounded p-3 mb-2"><div class="small text-muted">الموظف</div><div class="fw-bold">@Model.Person?.FullName</div></div>
+            <div class="bg-light rounded p-3 mb-2"><div class="small text-muted">الطالب</div><div class="fw-bold">@Model.Student?.FullName</div></div>
+            <div class="bg-light rounded p-3 mb-4"><div class="small text-muted">نوع العلاقة</div><span class="badge bg-danger">@Model.RelationType</span></div>
+            <form asp-action="Delete" method="post">
+                <input type="hidden" asp-for="RelativeId" />
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> حذف</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

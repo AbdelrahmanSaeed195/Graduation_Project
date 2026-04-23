@@ -1,0 +1,82 @@
+@model projectweb.Models.Person
+
+@{
+    ViewData["Title"] = "إضافة شخص جديد";
+}
+
+<div class="container py-4" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">قائمة الموظفين</a></li>
+                    <li class="breadcrumb-item active">إضافة جديد</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-lg border-0" style="border-radius: 12px;">
+                <div class="card-header bg-dark text-white p-3" style="border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0"><i class="bi bi-person-plus-fill me-2"></i> إضافة شخص جديد</h5>
+                </div>
+                <div class="card-body p-4 bg-white">
+
+                    @* ملخص الأخطاء *@
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
+
+                    <form asp-action="Create" method="post">
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="text-primary border-bottom pb-2 mb-3">المعلومات الأساسية</h6>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FullName" class="form-label fw-bold small text-secondary">الاسم الكامل *</label>
+                                <input asp-for="FullName" class="form-control shadow-sm" placeholder="أدخل الاسم رباعي" />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="NationalId" class="form-label fw-bold small text-secondary">الرقم القومي *</label>
+                                <input asp-for="NationalId" class="form-control shadow-sm" placeholder="14 رقم" maxlength="14" />
+                                <span asp-validation-for="NationalId" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Phone" class="form-label fw-bold small text-secondary">رقم المحمول *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-phone"></i></span>
+                                    <input asp-for="Phone" class="form-control shadow-sm" placeholder="01xxxxxxxxx" maxlength="11" />
+                                </div>
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label fw-bold small text-secondary">البريد الإلكتروني *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                                    <input asp-for="Email" type="email" class="form-control shadow-sm" placeholder="example@domain.com" />
+                                </div>
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="RoleID" class="form-label fw-bold small text-secondary">الدور أو الوظيفة *</label>
+                                <select asp-for="RoleID" asp-items="@(ViewBag.Roles as SelectList)" class="form-select shadow-sm">
+                                    <option value="">-- اختر الوظيفة --</option>
+                                </select>
+                                <span asp-validation-for="RoleID" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 border-top pt-4 mt-3">
+                            <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                                <i class="bi bi-check-lg me-1"></i> حفظ البيانات
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">إلغاء</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
