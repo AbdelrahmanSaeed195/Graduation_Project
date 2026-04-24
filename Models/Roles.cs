@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace projectweb.Models
@@ -36,15 +37,15 @@ namespace projectweb.Models
         [DataType(DataType.MultilineText)]
         public string RoleDescription { get; set; }
 
-
+        [ValidateNever]
         [Display(Name = "الموظفين بهذا الدور")]
-        public virtual ICollection<Person>? Persons { get; set; }
-
+        public virtual ICollection<Person> Persons { get; set; }
+        [ValidateNever]
         [Display(Name = "التكليفات المرتبطة")]
-        public virtual ICollection<CommitteesAssignment>? CommitteesAssignments { get; set; }
-
+        public virtual ICollection<CommitteesAssignment> CommitteesAssignments { get; set; }
+        [ValidateNever]
         [Display(Name = "المحاضر المرتبطة")]
-        public virtual ICollection<ReportPerson>? ReportPersons { get; set; }
+        public virtual ICollection<ReportPerson> ReportPersons { get; set; }
 
 
     }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -44,13 +45,13 @@ namespace projectweb.Models
         [Required(ErrorMessage = "يجب ربط المحضر بجلسة امتحان")]
         [Display(Name = "جلسة الامتحان")]
         public int ScheduleID { get; set; }
-
+        [ValidateNever]
         [ForeignKey("ScheduleID")]
         [Display(Name = "بيانات جلسة الامتحان")]
-        public virtual ExamSchedule? ExamSchedule { get; set; }
-
+        public virtual ExamSchedule ExamSchedule { get; set; }
+        [ValidateNever]
         [Display(Name = "الموقعون على المحضر")]
-        public virtual ICollection<ReportPerson>? ReportPersons { get; set; }
+        public virtual ICollection<ReportPerson> ReportPersons { get; set; }
 
        
     }

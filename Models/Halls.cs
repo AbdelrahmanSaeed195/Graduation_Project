@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -20,13 +21,13 @@ namespace projectweb.Models
 
         [Display(Name = "مشرف الصالة")]
         public int? HallSupervisorID { get; set; }
-
+        [ValidateNever]
         [ForeignKey("HallSupervisorID")]
         [Display(Name = "بيانات المشرف")]
-        public virtual Person? HallSupervisor { get; set; }
-
+        public virtual Person HallSupervisor { get; set; }
+        [ValidateNever]
         [Display(Name = "البلوكات التابعة")]
-        public virtual ICollection<Block>? Blocks { get; set; }
+        public virtual ICollection<Block> Blocks { get; set; }
 
       
     }

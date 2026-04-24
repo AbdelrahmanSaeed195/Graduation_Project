@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -30,13 +31,13 @@ namespace projectweb.Models
 
         [Display(Name = "اللجنة التابع لها")]
         public int? CommitteeId { get; set; }
-
+        [ValidateNever]
         [ForeignKey("CommitteeId")]
         [Display(Name = "بيانات اللجنة")]
-        public virtual Committee? Committee { get; set; }
-
+        public virtual Committee Committee { get; set; }
+        [ValidateNever]
         [Display(Name = "صلات القرابة")]
-        public virtual ICollection<Relative>? Relatives { get; set; }
+        public virtual ICollection<Relative> Relatives { get; set; }
 
        
 

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace projectweb.Models
@@ -12,18 +13,18 @@ namespace projectweb.Models
         [Required(ErrorMessage = "يجب تحديد الطالب")]
         [Display(Name = "الطالب")]
         public int StudentId { get; set; }
-
+        [ValidateNever]
         [ForeignKey("StudentId")]
         [Display(Name = "بيانات الطالب")]
-        public virtual Student? Student { get; set; }
+        public virtual Student Student { get; set; }
 
         [Required(ErrorMessage = "يجب تحديد الموظف")]
         [Display(Name = "الموظف")]
         public int PersonId { get; set; }
-
+        [ValidateNever]
         [ForeignKey("PersonId")]
         [Display(Name = "بيانات الموظف")]
-        public virtual Person? Person { get; set; }
+        public virtual Person Person { get; set; }
 
         [Required(ErrorMessage = "يجب تحديد درجة القرابة")]
         [StringLength(50)]

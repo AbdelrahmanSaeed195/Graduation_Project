@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace projectweb.Models
@@ -13,9 +14,9 @@ namespace projectweb.Models
         [StringLength(200)]
         [Display(Name = "اسم المادة")]
         public string SubjectName { get; set; }
-
+        [ValidateNever]
         [Display(Name = "الامتحانات المرتبطة")]
-        public virtual ICollection<Exam>? Exams { get; set; }
+        public virtual ICollection<Exam> Exams { get; set; }
 
       
     }
