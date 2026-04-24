@@ -1,0 +1,233 @@
+﻿@model IEnumerable<projectweb.Models.CommitteesAssignment>
+
+@{
+    ViewData["Title"] = "التكليف العشوائي";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-body" dir="rtl">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Page Title -->
+    <div class="mb-4">
+        <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-shuffle me-2"></i> التكليف العشوائي</h1>
+    </div>
+
+    <!-- Selection Criteria Card -->
+    <div class="card academic-card mb-4">
+        <div class="card-header academic-card-header text-white p-3">
+            <h5 class="mb-0 fw-bold text-white"><i class="bi bi-sliders me-2"></i> معايير الاختيار</h5>
+        </div>
+        <div class="card-body p-4" style="background-color: var(--surface-white);">
+            <form asp-action="Index" method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="hallId" class="form-label academic-label required">اختر الصالة <span class="text-danger">*</span></label>
+                    <select name="hallId" id="hallId" class="form-select academic-input" asp-items="@(ViewData["HallId"] as SelectList)">
+                        <option value="">-- اختر الصالة --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="blockId" class="form-label academic-label required">اختر البلوك <span class="text-danger">*</span></label>
+                    <select name="blockId" id="blockId" class="form-select academic-input" asp-items="@(ViewData["BlockId"] as SelectList)">
+                        <option value="">-- اختر البلوك --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="examId" class="form-label academic-label required">اختر الامتحان <span class="text-danger">*</span></label>
+                    <select name="examId" id="examId" class="form-select academic-input" asp-items="@(ViewData["ExamId"] as SelectList)">
+                        <option value="">-- اختر الامتحان --</option>
+                    </select>
+                </div>
+                <div class="col-12 mt-3">
+                    <button type="submit" class="btn btn-academic-primary px-5 fw-bold py-2">
+                        <i class="bi bi-play-fill me-1"></i> تشغيل خوارزمية التكليف
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Info Message Section -->
+    <div class="alert alert-secondary border-0 d-flex align-items-center mb-4" style="background-color: var(--bg-light); color: var(--text-main);">
+        <i class="bi bi-info-circle-fill fs-4 me-3" style="color: var(--accent-blue);"></i>
+        <div>
+            اختر الصالة والبلوك والامتحان ثم اضغط على <strong>"تشغيل خوارزمية التكليف"</strong> لعرض ومراجعة التكليفات المقترحة.
+        </div>
+    </div>
+
+    <!-- Action Buttons Row -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold academic-heading mb-0"><i class="bi bi-table me-2"></i> سجل التكليفات</h5>
+        <div class="d-flex gap-2">
+            <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> إضافة تكليف يدوي
+            </a>
+        </div>
+    </div>
+
+    <!-- Assignments Table -->
+    <div class="card academic-card overflow-hidden">
+        <div class="table-responsive">
+            <table class="table academic-table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">كود التكليف</th>
+                        <th>الموظف</th>
+                        <th>اللجنة</th>
+                        <th class="text-center">الدور الوظيفي</th>
+                        <th>جلسة الامتحان</th>
+                        <th class="text-center">احتياطي</th>
+                        <th class="text-center pe-4">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-muted">#@item.AssignmentID</td>
+                                <td>
+                                    @if (item.Person != null)
+                                    {
+                                        <span class="fw-medium" style="color: var(--primary-navy);">
+                                            <i class="bi bi-person-fill me-1" style="color: var(--accent-blue);"></i> @item.Person.FullName
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">غير محدد</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.Committee != null)
+                                    {
+                                        <span class="badge bg-light border px-3 py-2" style="color: var(--primary-navy); border-color: var(--border-color) !important;">
+                                            <i class="bi bi-people me-1"></i> لجنة @item.Committee.CommitteeNumber
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">غير محدد</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (item.Role != null)
+                                    {
+                                        switch (item.Role.RoleName)
+                                        {
+                                            case StaffPosition.HallManager:
+                                                <span class="badge bg-primary px-3 py-2"><i class="bi bi-building me-1"></i> رئيس صالة</span>
+                                                break;
+                                            case StaffPosition.BlockGroupLeader:
+                                                <span class="badge bg-info px-3 py-2"><i class="bi bi-layers me-1"></i> رئ. مجموعة بلوكات</span>
+                                                break;
+                                            case StaffPosition.CommitteeObserver:
+                                                <span class="badge bg-success px-3 py-2"><i class="bi bi-eye me-1"></i> مراقب</span>
+                                                break;
+                                            case StaffPosition.Doctor:
+                                                <span class="badge bg-danger px-3 py-2"><i class="bi bi-heart-pulse me-1"></i> طبيب</span>
+                                                break;
+                                            case StaffPosition.Nurse:
+                                                <span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-nurse me-1"></i> ممرض</span>
+                                                break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.ExamSchedule != null)
+                                    {
+                                        <span class="badge bg-light border px-3 py-2" style="color: var(--primary-navy); border-color: var(--border-color) !important;">
+                                            <i class="bi bi-calendar3 me-1"></i> @item.ExamSchedule.ScheduledDate.ToString("yyyy/MM/dd")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (item.isReserve)
+                                    {
+                                        <span class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-person-plus me-1"></i> احتياطي</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light border px-2 py-1 text-muted" style="border-color: var(--border-color) !important;">أساسي</span>
+                                    }
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a asp-action="Details" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-info" title="عرض التفاصيل">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-academic" title="تعديل">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-danger" title="حذف">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="bi bi-people fs-1 d-block mb-2 opacity-25"></i>
+                                    <p class="mb-0">لا توجد تكليفات مسجلة حالياً. اختر الصالة والبلوك والامتحان ثم اضغط "تشغيل خوارزمية التكليف" للبدء.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Cascade: Hall -> Block
+        document.getElementById('hallId').addEventListener('change', function () {
+            var hallId = this.value;
+            var blockSelect = document.getElementById('blockId');
+            blockSelect.innerHTML = '<option value="">-- اختر البلوك --</option>';
+            if (hallId) {
+                fetch('/CommitteesAssignments/GetBlocksByHall?hallId=' + hallId)
+                    .then(res => res.json())
+                    .then(data => {
+                        data.forEach(function (item) {
+                            var opt = document.createElement('option');
+                            opt.value = item.value;
+                            opt.text = item.text;
+                            blockSelect.appendChild(opt);
+                        });
+                    });
+            }
+        });
+
+        // Cascade: Block -> Exam (optional future enhancement)
+    </script>
+}

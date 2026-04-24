@@ -1,0 +1,25 @@
+﻿@model projectweb.Models.Subject
+
+<div class="container mt-5" dir="rtl" style="text-align: right;">
+    <div class="card shadow">
+        <div class="card-header bg-info text-white">
+            <h4 class="mb-0">تفاصيل المادة الدراسية</h4>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.SubjectId)</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.SubjectId)</dd>
+
+                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.SubjectName)</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.SubjectName)</dd>
+
+                <dt class="col-sm-3">عدد الامتحانات المرتبطة</dt>
+                <dd class="col-sm-9">@(Model.Exams?.Count ?? 0)</dd>
+            </dl>
+        </div>
+        <div class="card-footer bg-light">
+            <a asp-action="Edit" asp-route-id="@Model.SubjectId" class="btn btn-warning px-4">تعديل</a>
+            <a asp-action="Index" class="btn btn-secondary px-4">العودة للقائمة</a>
+        </div>
+    </div>
+</div>

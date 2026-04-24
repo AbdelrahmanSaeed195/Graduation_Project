@@ -1,0 +1,31 @@
+@model projectweb.ViewModel.RoleViewModel
+
+@{
+    ViewData["Title"] = "إضافة دور وظيفي";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="app-card p-4">
+            <h4 class="academic-heading mb-3"><i class="bi bi-gear"></i> إضافة دور جديد</h4>
+            <form asp-action="AddRole" method="post">
+                <div asp-validation-summary="All" class="alert alert-danger"></div>
+                <div class="mb-3">
+                    <label asp-for="RoleType" class="form-label academic-label required">اسم الدور</label>
+                    <input asp-for="RoleType" class="form-control academic-input" placeholder="أدخل اسم الدور الوظيفي" />
+                    <span asp-validation-for="RoleType" class="text-danger"></span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-academic-primary"><i class="bi bi-check-circle"></i> حفظ</button>
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">عودة</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

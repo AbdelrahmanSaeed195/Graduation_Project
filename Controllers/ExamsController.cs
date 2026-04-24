@@ -47,7 +47,8 @@ namespace projectweb.Controllers
         // =====================================
         public IActionResult Create()
         {
-            ViewData["SubjectID"] = new SelectList(_context.Subjects, "SubjectId", "SubjectName");
+            var subjects = _context.Subjects.OrderBy(s => s.SubjectName).ToList();
+            ViewBag.SubjectId = new SelectList(subjects, "SubjectId", "SubjectName");
             return View();
         }
         [HttpPost]
@@ -62,7 +63,7 @@ namespace projectweb.Controllers
                 return RedirectToAction(nameof(Index));
             }
             TempData["ErrorMessage"] = "فشل في حفظ البيانات، يرجى التأكد من المدخلات.";
-            ViewData["SubjectID"] = new SelectList(_context.Subjects, "SubjectId", "SubjectName", exam.SubjectID);
+            ViewBag.SubjectId = new SelectList(_context.Subjects.OrderBy(s => s.SubjectName), "SubjectId", "SubjectName", exam.SubjectID);
             return View(exam);
         }
         // =====================================

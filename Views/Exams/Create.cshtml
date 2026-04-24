@@ -1,0 +1,84 @@
+﻿@model projectweb.Models.Exam
+
+@{
+    ViewData["Title"] = "إضافة امتحان جديد";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-xl-8">
+        <div class="card academic-card">
+            <div class="card-header academic-card-header text-white p-4">
+                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-plus-square-fill me-2"></i> إضافة امتحان جديد</h4>
+            </div>
+            <div class="card-body p-4" style="background-color: var(--surface-white);">
+
+                <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4">
+                    <i class="bi bi-info-circle-fill fs-3 me-3 text-primary"></i>
+                    <div>
+                        <strong class="d-block mb-1">توضيح:</strong>
+                        <ul class="mb-0 ps-3 small opacity-90">
+                            <li>بعد إنشاء الامتحان، يمكنك إضافة جداول التوزيع (اللجان والمواعيد) من صفحة التفاصيل.</li>
+                            <li>تأكد من أن المادة الدراسية مسجلة مسبقاً قبل إنشاء الامتحان.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="All" class="alert alert-danger small mb-3"></div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="SubjectID" class="form-label academic-label required">المادة الدراسية</label>
+                            <select asp-for="SubjectID" asp-items="@(ViewData["SubjectID"] as SelectList)" class="form-select academic-input">
+                                <option value="">-- اختر المادة --</option>
+                            </select>
+                            <span asp-validation-for="SubjectID" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ExamDate" class="form-label academic-label required">تاريخ الامتحان</label>
+                            <input asp-for="ExamDate" class="form-control academic-input" type="date" />
+                            <span asp-validation-for="ExamDate" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="StartTime" class="form-label academic-label required">وقت البدء</label>
+                            <input asp-for="StartTime" class="form-control academic-input" type="time" />
+                            <span asp-validation-for="StartTime" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="EndTime" class="form-label academic-label required">وقت الانتهاء</label>
+                            <input asp-for="EndTime" class="form-control academic-input" type="time" />
+                            <span asp-validation-for="EndTime" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label asp-for="TargetAcademicYear" class="form-label academic-label required">السنة الدراسية المستهدفة</label>
+                            <select asp-for="TargetAcademicYear" class="form-select academic-input">
+                                <option value="">-- اختر السنة الدراسية --</option>
+                                <option value="1">المستوى الأول</option>
+                                <option value="2">المستوى الثاني</option>
+                                <option value="3">المستوى الثالث</option>
+                                <option value="4">المستوى الرابع</option>
+                            </select>
+                            <span asp-validation-for="TargetAcademicYear" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+                        <button type="submit" class="btn btn-academic-primary px-4 fw-bold">
+                            <i class="bi bi-check-circle me-1"></i> حفظ وإنشاء
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

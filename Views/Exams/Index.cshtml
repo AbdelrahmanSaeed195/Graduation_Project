@@ -1,0 +1,110 @@
+﻿@model IEnumerable<projectweb.Models.Exam>
+
+@{
+    ViewData["Title"] = "إدارة الامتحانات";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-body" dir="rtl">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-journal-bookmark-fill me-2"></i> إدارة الامتحانات</h1>
+        <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> إضافة امتحان جديد
+        </a>
+    </div>
+
+    <div class="card academic-card overflow-hidden">
+        <div class="table-responsive">
+            <table class="table academic-table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">كود الامتحان</th>
+                        <th>المادة الدراسية</th>
+                        <th>تاريخ الامتحان</th>
+                        <th class="text-center">وقت الامتحان</th>
+                        <th class="text-center">السنة الدراسية</th>
+                        <th class="text-center">جداول التوزيع</th>
+                        <th class="text-center pe-4">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-muted">#@item.ExamId</td>
+                                <td class="fw-bold" style="color: var(--text-main);">
+                                    @if (item.Subject != null)
+                                    {
+                                        <i class="bi bi-book me-1" style="color: var(--accent-blue);"></i> 
+                                        @item.Subject.SubjectName
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">غير محدد</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-light border px-3 py-2" style="color: var(--primary-navy); border-color: var(--border-color) !important;">
+                                        <i class="bi bi-calendar-event me-1"></i> @item.ExamDate.ToString("yyyy/MM/dd")
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge px-3 py-2" style="background-color: var(--bg-light); color: var(--text-main); border: 1px solid var(--border-color);">
+                                        <i class="bi bi-clock me-1"></i> @item.StartTime.ToString("hh:mm tt") - @item.EndTime.ToString("hh:mm tt")
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-info text-dark px-3 py-2">
+                                        @item.TargetAcademicYear
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @(item.ExamSchedules != null && item.ExamSchedules.Any() ? "bg-success" : "bg-secondary") px-3 py-2">
+                                        @(item.ExamSchedules?.Count ?? 0) جدول
+                                    </span>
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a asp-action="Details" asp-route-id="@item.ExamId" class="btn btn-sm btn-outline-info" title="عرض التفاصيل">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.ExamId" class="btn btn-sm btn-outline-academic" title="تعديل">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.ExamId" class="btn btn-sm btn-outline-danger" title="حذف">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">لا توجد امتحانات مسجلة في النظام.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

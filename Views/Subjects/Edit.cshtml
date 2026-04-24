@@ -1,0 +1,30 @@
+﻿@model projectweb.Models.Subject
+
+<div class="container mt-5" dir="rtl" style="text-align: right;">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">تعديل بيانات المادة</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="SubjectId" />
+
+                        <div class="form-group">
+                            <label asp-for="SubjectName" class="control-label font-weight-bold"></label>
+                            <input asp-for="SubjectName" class="form-control" />
+                            <span asp-validation-for="SubjectName" class="text-danger"></span>
+                        </div>
+                        <hr />
+                        <div class="form-group mb-0">
+                            <button type="submit" class="btn btn-success px-4">تحديث البيانات</button>
+                            <a asp-action="Index" class="btn btn-secondary px-4">إلغاء</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

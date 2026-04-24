@@ -1,0 +1,132 @@
+﻿@model projectweb.Models.CommitteesAssignment
+
+@{
+    ViewData["Title"] = "تأكيد حذف تكليف";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-xl-7">
+        <div class="card academic-card shadow-sm">
+            <div class="card-body p-4 bg-white">
+                <div class="text-center mb-4">
+                    <i class="bi bi-exclamation-octagon text-danger" style="font-size: 4rem;"></i>
+                    <h3 class="academic-heading fw-bold mt-2">تأكيد الحذف</h3>
+                </div>
+
+                <div class="alert alert-warning border-0 d-flex gap-2 align-items-center mb-4 shadow-sm">
+                    <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                    <div>
+                        <strong>تأكيد عملية الحذف!</strong><br />
+                        <span class="small">أنت على وشك حذف التكليف رقم <strong>#@Model.AssignmentID</strong> نهائياً. هل أنت متأكد؟</span>
+                    </div>
+                </div>
+
+                <!-- ملخص بيانات التكليف -->
+                <div class="row g-3 mb-4 text-center">
+                    <div class="col-4">
+                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
+                            <div class="small academic-label mb-1">الموظف</div>
+                            <div class="fw-bold mt-1" style="color: var(--text-main);">
+                                @(Model.Person?.FullName ?? "—")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
+                            <div class="small academic-label mb-1">اللجنة</div>
+                            <div class="fw-bold mt-1" style="color: var(--text-main);">
+                                @(Model.Committee != null ? $"لجنة {Model.Committee.CommitteeNumber}" : "—")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
+                            <div class="small academic-label mb-1">الدور الوظيفي</div>
+                            <div class="fw-bold mt-1">
+                                @if (Model.Role != null)
+                                {
+                                    switch (Model.Role.RoleName)
+                                    {
+                                        case StaffPosition.HallManager:
+                                            <span class="badge bg-primary px-2 py-1">رئيس صالة</span>
+                                            break;
+                                        case StaffPosition.BlockGroupLeader:
+                                            <span class="badge bg-info px-2 py-1">رئ. مجموعة بلوكات</span>
+                                            break;
+                                        case StaffPosition.CommitteeObserver:
+                                            <span class="badge bg-success px-2 py-1">مراقب</span>
+                                            break;
+                                        case StaffPosition.Doctor:
+                                            <span class="badge bg-danger px-2 py-1">طبيب</span>
+                                            break;
+                                        case StaffPosition.Nurse:
+                                            <span class="badge bg-warning text-dark px-2 py-1">ممرض</span>
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- تفاصيل إضافية -->
+                <div class="row g-3 mb-4 text-center">
+                    <div class="col-4">
+                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
+                            <div class="small academic-label mb-1">الجلسة</div>
+                            <div class="fw-bold mt-1 small" style="color: var(--text-main);">
+                                @if (Model.ExamSchedule != null)
+                                {
+                                    <i class="bi bi-calendar3 me-1"></i> 
+                                    @Model.ExamSchedule.ScheduledDate.ToString("yyyy/MM/dd")
+                                }
+                                else
+                                {
+                                    <span>—</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
+                            <div class="small academic-label mb-1">حالة التكليف</div>
+                            <div class="fw-bold mt-1">
+                                @if (Model.isReserve)
+                                {
+                                    <span class="badge bg-warning text-dark px-2 py-1">احتياطي</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success px-2 py-1">أساسي</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
+                            <div class="small academic-label mb-1">نوع التكليف</div>
+                            <div class="fw-bold mt-1" style="color: var(--text-main);">
+                                @(Model.AssignmentType ?? "—")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="AssignmentID" />
+                    <div class="d-flex justify-content-center gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+                        <button type="submit" class="btn btn-danger px-4 fw-bold">
+                            <i class="bi bi-trash me-1"></i> تأكيد الحذف
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">تراجع والعودة</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

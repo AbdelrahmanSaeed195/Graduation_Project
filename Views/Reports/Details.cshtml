@@ -1,0 +1,174 @@
+﻿@model projectweb.Models.Report
+
+@{
+    ViewData["Title"] = "تفاصيل المحضر";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-xl-10">
+        <div class="card academic-card mb-4">
+            <div class="card-header academic-card-header text-white p-4 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-info-circle-fill me-2"></i> بيانات المحضر</h4>
+                <span class="badge bg-light fs-6" style="color: var(--primary-navy);">كود المحضر #@Model.ReportID</span>
+            </div>
+            <div class="card-body p-4" style="background-color: var(--surface-white);">
+
+                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3" style="border-color: var(--border-color) !important;">المعلومات الأساسية</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="data-panel">
+                            <div class="panel-label">جلسة الامتحان</div>
+                            <div class="panel-value">
+                                @if (Model.ExamSchedule != null)
+                                {
+                                    <i class="bi bi-book me-1" style="color: var(--accent-blue);"></i>
+                                    @if (Model.ExamSchedule.Exam != null && Model.ExamSchedule.Exam.Subject != null)
+                                    {
+                                        @Model.ExamSchedule.Exam.Subject.SubjectName
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">غير محدد</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="data-panel">
+                            <div class="panel-label">اللجنة</div>
+                            <div class="panel-value">
+                                @(Model.ExamSchedule?.Committee != null ? $"لجنة {Model.ExamSchedule.Committee.CommitteeNumber}" : "غير محدد")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="data-panel">
+                            <div class="panel-label">نوع / حالة المحضر</div>
+                            <div class="panel-value mt-1">
+                                @switch (Model.Status)
+                                {
+                                    case ReportStatus.Normal:
+                                        <span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle me-1"></i> طبيعي</span>
+                                        break;
+                                    case ReportStatus.Cheating:
+                                        <span class="badge bg-danger px-3 py-2"><i class="bi bi-exclamation-diamond me-1"></i> غش</span>
+                                        break;
+                                    case ReportStatus.Disturbance:
+                                        <span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-megaphone me-1"></i> شغب</span>
+                                        break;
+                                    case ReportStatus.Emergency:
+                                        <span class="badge bg-danger px-3 py-2"><i class="bi bi-lightning me-1"></i> طوارئ</span>
+                                        break;
+                                    case ReportStatus.AbsenceIssue:
+                                        <span class="badge bg-secondary px-3 py-2"><i class="bi bi-person-x me-1"></i> غياب</span>
+                                        break;
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="data-panel">
+                            <div class="panel-label">تاريخ تحرير المحضر</div>
+                            <div class="panel-value">
+                                <i class="bi bi-calendar3 me-1"></i> @Model.CreatedDate.ToString("yyyy/MM/dd hh:mm tt")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="data-panel">
+                            <div class="panel-label">موعد الجلسة</div>
+                            <div class="panel-value">
+                                @if (Model.ExamSchedule != null)
+                                {
+                                    <i class="bi bi-clock me-1"></i> 
+                                    @Model.ExamSchedule.ScheduledDate.ToString("yyyy/MM/dd")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="data-panel">
+                            <div class="panel-label">عدد الموقعين</div>
+                            <div class="panel-value text-success">@(Model.ReportPersons?.Count ?? 0) موقع</div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 mt-4" style="border-color: var(--border-color) !important;">
+                        <i class="bi bi-card-text me-2"></i> ملاحظات وتفاصيل
+                    </h5>
+                    <div class="alert alert-secondary border-0 mb-4" style="background-color: var(--bg-light);">
+                        @Model.Notes
+                    </div>
+                }
+
+                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 mt-4" style="border-color: var(--border-color) !important;">
+                    <i class="bi bi-pen me-2"></i> الموقعون على المحضر
+                </h5>
+
+                @if (Model.ReportPersons != null && Model.ReportPersons.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table academic-table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>الاسم</th>
+                                    <th>الصفة / الدور</th>
+                                    <th>وقت التوقيع</th>
+                                    <th>التوقيع</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var rp in Model.ReportPersons)
+                                {
+                                    <tr>
+                                        <td class="fw-medium" style="color: var(--primary-navy);">
+                                            <i class="bi bi-person me-1"></i> @(rp.Person?.FullName ?? "غير محدد")
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light border px-3 py-1" style="color: var(--primary-navy); border-color: var(--border-color) !important;">
+                                                @(rp.Role != null ? rp.Role.RoleName.ToString() : "—")
+                                            </span>
+                                        </td>
+                                        <td class="text-muted small">@rp.SignedAt.ToString("yyyy/MM/dd hh:mm tt")</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(rp.Signature))
+                                            {
+                                                <i class="bi bi-check-circle-fill text-success me-1"></i> <span class="text-success small">موقع</span>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-x-circle text-muted me-1"></i> <span class="text-muted small">لم يوقع بعد</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-secondary border-0 text-center" style="background-color: var(--bg-light); color: var(--text-main);">
+                        لا يوجد موقعون على هذا المحضر حالياً.
+                    </div>
+                }
+
+                <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+                    <a asp-action="Edit" asp-route-id="@Model.ReportID" class="btn btn-academic-primary px-4 fw-bold">
+                        <i class="bi bi-pencil-square me-1"></i> تعديل
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

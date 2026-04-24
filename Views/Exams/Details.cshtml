@@ -1,0 +1,122 @@
+﻿@model projectweb.Models.Exam
+
+@{
+    ViewData["Title"] = "تفاصيل الامتحان";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-xl-10">
+        <div class="card academic-card mb-4">
+            <div class="card-header academic-card-header text-white p-4 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-info-circle-fill me-2"></i> بيانات الامتحان</h4>
+                <span class="badge bg-light fs-6" style="color: var(--primary-navy);">كود الامتحان #@Model.ExamId</span>
+            </div>
+            <div class="card-body p-4 bg-white">
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="bg-light rounded p-3 border" style="border-color: var(--border-color) !important;">
+                            <div class="small academic-label mb-1">المادة الدراسية</div>
+                            <div class="fw-bold fs-5" style="color: var(--text-main);">
+                                @if (Model.Subject != null)
+                                {
+                                    <i class="bi bi-book me-1" style="color: var(--accent-blue);"></i> 
+                                    @Model.Subject.SubjectName
+                                }
+                                else
+                                {
+                                    <span class="text-muted">غير محدد</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="bg-light rounded p-3 border" style="border-color: var(--border-color) !important;">
+                            <div class="small academic-label mb-1">تاريخ الامتحان</div>
+                            <div class="fw-bold fs-5 academic-heading">
+                                <i class="bi bi-calendar-event me-1"></i> @Model.ExamDate.ToString("yyyy/MM/dd")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="bg-light rounded p-3 border" style="border-color: var(--border-color) !important;">
+                            <div class="small academic-label mb-1">السنة الدراسية</div>
+                            <div class="fw-bold fs-5 academic-heading">
+                                <span class="badge bg-info text-dark px-3 py-2 fs-6">@Model.TargetAcademicYear</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="bg-light rounded p-3 border" style="border-color: var(--border-color) !important;">
+                            <div class="small academic-label mb-1">وقت البدء</div>
+                            <div class="fw-bold fs-5" style="color: var(--text-main);">
+                                <i class="bi bi-clock me-1" style="color: var(--accent-blue);"></i> @Model.StartTime.ToString("hh:mm tt")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="bg-light rounded p-3 border" style="border-color: var(--border-color) !important;">
+                            <div class="small academic-label mb-1">وقت الانتهاء</div>
+                            <div class="fw-bold fs-5" style="color: var(--text-main);">
+                                <i class="bi bi-clock-fill me-1" style="color: var(--accent-blue);"></i> @Model.EndTime.ToString("hh:mm tt")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 mt-4" style="border-color: var(--border-color) !important;">
+                    <i class="bi bi-table me-2"></i> جداول توزيع اللجان المرتبطة
+                </h5>
+
+                @if (Model.ExamSchedules != null && Model.ExamSchedules.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table academic-table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>كود الجلسة</th>
+                                    <th>اللجنة</th>
+                                    <th>التاريخ</th>
+                                    <th>وقت البدء</th>
+                                    <th>وقت الانتهاء</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var s in Model.ExamSchedules)
+                                {
+                                    <tr>
+                                        <td class="fw-bold text-muted">#@s.ExamScheduleId</td>
+                                        <td class="fw-medium" style="color: var(--primary-navy);">
+                                            @(s.Committee != null ? $"لجنة {s.Committee.CommitteeNumber}" : "غير محدد")
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light border px-3 py-1" style="color: var(--primary-navy); border-color: var(--border-color) !important;">
+                                                @s.ScheduledDate.ToString("yyyy/MM/dd")
+                                            </span>
+                                        </td>
+                                        <td>@s.StartTime.ToString(@"hh\:mm")</td>
+                                        <td>@s.EndTime.ToString(@"hh\:mm")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-secondary border-0 text-center" style="background-color: var(--bg-light); color: var(--text-main);">
+                        لا توجد جداول توزيع مرتبطة بهذا الامتحان حالياً.
+                    </div>
+                }
+
+                <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+                    <a asp-action="Edit" asp-route-id="@Model.ExamId" class="btn btn-academic-primary px-4 fw-bold">
+                        <i class="bi bi-pencil-square me-1"></i> تعديل
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

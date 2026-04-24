@@ -1,0 +1,27 @@
+﻿@model projectweb.Models.Subject
+
+<div class="container mt-5" dir="rtl" style="text-align: right;">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">تأكيد الحذف</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="text-danger mb-4">هل أنت متأكد من رغبتك في حذف هذه المادة؟</h5>
+                    <div class="bg-light p-3 rounded">
+                        <p><strong>اسم المادة:</strong> @Model.SubjectName</p>
+                        <p><strong>كود المادة:</strong> @Model.SubjectId</p>
+                    </div>
+                </div>
+                <div class="card-footer bg-white text-left">
+                    <form asp-action="Delete">
+                        <input type="hidden" asp-for="SubjectId" />
+                        <button type="submit" class="btn btn-danger px-4">تأكيد الحذف النهائي</button>
+                        <a asp-action="Index" class="btn btn-secondary px-4">تراجع</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

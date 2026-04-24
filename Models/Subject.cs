@@ -15,7 +15,7 @@ namespace projectweb.Models
         public string SubjectName { get; set; }
 
         [Display(Name = "الامتحانات المرتبطة")]
-        public virtual ICollection<Exam> Exams { get; set; }
+        public virtual ICollection<Exam>? Exams { get; set; }
 
       
     }

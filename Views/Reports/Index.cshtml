@@ -1,0 +1,171 @@
+﻿@model IEnumerable<projectweb.Models.Report>
+
+@{
+    ViewData["Title"] = "التقارير والمحاضر";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-body" dir="rtl">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-file-earmark-text-fill me-2"></i> التقارير والمحاضر</h1>
+        <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> إنشاء محضر جديد
+        </a>
+    </div>
+
+    <!-- Report Type Selection Section -->
+    <div class="card academic-card mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold academic-heading mb-3"><i class="bi bi-funnel me-2"></i> تصفية حسب نوع التقرير</h5>
+            <form asp-action="Index" method="get" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label for="reportType" class="form-label academic-label required">نوع التقرير</label>
+                    <select name="reportType" id="reportType" class="form-select academic-input">
+                        <option value="">-- اختر نوع التقرير --</option>
+                        <option value="1">تقرير طبيعي / دوري</option>
+                        <option value="2">حالة غش</option>
+                        <option value="3">شغب وضوضاء</option>
+                        <option value="4">حالة طوارئ</option>
+                        <option value="5">مشكلة في الغياب</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-academic-primary px-4 fw-bold w-100">
+                        <i class="bi bi-eye me-1"></i> عرض التقرير
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reports Preview Section -->
+    <div class="card academic-card overflow-hidden">
+        <div class="card-header academic-card-header text-white p-3">
+            <h5 class="mb-0 fw-bold text-white"><i class="bi bi-table me-2"></i> المحاضر المسجلة</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table academic-table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">كود المحضر</th>
+                        <th>جلسة الامتحان</th>
+                        <th>التاريخ</th>
+                        <th class="text-center">نوع المحضر</th>
+                        <th>الملاحظات</th>
+                        <th class="text-center pe-4">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-muted">#@item.ReportID</td>
+                                <td>
+                                    @if (item.ExamSchedule != null)
+                                    {
+                                        <span class="fw-medium" style="color: var(--primary-navy);">
+                                            @if (item.ExamSchedule.Exam != null && item.ExamSchedule.Exam.Subject != null)
+                                            {
+                                                <i class="bi bi-book me-1" style="color: var(--accent-blue);"></i> 
+                                                @item.ExamSchedule.Exam.Subject.SubjectName
+                                            }
+                                            @if (item.ExamSchedule.Committee != null)
+                                            {
+                                                <span class="text-muted mx-1">|</span>
+                                                <i class="bi bi-people me-1"></i>
+                                                @item.ExamSchedule.Committee.StatusOfCommittee
+                                            }
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">غير محدد</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-light border px-3 py-2" style="color: var(--primary-navy); border-color: var(--border-color) !important;">
+                                        <i class="bi bi-calendar3 me-1"></i> @item.CreatedDate.ToString("yyyy/MM/dd")
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @switch (item.Status)
+                                    {
+                                        case ReportStatus.Normal:
+                                            <span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle me-1"></i> طبيعي</span>
+                                            break;
+                                        case ReportStatus.Cheating:
+                                            <span class="badge bg-danger px-3 py-2"><i class="bi bi-exclamation-diamond me-1"></i> غش</span>
+                                            break;
+                                        case ReportStatus.Disturbance:
+                                            <span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-megaphone me-1"></i> شغب</span>
+                                            break;
+                                        case ReportStatus.Emergency:
+                                            <span class="badge bg-danger px-3 py-2"><i class="bi bi-lightning me-1"></i> طوارئ</span>
+                                            break;
+                                        case ReportStatus.AbsenceIssue:
+                                            <span class="badge bg-secondary px-3 py-2"><i class="bi bi-person-x me-1"></i> غياب</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Notes))
+                                    {
+                                        <span class="text-muted small" title="@item.Notes">
+                                            @(item.Notes.Length > 40 ? item.Notes.Substring(0, 40) + "..." : item.Notes)
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">—</span>
+                                    }
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a asp-action="Details" asp-route-id="@item.ReportID" class="btn btn-sm btn-outline-info" title="عرض التفاصيل">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.ReportID" class="btn btn-sm btn-outline-academic" title="تعديل">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.ReportID" class="btn btn-sm btn-outline-danger" title="حذف">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="bi bi-file-earmark-text fs-1 d-block mb-2 opacity-25"></i>
+                                    <p class="mb-0">اختر نوع التقرير واضغط "عرض التقرير" لعرض المحاضر</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
