@@ -36,16 +36,16 @@ namespace projectweb.Models
 
         [ForeignKey("BlockID")]
         [Display(Name = "بيانات البلوك")]
-        public virtual Block Block { get; set; }
+        public virtual Block? Block { get; set; }
 
         [Display(Name = "قائمة الطلاب")]
-        public virtual ICollection<Student> Students { get; set; }
+        public virtual ICollection<Student>? Students { get; set; }
 
         [Display(Name = "توزيعات المراقبين")]
-        public virtual ICollection<CommitteesAssignment> CommitteesAssignments { get; set; }
+        public virtual ICollection<CommitteesAssignment>? CommitteesAssignments { get; set; }
 
         [Display(Name = "جدول الامتحانات")]
-        public virtual ICollection<ExamSchedule> ExamSchedules { get; set; }
+        public virtual ICollection<ExamSchedule>? ExamSchedules { get; set; }
 
        
     }

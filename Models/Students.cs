@@ -33,10 +33,10 @@ namespace projectweb.Models
 
         [ForeignKey("CommitteeId")]
         [Display(Name = "بيانات اللجنة")]
-        public virtual Committee Committee { get; set; }
+        public virtual Committee? Committee { get; set; }
 
         [Display(Name = "صلات القرابة")]
-        public virtual ICollection<Relative> Relatives { get; set; }
+        public virtual ICollection<Relative>? Relatives { get; set; }
 
        
 

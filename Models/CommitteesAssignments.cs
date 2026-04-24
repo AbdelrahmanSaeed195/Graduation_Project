@@ -33,11 +33,11 @@ namespace projectweb.Models
     
         [ForeignKey("PersonID")]
         [Display(Name = "بيانات الموظف")]
-        public virtual Person Person { get; set; }
+        public virtual Person? Person { get; set; }
 
         [ForeignKey("CommitteeID")]
         [Display(Name = "بيانات اللجنة")]
-        public virtual Committee Committee { get; set; }
+        public virtual Committee? Committee { get; set; }
 
         [Required(ErrorMessage = "يجب اختيار موعد الجلسة")]
         [Display(Name = "موعد الجلسة الامتحانية")]
@@ -45,10 +45,9 @@ namespace projectweb.Models
 
         [ForeignKey("ExamScheduleId")]
         [Display(Name = "بيانات الجلسة")]
-        public virtual ExamSchedule ExamSchedule { get; set; }
-
+        public virtual ExamSchedule? ExamSchedule { get; set; }
         [ForeignKey("RoleID")]
         [Display(Name = "بيانات الدور")]
-        public virtual Role Role { get; set; }
+        public virtual Role? Role { get; set; }
     }
 }

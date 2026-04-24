@@ -47,10 +47,10 @@ namespace projectweb.Models
 
         [ForeignKey("ScheduleID")]
         [Display(Name = "بيانات جلسة الامتحان")]
-        public virtual ExamSchedule ExamSchedule { get; set; }
+        public virtual ExamSchedule? ExamSchedule { get; set; }
 
         [Display(Name = "الموقعون على المحضر")]
-        public virtual ICollection<ReportPerson> ReportPersons { get; set; }
+        public virtual ICollection<ReportPerson>? ReportPersons { get; set; }
 
        
     }

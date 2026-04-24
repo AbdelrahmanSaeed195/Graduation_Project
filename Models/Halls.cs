@@ -23,10 +23,10 @@ namespace projectweb.Models
 
         [ForeignKey("HallSupervisorID")]
         [Display(Name = "بيانات المشرف")]
-        public virtual Person HallSupervisor { get; set; }
+        public virtual Person? HallSupervisor { get; set; }
 
         [Display(Name = "البلوكات التابعة")]
-        public virtual ICollection<Block> Blocks { get; set; }
+        public virtual ICollection<Block>? Blocks { get; set; }
 
       
     }

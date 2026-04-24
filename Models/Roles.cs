@@ -38,13 +38,13 @@ namespace projectweb.Models
 
 
         [Display(Name = "الموظفين بهذا الدور")]
-        public virtual ICollection<Person> Persons { get; set; }
+        public virtual ICollection<Person>? Persons { get; set; }
 
         [Display(Name = "التكليفات المرتبطة")]
-        public virtual ICollection<CommitteesAssignment> CommitteesAssignments { get; set; }
+        public virtual ICollection<CommitteesAssignment>? CommitteesAssignments { get; set; }
 
         [Display(Name = "المحاضر المرتبطة")]
-        public virtual ICollection<ReportPerson> ReportPersons { get; set; }
+        public virtual ICollection<ReportPerson>? ReportPersons { get; set; }
 
 
     }

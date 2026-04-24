@@ -20,10 +20,10 @@ namespace projectweb.Models
 
         [ForeignKey("HallId")]
         [Display(Name = "بيانات الصالة")]
-        public virtual Hall Hall { get; set; }
+        public virtual Hall? Hall { get; set; }
 
         [Display(Name = "اللجان التابعة")]
-        public virtual ICollection<Committee> Committees { get; set; }
+        public virtual ICollection<Committee>? Committees { get; set; }
 
         
     }

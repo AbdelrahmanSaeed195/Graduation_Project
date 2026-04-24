@@ -32,7 +32,7 @@ namespace projectweb.Models
 
         [ForeignKey("ExamId")]
         [Display(Name = "بيانات الامتحان")]
-        public virtual Exam Exam { get; set; }
+        public virtual Exam? Exam { get; set; }
 
         [Required(ErrorMessage = "يجب اختيار اللجنة")]
         [Display(Name = "اللجنة")]
@@ -40,10 +40,10 @@ namespace projectweb.Models
 
         [ForeignKey("CommitteeId")]
         [Display(Name = "بيانات اللجنة")]
-        public virtual Committee Committee { get; set; }
+        public virtual Committee? Committee { get; set; }
 
         [Display(Name = "المحاضر والتقارير")]
-        public virtual ICollection<Report> Reports { get; set; }
+        public virtual ICollection<Report>? Reports { get; set; }
 
        
     }

@@ -36,10 +36,10 @@ namespace projectweb.Models
 
         [ForeignKey("SubjectID")]
         [Display(Name = "بيانات المادة")]
-        public virtual Subject Subject { get; set; }
+        public virtual Subject? Subject { get; set; }
 
         [Display(Name = "جدول توزيع اللجان")]
-        public virtual ICollection<ExamSchedule> ExamSchedules { get; set; }
+        public virtual ICollection<ExamSchedule>? ExamSchedules { get; set; }
 
         
     }

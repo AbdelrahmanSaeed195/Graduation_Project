@@ -15,7 +15,7 @@ namespace projectweb.Models
 
         [ForeignKey("StudentId")]
         [Display(Name = "بيانات الطالب")]
-        public virtual Student Student { get; set; }
+        public virtual Student? Student { get; set; }
 
         [Required(ErrorMessage = "يجب تحديد الموظف")]
         [Display(Name = "الموظف")]
@@ -23,7 +23,7 @@ namespace projectweb.Models
 
         [ForeignKey("PersonId")]
         [Display(Name = "بيانات الموظف")]
-        public virtual Person Person { get; set; }
+        public virtual Person? Person { get; set; }
 
         [Required(ErrorMessage = "يجب تحديد درجة القرابة")]
         [StringLength(50)]

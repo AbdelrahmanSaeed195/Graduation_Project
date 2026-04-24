@@ -12,7 +12,7 @@ namespace projectweb.Models
 
         [ForeignKey("ReportID")]
         [Display(Name = "بيانات المحضر")]
-        public virtual Report Report { get; set; }
+        public virtual Report? Report { get; set; }
 
         [Key, Column(Order = 1)]
         [Display(Name = "كود الشخص")]
@@ -20,7 +20,7 @@ namespace projectweb.Models
 
         [ForeignKey("PersonID")]
         [Display(Name = "بيانات الموقع")]
-        public virtual Person Person { get; set; }
+        public virtual Person? Person { get; set; }
 
         [Required(ErrorMessage = "يجب تحديد صفة الموقع")]
         [Display(Name = "الصفة في المحضر")]
@@ -28,7 +28,7 @@ namespace projectweb.Models
 
         [ForeignKey("RoleID")]
         [Display(Name = "بيانات الصفة")]
-        public virtual Role Role { get; set; }
+        public virtual Role? Role { get; set; }
 
         [Display(Name = "التوقيع الإلكتروني")]
         public string Signature { get; set; }

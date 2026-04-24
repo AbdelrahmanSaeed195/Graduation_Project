@@ -34,19 +34,19 @@ namespace projectweb.Models
 
         [ForeignKey("RoleID")]
         [Display(Name = "بيانات الوظيفة")]
-        public virtual Role Role { get; set; }
+        public virtual Role? Role { get; set; }
 
         [Display(Name = "حالة النشاط في التكليفات")]
         public bool IsActiveForAssignment { get; set; } = true;
 
         [Display(Name = "تكليفات المراقبة")]
-        public virtual ICollection<CommitteesAssignment> CommitteesAssignments { get; set; }
+        public virtual ICollection<CommitteesAssignment>? CommitteesAssignments { get; set; }
 
         [Display(Name = "التوقيعات على المحاضر")]
-        public virtual ICollection<ReportPerson> ReportPersons { get; set; }
+        public virtual ICollection<ReportPerson>? ReportPersons { get; set; }
 
         [Display(Name = "أقارب الدرجة الأولى")]
-        public virtual ICollection<Relative> Relatives { get; set; }
+        public virtual ICollection<Relative>? Relatives { get; set; }
 
       
     }
