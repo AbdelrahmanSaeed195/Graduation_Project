@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -33,17 +34,17 @@ namespace projectweb.Models
         [Required(ErrorMessage = "يجب تحديد البلوك التابع له")]
         [Display(Name = "البلوك (الجزء)")]
         public int BlockID { get; set; }
-
+        [ValidateNever]
         [ForeignKey("BlockID")]
         [Display(Name = "بيانات البلوك")]
         public virtual Block Block { get; set; }
-
+        [ValidateNever]
         [Display(Name = "قائمة الطلاب")]
         public virtual ICollection<Student> Students { get; set; }
-
+        [ValidateNever]
         [Display(Name = "توزيعات المراقبين")]
         public virtual ICollection<CommitteesAssignment> CommitteesAssignments { get; set; }
-
+        [ValidateNever]
         [Display(Name = "جدول الامتحانات")]
         public virtual ICollection<ExamSchedule> ExamSchedules { get; set; }
 
