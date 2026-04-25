@@ -62,6 +62,10 @@ namespace projectweb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ExamScheduleId,ScheduledDate,StartTime,EndTime,ExamId,CommitteeId")] ExamSchedule examSchedule)
         {
+            if (examSchedule.EndTime <= examSchedule.StartTime)
+            {
+                ModelState.AddModelError("EndTime", "يجب أن يكون وقت الانتهاء بعد وقت البدء.");
+            }
             if (ModelState.IsValid)
             {
                 _context.Add(examSchedule);

@@ -82,9 +82,11 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="RoleType" class="form-label academic-label">مسمى الدور</label>
-                            <input asp-for="RoleType" class="form-control academic-input" placeholder="مثال: ملاحظ لجنة، رئيس صالة" />
-                            <span asp-validation-for="RoleType" class="text-danger small mt-1 d-block"></span>
+                            <label asp-for="RoleID" class="form-label academic-label required">الدور الوظيفي <span class="text-danger">*</span></label>
+                            <select asp-for="RoleID" asp-items="@(ViewData["RoleID"] as SelectList)" class="form-select academic-input">
+                                <option value="">-- اختر الدور --</option>
+                            </select>
+                            <span asp-validation-for="RoleID" class="text-danger small mt-1 d-block"></span>
                         </div>
 
                         <div class="col-md-6 d-flex align-items-center">

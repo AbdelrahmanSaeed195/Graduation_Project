@@ -1,0 +1,95 @@
+﻿@model IEnumerable<projectweb.Models.ExamSchedule>
+
+@{
+    ViewData["Title"] = "إدارة مواعيد الامتحانات";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-body" dir="rtl">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 fw-bold academic-heading">
+            <i class="bi bi-calendar3 me-2"></i> جدول مواعيد الامتحانات
+        </h1>
+        <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm" style="background-color: #1a2c4e; color: white;">
+            <i class="bi bi-plus-circle me-1"></i> إضافة موعد جديد
+        </a>
+    </div>
+
+    <div class="card academic-card shadow-sm overflow-hidden border-0" style="border-radius: 15px;">
+        <div class="table-responsive">
+            <table class="table academic-table table-hover align-middle mb-0">
+                <thead style="background-color: #212529; color: white;">
+                    <tr>
+                        <th class="ps-4 py-3">المادة الدراسية</th>
+                        <th class="text-center">اللجنة</th>
+                        <th class="text-center">تاريخ الامتحان</th>
+                        <th class="text-center">الوقت</th>
+                        <th class="text-center pe-4">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold" style="color: #1a2c4e;">
+                                    <i class="bi bi-book me-2" style="color: #00a8ff;"></i>
+                                    @(item.Exam?.Subject?.SubjectName ?? "غير محدد")
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light border px-3 py-2 text-dark" style="border-radius: 8px;">
+                                        لجنة @item.Committee?.CommitteeNumber
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light border px-3 py-2 text-dark" style="border-radius: 8px;">
+                                        <i class="bi bi-calendar-event me-1 text-primary"></i>
+                                        @item.ScheduledDate.ToString("yyyy/MM/dd")
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge px-3 py-2" style="background-color: #f8f9fa; color: #333; border: 1px solid #dee2e6; border-radius: 8px;">
+                                        <i class="bi bi-clock me-1 text-info"></i>
+                                        @item.StartTime.ToString(@"hh\:mm") - @item.EndTime.ToString(@"hh\:mm")
+                                    </span>
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a asp-action="Details" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-outline-info" style="border-radius: 6px;" title="عرض">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-outline-dark" style="border-radius: 6px;" title="تعديل">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-outline-danger" style="border-radius: 6px;" title="حذف">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                لا توجد مواعيد مسجلة حالياً
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

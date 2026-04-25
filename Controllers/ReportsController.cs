@@ -21,17 +21,36 @@ namespace projectweb.Controllers
         // =====================================
         // INDEX
         // =====================================
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? reportType)
         {
-           
-            var reports = _context.Reports
+            // 1. نبدأ بالاستعلام الأساسي مع جلب كل الجداول المرتبطة (اسم المادة واللجنة)
+            var reportsQuery = _context.Reports
                 .Include(r => r.ExamSchedule)
                     .ThenInclude(s => s.Exam)
+                        .ThenInclude(e => e.Subject) // تأكد من جلب اسم المادة
                 .Include(r => r.ExamSchedule)
                     .ThenInclude(s => s.Committee)
-                .OrderByDescending(r => r.CreatedDate);
+                .AsQueryable();
 
-            return View(await reports.ToListAsync());
+          
+            if (reportType.HasValue && reportType.Value > 0)
+            {
+              
+                var status = (ReportStatus)reportType.Value;
+
+               
+                reportsQuery = reportsQuery.Where(r => r.Status == status);
+
+              
+                ViewBag.SelectedReportType = reportType.Value;
+            }
+
+         
+            var reports = await reportsQuery
+                .OrderByDescending(r => r.CreatedDate)
+                .ToListAsync();
+
+            return View(reports);
         }
 
         // =====================================
@@ -166,16 +185,19 @@ namespace projectweb.Controllers
         {
             var schedules = _context.ExamSchedules
                 .Include(s => s.Exam)
+                    .ThenInclude(e => e.Subject)
                 .Include(s => s.Committee)
                 .OrderBy(s => s.ScheduledDate)
-                .Select(s => new
-                {
-                    ID = s.ExamScheduleId,
-                    Text = $"{s.Exam.Subject.SubjectName} | اللجنة: {s.Committee.CommitteeNumber} | التاريخ: {s.ScheduledDate:dd/MM/yyyy}"
-                })
                 .ToList();
 
-            ViewData["ScheduleID"] = new SelectList(schedules, "ID", "Text", selectedSchedule);
+            var dropdownList = schedules.Select(s => new
+            {
+                ID = s.ExamScheduleId,
+               
+                Text = $"{(s.Exam?.Subject?.SubjectName ?? "مادة غير محددة")} | اللجنة: {(s.Committee?.CommitteeNumber ?? 0)} | التاريخ: {s.ScheduledDate.ToString("dd/MM/yyyy")}"
+            }).ToList();
+
+            ViewData["ScheduleID"] = new SelectList(dropdownList, "ID", "Text", selectedSchedule);
         }
 
         private bool ReportExists(int id)

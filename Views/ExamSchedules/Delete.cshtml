@@ -1,0 +1,54 @@
+﻿@model projectweb.Models.ExamSchedule
+
+@{
+    ViewData["Title"] = "حذف موعد امتحان";
+}
+
+<div class="container mt-5" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-lg border-0 rounded-3 border-danger" style="border-top-width: 5px !important;">
+                <div class="card-header bg-danger text-white py-3 border-0 rounded-top-3">
+                    <h3 class="card-title mb-0 fw-bold text-center">
+                        <i class="bi bi-exclamation-triangle me-2"></i> تأكيد حذف موعد امتحان
+                    </h3>
+                </div>
+
+                <div class="card-body p-4 p-md-5 text-center">
+                    <div class="alert alert-warning border-0 rounded-3 p-4 mb-5 shadow-sm">
+                        <i class="bi bi-patch-exclamation-fill text-warning fs-1 mb-3"></i>
+                        <h4 class="fw-bold text-dark">هل أنت متأكد نهائياً من رغبتك في حذف هذا الموعد؟</h4>
+                        <p class="text-danger mb-0 fw-bold">
+                            تحذير: هذا الإجراء لا يمكن التراجع عنه وقد يؤدي لمشاكل في التقارير المرتبطة.
+                        </p>
+                    </div>
+
+                    <div class="card bg-light border-0 rounded-3 mb-5 text-start">
+                        <div class="card-body py-3 px-4">
+                            <h5 class="fw-bold text-primary border-bottom pb-2 mb-3">
+                                @(Model.Exam?.Subject?.SubjectName ?? "مادة غير محددة")
+                            </h5>
+                            <p class="mb-2"><strong>اللجنة:</strong> لجنة @Model.Committee?.CommitteeNumber</p>
+                            <p class="mb-2"><strong>التاريخ:</strong> @Model.ScheduledDate.ToString("dd / MM / yyyy")</p>
+                            <p class="mb-0">
+                                <strong>الوقت:</strong> @Model.StartTime.ToString(@"hh\:mm") - @Model.EndTime.ToString(@"hh\:mm")
+                            </p>
+                        </div>
+                    </div>
+
+                    <form asp-action="Delete">
+                        <input type="hidden" asp-for="ExamScheduleId" />
+                        <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+                            <button type="submit" class="btn btn-danger btn-lg px-5 rounded-pill shadow">
+                                <i class="bi bi-trash"></i> نعم، قم بالحذف نهائياً
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-5 rounded-pill">
+                                <i class="bi bi-arrow-right"></i> تراجع وإلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

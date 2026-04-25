@@ -5,6 +5,7 @@ using projectweb.Models;
 using projectweb.Services;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,10 +31,20 @@ namespace projectweb.Controllers
                 .Include(c => c.Person)
                 .Include(c => c.Role)
                 .Include(c => c.ExamSchedule)
-                .OrderByDescending(c => c.ExamSchedule.ScheduledDate); 
+                .OrderByDescending(c => c.ExamSchedule.ScheduledDate);
 
             return View(await committeesAssignments.ToListAsync());
         }
+      
+        //public async Task<IActionResult> GetBlocksByHall(int hallId)
+        //{
+        //    var blocks = await _context.Blocks
+        //        .Where(b => b.HallId == hallId)
+        //        .Select(b => new { value = b.BlockID, text = b.BlockName })
+        //        .ToListAsync();
+
+        //    return Json(blocks);
+        //}
         // =====================================
         // DETAILS
         // =====================================
@@ -56,32 +67,26 @@ namespace projectweb.Controllers
 
             return View(committeesAssignment);
         }
+
         // =====================================
         // CREATE
         // =====================================
+        // =====================================
+        // CREATE (GET)
+        // =====================================
         public IActionResult Create()
         {
-            ViewData["CommitteeID"] = new SelectList(_context.Committees, "CommitteeID", "CommitteeNumber");
-            ViewData["PersonID"] = new SelectList(_context.Persons, "PersonId", "FullName");
-            ViewData["RoleID"] = new SelectList(_context.Roles, "RoleID", "RoleName");
-
-            
-            var schedules = _context.ExamSchedules
-                .Include(s => s.Exam)
-                .Select(s => new {
-                    ID = s.ExamScheduleId,
-                    Text = s.Exam.ExamId + " - " + s.ScheduledDate.ToShortDateString()
-                }).ToList();
-
-            ViewData["ExamScheduleId"] = new SelectList(schedules, "ID", "Text");
+            PopulateViewData();
             return View();
         }
 
+        // =====================================
+        // CREATE (POST)
+        // =====================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("AssignmentID,PersonID,CommitteeID,RoleID,ExamScheduleId,isReserve,AssignmentType,RoleType")] CommitteesAssignment committeesAssignment)
         {
-          
             if (ModelState.IsValid)
             {
                 _context.Add(committeesAssignment);
@@ -90,13 +95,42 @@ namespace projectweb.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-          
-            ViewData["CommitteeID"] = new SelectList(_context.Committees, "CommitteeID", "CommitteeNumber", committeesAssignment.CommitteeID);
-            ViewData["PersonID"] = new SelectList(_context.Persons, "PersonId", "FullName", committeesAssignment.PersonID);
-            ViewData["RoleID"] = new SelectList(_context.Roles, "RoleID", "RoleName", committeesAssignment.RoleID);
-            ViewData["ExamScheduleId"] = new SelectList(_context.ExamSchedules, "ExamScheduleId", "ScheduledDate", committeesAssignment.ExamScheduleId);
-
+            // في حالة الخطأ: نعيد ملء القوائم مع الاحتفاظ بالقيم المختارة
+            PopulateViewData(committeesAssignment);
             return View(committeesAssignment);
+        }
+
+        // دالة موحدة لملء الـ SelectLists لضمان عدم تكرار الكود ولغة العرض
+        private void PopulateViewData(CommitteesAssignment assignment = null)
+        {
+            ViewData["CommitteeID"] = new SelectList(_context.Committees, "CommitteeID", "CommitteeNumber", assignment?.CommitteeID);
+            ViewData["PersonID"] = new SelectList(_context.Persons, "PersonId", "FullName", assignment?.PersonID);
+
+            // جلب الأدوار بالعربي باستخدام الـ Display Name
+            var roles = _context.Roles.ToList().Select(r => new {
+                RoleID = r.RoleID,
+                RoleName = GetDisplayName(r.RoleName)
+            });
+            ViewData["RoleID"] = new SelectList(roles, "RoleID", "RoleName", assignment?.RoleID);
+
+            // جلب الجداول مع اسم الامتحان والتاريخ
+            var schedules = _context.ExamSchedules
+                .Include(s => s.Exam)
+                .Select(s => new {
+                    ID = s.ExamScheduleId,
+                    Text = s.Exam.ExamId + " - " + s.ScheduledDate.ToShortDateString()
+                }).ToList();
+
+            ViewData["ExamScheduleId"] = new SelectList(schedules, "ID", "Text", assignment?.ExamScheduleId);
+        }
+
+        // دالة المساعدة لتحويل الـ Enum للعربية
+        private string GetDisplayName(StaffPosition enumValue)
+        {
+            return enumValue.GetType()
+                .GetField(enumValue.ToString())?
+                .GetCustomAttributes(typeof(DisplayAttribute), false)
+                .FirstOrDefault() is DisplayAttribute attribute ? attribute.Name : enumValue.ToString();
         }
         // =====================================
         // EDIT
