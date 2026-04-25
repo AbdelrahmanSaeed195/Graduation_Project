@@ -14,6 +14,7 @@ namespace projectweb.Controllers
             _context = context;
         }
 
+        // 1. عرض الأشخاص بدون تكرار في الجدول
         public async Task<IActionResult> Index(string search)
         {
             var query = _context.Persons.Include(p => p.Role).AsQueryable();
@@ -27,8 +28,14 @@ namespace projectweb.Controllers
             }
 
             var result = await query.ToListAsync();
+
+            // تجميع بالرقم القومي لضمان عدم ظهور الشخص أكثر من مرة
+            var uniqueResult = result.GroupBy(p => p.NationalId)
+                                     .Select(g => g.First())
+                                     .ToList();
+
             ViewBag.Search = search;
-            return View(result);
+            return View(uniqueResult);
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -41,7 +48,8 @@ namespace projectweb.Controllers
 
         public IActionResult Create()
         {
-            ViewBag.Roles = new SelectList(_context.Roles, "RoleID", "RoleName");
+            // سحب الوصف العربي من الداتابيز وترتيبه
+            ViewBag.Roles = new SelectList(_context.Roles.OrderBy(r => r.RoleDescription), "RoleID", "RoleDescription");
             return View();
         }
 
@@ -49,6 +57,18 @@ namespace projectweb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Person person)
         {
+            // التحقق من عدم تكرار الرقم القومي
+            if (_context.Persons.Any(p => p.NationalId == person.NationalId))
+            {
+                ModelState.AddModelError("NationalId", "عفواً، هذا الرقم القومي مسجل مسبقاً.");
+            }
+
+            // التحقق من عدم تكرار الاسم
+            if (_context.Persons.Any(p => p.FullName == person.FullName))
+            {
+                ModelState.AddModelError("FullName", "عفواً، هذا الاسم موجود بالفعل في النظام.");
+            }
+
             ModelState.Remove("Role");
             ModelState.Remove("Accounts");
             ModelState.Remove("CommitteesAssignments");
@@ -61,7 +81,8 @@ namespace projectweb.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewBag.Roles = new SelectList(_context.Roles, "RoleID", "RoleName", person.RoleID);
+
+            ViewBag.Roles = new SelectList(_context.Roles.OrderBy(r => r.RoleDescription), "RoleID", "RoleDescription", person.RoleID);
             return View(person);
         }
 
@@ -70,7 +91,8 @@ namespace projectweb.Controllers
             if (id == null) return NotFound();
             var person = await _context.Persons.FindAsync(id);
             if (person == null) return NotFound();
-            ViewBag.Roles = new SelectList(_context.Roles, "RoleID", "RoleName", person.RoleID);
+
+            ViewBag.Roles = new SelectList(_context.Roles.OrderBy(r => r.RoleDescription), "RoleID", "RoleDescription", person.RoleID);
             return View(person);
         }
 
@@ -79,6 +101,17 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Edit(int id, Person person)
         {
             if (id != person.PersonId) return NotFound();
+
+            // التحقق من عدم التكرار مع استثناء الشخص الحالي
+            if (_context.Persons.Any(p => p.NationalId == person.NationalId && p.PersonId != id))
+            {
+                ModelState.AddModelError("NationalId", "هذا الرقم القومي مستخدم مع شخص آخر.");
+            }
+
+            if (_context.Persons.Any(p => p.FullName == person.FullName && p.PersonId != id))
+            {
+                ModelState.AddModelError("FullName", "هذا الاسم مستخدم بالفعل لشخص آخر.");
+            }
 
             ModelState.Remove("Role");
             ModelState.Remove("Accounts");
@@ -100,7 +133,8 @@ namespace projectweb.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewBag.Roles = new SelectList(_context.Roles, "RoleID", "RoleName", person.RoleID);
+
+            ViewBag.Roles = new SelectList(_context.Roles.OrderBy(r => r.RoleDescription), "RoleID", "RoleDescription", person.RoleID);
             return View(person);
         }
 
