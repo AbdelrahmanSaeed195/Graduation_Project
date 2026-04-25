@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -9,7 +10,7 @@ namespace projectweb.Models
         [Key, Column(Order = 0)]
         [Display(Name = "كود المحضر")]
         public int ReportID { get; set; }
-
+        [ValidateNever]
         [ForeignKey("ReportID")]
         [Display(Name = "بيانات المحضر")]
         public virtual Report Report { get; set; }
@@ -17,7 +18,7 @@ namespace projectweb.Models
         [Key, Column(Order = 1)]
         [Display(Name = "كود الشخص")]
         public int PersonID { get; set; }
-
+        [ValidateNever]
         [ForeignKey("PersonID")]
         [Display(Name = "بيانات الموقع")]
         public virtual Person Person { get; set; }
@@ -25,7 +26,7 @@ namespace projectweb.Models
         [Required(ErrorMessage = "يجب تحديد صفة الموقع")]
         [Display(Name = "الصفة في المحضر")]
         public int RoleID { get; set; }
-
+        [ValidateNever]
         [ForeignKey("RoleID")]
         [Display(Name = "بيانات الصفة")]
         public virtual Role Role { get; set; }

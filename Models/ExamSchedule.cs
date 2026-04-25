@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -29,7 +30,7 @@ namespace projectweb.Models
         [Required(ErrorMessage = "يجب اختيار الامتحان")]
         [Display(Name = "الامتحان / المادة")]
         public int ExamId { get; set; }
-
+        [ValidateNever]
         [ForeignKey("ExamId")]
         [Display(Name = "بيانات الامتحان")]
         public virtual Exam Exam { get; set; }
@@ -37,11 +38,11 @@ namespace projectweb.Models
         [Required(ErrorMessage = "يجب اختيار اللجنة")]
         [Display(Name = "اللجنة")]
         public int CommitteeId { get; set; }
-
+        [ValidateNever]
         [ForeignKey("CommitteeId")]
         [Display(Name = "بيانات اللجنة")]
         public virtual Committee Committee { get; set; }
-
+        [ValidateNever]
         [Display(Name = "المحاضر والتقارير")]
         public virtual ICollection<Report> Reports { get; set; }
 

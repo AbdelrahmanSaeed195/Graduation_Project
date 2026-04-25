@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -31,20 +32,20 @@ namespace projectweb.Models
         [Required(ErrorMessage = "يجب تحديد التخصص/الوظيفة")]
         [Display(Name = "الوظيفة")]
         public int RoleID { get; set; }
-
+        [ValidateNever]
         [ForeignKey("RoleID")]
         [Display(Name = "بيانات الوظيفة")]
         public virtual Role Role { get; set; }
 
         [Display(Name = "حالة النشاط في التكليفات")]
         public bool IsActiveForAssignment { get; set; } = true;
-
+        [ValidateNever]
         [Display(Name = "تكليفات المراقبة")]
         public virtual ICollection<CommitteesAssignment> CommitteesAssignments { get; set; }
-
+        [ValidateNever]
         [Display(Name = "التوقيعات على المحاضر")]
         public virtual ICollection<ReportPerson> ReportPersons { get; set; }
-
+        [ValidateNever]
         [Display(Name = "أقارب الدرجة الأولى")]
         public virtual ICollection<Relative> Relatives { get; set; }
 

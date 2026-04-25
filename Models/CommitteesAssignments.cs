@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -30,11 +31,11 @@ namespace projectweb.Models
 
         [Display(Name = "مسمى الدور")]
         public string RoleType { get; set; }
-    
+        [ValidateNever]
         [ForeignKey("PersonID")]
         [Display(Name = "بيانات الموظف")]
         public virtual Person Person { get; set; }
-
+        [ValidateNever]
         [ForeignKey("CommitteeID")]
         [Display(Name = "بيانات اللجنة")]
         public virtual Committee Committee { get; set; }
@@ -42,11 +43,11 @@ namespace projectweb.Models
         [Required(ErrorMessage = "يجب اختيار موعد الجلسة")]
         [Display(Name = "موعد الجلسة الامتحانية")]
         public int ExamScheduleId { get; set; }
-
+        [ValidateNever]
         [ForeignKey("ExamScheduleId")]
         [Display(Name = "بيانات الجلسة")]
         public virtual ExamSchedule ExamSchedule { get; set; }
-
+        [ValidateNever]
         [ForeignKey("RoleID")]
         [Display(Name = "بيانات الدور")]
         public virtual Role Role { get; set; }

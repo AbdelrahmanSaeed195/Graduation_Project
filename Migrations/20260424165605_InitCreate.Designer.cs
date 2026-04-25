@@ -12,7 +12,7 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260424143526_InitCreate")]
+    [Migration("20260424165605_InitCreate")]
     partial class InitCreate
     {
         /// <inheritdoc />

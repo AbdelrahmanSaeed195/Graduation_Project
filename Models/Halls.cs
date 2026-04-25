@@ -21,7 +21,6 @@ namespace projectweb.Models
 
         [Display(Name = "مشرف الصالة")]
         public int? HallSupervisorID { get; set; }
-
         [ValidateNever]
         [ForeignKey("HallSupervisorID")]
         [Display(Name = "بيانات المشرف")]

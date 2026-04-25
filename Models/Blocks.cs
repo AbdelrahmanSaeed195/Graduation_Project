@@ -18,6 +18,7 @@ namespace projectweb.Models
         [Required(ErrorMessage = "يجب تحديد الصالة التابع لها")]
         [Display(Name = "الصالة / القاعة")]
         public int HallId { get; set; }
+
         [ValidateNever]
         [ForeignKey("HallId")]
         [Display(Name = "بيانات الصالة")]
