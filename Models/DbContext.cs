@@ -79,25 +79,57 @@ new Role { RoleID = 5, RoleName = StaffPosition.Nurse, RoleDescription = "ممر
             //    .OnDelete(DeleteBehavior.Restrict);
 
 
+            // 1. اجعل الـ AssignmentID هو المفتاح الأساسي الوحيد
+            modelBuilder.Entity<CommitteesAssignment>()
+     .HasKey(ca => ca.AssignmentID);
+
+            // 2. منع تكرار الموظف في نفس الجلسة (لضمان عدم التضارب)
+            modelBuilder.Entity<CommitteesAssignment>()
+                .HasIndex(ca => new { ca.PersonID, ca.ExamScheduleId })
+                .IsUnique();
+
+            // 3. علاقة التكليف بالموظف
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasOne(ca => ca.Person)
                 .WithMany(p => p.CommitteesAssignments)
                 .HasForeignKey(ca => ca.PersonID)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // 4. علاقة التكليف بجلسة الامتحان
+            modelBuilder.Entity<CommitteesAssignment>()
+                .HasOne(ca => ca.ExamSchedule)
+                .WithMany()
+                .HasForeignKey(ca => ca.ExamScheduleId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // 5. علاقة التكليف بالدور (Role)
+            modelBuilder.Entity<CommitteesAssignment>()
+                .HasOne(ca => ca.Role)
+                .WithMany(r => r.CommitteesAssignments)
+                .HasForeignKey(ca => ca.RoleID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 6. العلاقات الجديدة (نطاق المسئولية)
+            // علاقة اختيارية بالصالة (لرؤساء الصالات)
+            modelBuilder.Entity<CommitteesAssignment>()
+                .HasOne(ca => ca.Hall)
+                .WithMany()
+                .HasForeignKey(ca => ca.HallId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // علاقة اختيارية بالبلوك (للمراقبين)
+            modelBuilder.Entity<CommitteesAssignment>()
+                .HasOne(ca => ca.Block)
+                .WithMany()
+                .HasForeignKey(ca => ca.BlockId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // علاقة اختيارية باللجنة (للملاحظين)
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasOne(ca => ca.Committee)
                 .WithMany(c => c.CommitteesAssignments)
                 .HasForeignKey(ca => ca.CommitteeID)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<CommitteesAssignment>()
-                .HasOne(ca => ca.Role)
-                .WithMany()
-                .HasForeignKey(ca => ca.RoleID)
-                .OnDelete(DeleteBehavior.Restrict);
-
 
             modelBuilder.Entity<Hall>()
                 .HasOne(h => h.HallSupervisor)

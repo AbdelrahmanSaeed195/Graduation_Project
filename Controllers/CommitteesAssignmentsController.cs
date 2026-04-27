@@ -3,284 +3,244 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
 using projectweb.Services;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace projectweb.Controllers
 {
     public class CommitteesAssignmentsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly ICommitteesAssignmentsService _committeesAssignmentsService;
+        private readonly ICommitteesAssignmentsService _assignmentService;
 
-        public CommitteesAssignmentsController(ApplicationDbContext context, ICommitteesAssignmentsService committeesAssignmentsService)
+        public CommitteesAssignmentsController(ApplicationDbContext context, ICommitteesAssignmentsService assignmentService)
         {
             _context = context;
-            _committeesAssignmentsService = committeesAssignmentsService;
+            _assignmentService = assignmentService;
         }
-        // =====================================
-        // INDEX
-        // =====================================
-        public async Task<IActionResult> Index()
+
+        // 1. Index: عرض التوزيعات مع تصفية تلقائية لأحدث جلسة
+        public async Task<IActionResult> Index(int? scheduleId)
         {
-            var committeesAssignments = _context.CommitteesAssignments
-                .Include(c => c.Committee)
-                .Include(c => c.Person)
-                .Include(c => c.Role)
-                .Include(c => c.ExamSchedule)
-                .OrderByDescending(c => c.ExamSchedule.ScheduledDate);
+            // إذا لم يتم اختيار جلسة، قم بجلب آخر جلسة تم إضافتها تلقائياً
+            if (!scheduleId.HasValue)
+            {
+                scheduleId = await _context.ExamSchedules
+                    .OrderByDescending(s => s.ExamScheduleId)
+                    .Select(s => s.ExamScheduleId)
+                    .FirstOrDefaultAsync();
+            }
 
-            return View(await committeesAssignments.ToListAsync());
+            ViewBag.CurrentScheduleId = scheduleId;
+
+            var query = _context.CommitteesAssignments
+                .Include(a => a.Person)
+                .Include(a => a.Role)
+                .Include(a => a.Hall)
+                .Include(a => a.Block)
+                .Include(a => a.Committee)
+                .Include(a => a.ExamSchedule.Exam.Subject)
+                .Where(a => a.ExamScheduleId == scheduleId) // عرض تكليفات الجلسة المحددة فقط
+                .AsQueryable();
+
+            return View(await query.ToListAsync());
         }
-      
-        //public async Task<IActionResult> GetBlocksByHall(int hallId)
-        //{
-        //    var blocks = await _context.Blocks
-        //        .Where(b => b.HallId == hallId)
-        //        .Select(b => new { value = b.BlockID, text = b.BlockName })
-        //        .ToListAsync();
 
-        //    return Json(blocks);
-        //}
-        // =====================================
-        // DETAILS
-        // =====================================
+        // 2. Details: عرض تفاصيل التكليف بالكامل
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var committeesAssignment = await _context.CommitteesAssignments
-                .Include(c => c.Committee)
-                .Include(c => c.Person)
-                .Include(c => c.Role)
+            var assignment = await _context.CommitteesAssignments
+                .Include(a => a.Person)
+                .Include(a => a.Role)
+                .Include(a => a.Hall)
+                .Include(a => a.Block)
+                .Include(a => a.Committee)
+                .Include(a => a.ExamSchedule.Exam.Subject)
                 .FirstOrDefaultAsync(m => m.AssignmentID == id);
-            if (committeesAssignment == null)
-            {
-                return NotFound();
-            }
 
-            return View(committeesAssignment);
+            if (assignment == null) return NotFound();
+            return View(assignment);
         }
 
-        // =====================================
-        // CREATE
-        // =====================================
-        // =====================================
-        // CREATE (GET)
-        // =====================================
+        // 3. Create (GET)
         public IActionResult Create()
         {
-            PopulateViewData();
+            LoadDropdowns();
             return View();
         }
 
-        // =====================================
-        // CREATE (POST)
-        // =====================================
+        // 4. Create (POST): مع إضافة فحص التكرار ومنع الخطأ
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("AssignmentID,PersonID,CommitteeID,RoleID,ExamScheduleId,isReserve,AssignmentType,RoleType")] CommitteesAssignment committeesAssignment)
+        public async Task<IActionResult> Create(CommitteesAssignment assignment)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(committeesAssignment);
+                // أ- فحص هل اللجنة المختارة لها مراقب بالفعل في هذه الجلسة؟
+                if (assignment.CommitteeID.HasValue)
+                {
+                    var committeeHasObserver = await _context.CommitteesAssignments
+                        .AnyAsync(a => a.ExamScheduleId == assignment.ExamScheduleId &&
+                                       a.CommitteeID == assignment.CommitteeID);
+
+                    if (committeeHasObserver)
+                    {
+                        ModelState.AddModelError("", "عفواً، هذه اللجنة تم تخصيص مراقب لها بالفعل في هذه الجلسة!");
+                        LoadDropdowns(assignment);
+                        return View(assignment);
+                    }
+                }
+
+                // ب- فحص هل الموظف مشغول بتكليف آخر في نفس الجلسة؟ (لمنع Duplicate Key Error)
+                var isBusy = await _context.CommitteesAssignments
+                    .AnyAsync(a => a.ExamScheduleId == assignment.ExamScheduleId &&
+                                   a.PersonID == assignment.PersonID);
+
+                if (isBusy)
+                {
+                    ModelState.AddModelError("", "هذا الموظف لديه تكليف آخر بالفعل في نفس موعد هذه الجلسة!");
+                    LoadDropdowns(assignment);
+                    return View(assignment);
+                }
+
+                assignment.AssignmentType = "Manual";
+                var role = await _context.Roles.FindAsync(assignment.RoleID);
+                assignment.RoleType = role?.RoleDescription ?? "تكليف";
+
+                _context.Add(assignment);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "تم إنشاء التكليف بنجاح";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), new { scheduleId = assignment.ExamScheduleId });
             }
-
-            // في حالة الخطأ: نعيد ملء القوائم مع الاحتفاظ بالقيم المختارة
-            PopulateViewData(committeesAssignment);
-            return View(committeesAssignment);
+            LoadDropdowns(assignment);
+            return View(assignment);
         }
 
-        // دالة موحدة لملء الـ SelectLists لضمان عدم تكرار الكود ولغة العرض
-        private void PopulateViewData(CommitteesAssignment assignment = null)
-        {
-            ViewData["CommitteeID"] = new SelectList(_context.Committees, "CommitteeID", "CommitteeNumber", assignment?.CommitteeID);
-            ViewData["PersonID"] = new SelectList(_context.Persons, "PersonId", "FullName", assignment?.PersonID);
-
-            // جلب الأدوار بالعربي باستخدام الـ Display Name
-            var roles = _context.Roles.ToList().Select(r => new {
-                RoleID = r.RoleID,
-                RoleName = GetDisplayName(r.RoleName)
-            });
-            ViewData["RoleID"] = new SelectList(roles, "RoleID", "RoleName", assignment?.RoleID);
-
-            // جلب الجداول مع اسم الامتحان والتاريخ
-            var schedules = _context.ExamSchedules
-                .Include(s => s.Exam)
-                .Select(s => new {
-                    ID = s.ExamScheduleId,
-                    Text = s.Exam.ExamId + " - " + s.ScheduledDate.ToShortDateString()
-                }).ToList();
-
-            ViewData["ExamScheduleId"] = new SelectList(schedules, "ID", "Text", assignment?.ExamScheduleId);
-        }
-
-        // دالة المساعدة لتحويل الـ Enum للعربية
-        private string GetDisplayName(StaffPosition enumValue)
-        {
-            return enumValue.GetType()
-                .GetField(enumValue.ToString())?
-                .GetCustomAttributes(typeof(DisplayAttribute), false)
-                .FirstOrDefault() is DisplayAttribute attribute ? attribute.Name : enumValue.ToString();
-        }
-        // =====================================
-        // EDIT
-        // =====================================
+        // 5. Edit (GET)
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var committeesAssignment = await _context.CommitteesAssignments.FindAsync(id);
-            if (committeesAssignment == null)
-            {
-                return NotFound();
-            }
+            var assignment = await _context.CommitteesAssignments.FindAsync(id);
+            if (assignment == null) return NotFound();
 
-            ViewData["CommitteeID"] = new SelectList(_context.Committees, "CommitteeID", "CommitteeNumber", committeesAssignment.CommitteeID);
-            ViewData["PersonID"] = new SelectList(_context.Persons, "PersonId", "FullName", committeesAssignment.PersonID);
-            ViewData["RoleID"] = new SelectList(_context.Roles, "RoleID", "RoleName", committeesAssignment.RoleID);
-    
-            var schedules = _context.ExamSchedules
-                .Include(s => s.Exam)
-                .Select(s => new {
-                    ID = s.ExamScheduleId,
-                    Text = s.Exam.ExamId + " - " + s.ScheduledDate.ToShortDateString()
-                }).ToList();
-            ViewData["ExamScheduleId"] = new SelectList(schedules, "ID", "Text", committeesAssignment.ExamScheduleId);
-
-            return View(committeesAssignment);
+            LoadDropdowns(assignment);
+            return View(assignment);
         }
+
+        // 6. Edit (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("AssignmentID,PersonID,CommitteeID,RoleID,ExamScheduleId,isReserve,AssignmentType,RoleType")] CommitteesAssignment committeesAssignment)
+        public async Task<IActionResult> Edit(int id, CommitteesAssignment assignment)
         {
-            if (id != committeesAssignment.AssignmentID)
-            {
-                return NotFound();
-            }
+            if (id != assignment.AssignmentID) return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(committeesAssignment);
+                    // 1. فحص هل الموظف الجديد (بعد التعديل) مشغول في نفس الجلسة؟
+                    // بنستثني التكليف الحالي (assignment.AssignmentID) عشان ميفحصش نفسه
+                    var isBusy = await _context.CommitteesAssignments
+                        .AnyAsync(a => a.ExamScheduleId == assignment.ExamScheduleId &&
+                                       a.PersonID == assignment.PersonID &&
+                                       a.AssignmentID != assignment.AssignmentID);
+
+                    if (isBusy)
+                    {
+                        ModelState.AddModelError("", "عفواً، هذا الموظف لديه تكليف آخر بالفعل في هذه الجلسة!");
+                        LoadDropdowns(assignment);
+                        return View(assignment);
+                    }
+
+                    // 2. فحص هل اللجنة المختارة محجوزة لشخص آخر؟
+                    if (assignment.CommitteeID.HasValue)
+                    {
+                        var committeeTaken = await _context.CommitteesAssignments
+                            .AnyAsync(a => a.ExamScheduleId == assignment.ExamScheduleId &&
+                                           a.CommitteeID == assignment.CommitteeID &&
+                                           a.AssignmentID != assignment.AssignmentID);
+
+                        if (committeeTaken)
+                        {
+                            ModelState.AddModelError("", "هذه اللجنة تم تخصيص مراقب آخر لها بالفعل!");
+                            LoadDropdowns(assignment);
+                            return View(assignment);
+                        }
+                    }
+
+                    // لو كل الفحوصات سليمة، نفذ التعديل
+                    _context.Update(assignment);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "تم تحديث التكليف بنجاح";
+                    return RedirectToAction(nameof(Index), new { scheduleId = assignment.ExamScheduleId });
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CommitteesAssignmentExists(committeesAssignment.AssignmentID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!AssignmentExists(assignment.AssignmentID)) return NotFound();
+                    else throw;
                 }
-                return RedirectToAction(nameof(Index));
             }
 
-           
-            ViewData["CommitteeID"] = new SelectList(_context.Committees, "CommitteeID", "CommitteeNumber", committeesAssignment.CommitteeID);
-            ViewData["PersonID"] = new SelectList(_context.Persons, "PersonId", "FullName", committeesAssignment.PersonID);
-            ViewData["RoleID"] = new SelectList(_context.Roles, "RoleID", "RoleName", committeesAssignment.RoleID);
-            ViewData["ExamScheduleId"] = new SelectList(_context.ExamSchedules, "ExamScheduleId", "ScheduledDate", committeesAssignment.ExamScheduleId);
-
-            return View(committeesAssignment);
+            LoadDropdowns(assignment);
+            return View(assignment);
         }
-        // =====================================
-        //  DELETE
-        // =====================================
+
+        // 7. Delete (GET)
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var committeesAssignment = await _context.CommitteesAssignments
-                .Include(c => c.Committee)
-                .Include(c => c.Person) 
-                .Include(c => c.Role)
+            var assignment = await _context.CommitteesAssignments
+                .Include(a => a.Person)
+                .Include(a => a.ExamSchedule.Exam.Subject)
                 .FirstOrDefaultAsync(m => m.AssignmentID == id);
 
-            if (committeesAssignment == null)
-            {
-                return NotFound();
-            }
-
-            return View(committeesAssignment);
+            if (assignment == null) return NotFound();
+            return View(assignment);
         }
 
+        // 8. Delete (POST)
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var committeesAssignment = await _context.CommitteesAssignments.FindAsync(id);
-            if (committeesAssignment != null)
-            {
-                _context.CommitteesAssignments.Remove(committeesAssignment);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "تم حذف تكليف اللجنة بنجاح";
+            var assignment = await _context.CommitteesAssignments.FindAsync(id);
+            int? scheduleId = assignment?.ExamScheduleId;
+            if (assignment != null) _context.CommitteesAssignments.Remove(assignment);
 
-            }
-
-            return RedirectToAction(nameof(Index));
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index), new { scheduleId = scheduleId });
         }
 
-        public async Task<IActionResult> AutoAssign()
-        {
-            
-            var schedules = _context.ExamSchedules
-                .Include(s => s.Exam)
-                    .ThenInclude(e => e.Subject)
-                .Include(s => s.Committee)
-                .OrderBy(s => s.ScheduledDate)
-                .Select(s => new {
-                    ID = s.ExamScheduleId,
-                    Text = $"{s.Exam.Subject.SubjectName} - Committee {s.Committee.CommitteeNumber} ({s.ScheduledDate:dd/MM})"
-                }).ToList();
-
-            ViewData["ExamScheduleId"] = new SelectList(schedules, "ID", "Text");
-
-            return View();
-        }
-
+        // 9. AutoAssign: استدعاء الخدمة الذكية
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AutoAssign(int examScheduleId)
+        public async Task<IActionResult> AutoAssign(int scheduleId)
         {
-    
-            var success = await _committeesAssignmentsService.RunAssignmentAsync(examScheduleId);
+            var success = await _assignmentService.RunAssignmentAsync(scheduleId);
+            if (success) TempData["Success"] = "تم التوزيع التلقائي بنجاح وفقاً للهيكل الإداري.";
+            else TempData["Error"] = "فشل التوزيع التلقائي، تأكد من توفر الموظفين المتاحين.";
 
-            if (success)
-            {
-                TempData["SuccessMessage"] = "تم إنشاء تكليفات اللجنة بنجاح";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "فشل في إنشاء التكليفات. الأسباب المحتملة: جميع الموظفين مشغولون في هذا الوقت أو لم يتم العثور على جدول الجلسة.";
-            }
-
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { scheduleId = scheduleId });
         }
 
-        private bool CommitteesAssignmentExists(int id)
+        // دالة موحدة لتحميل البيانات مع تصفية الموظفين النشطين
+        private void LoadDropdowns(CommitteesAssignment? assignment = null)
         {
-            return _context.CommitteesAssignments.Any(e => e.AssignmentID == id);
+            // جلب الموظفين النشطين فقط لتسهيل الاختيار
+            var activeStaff = _context.Persons.Where(p => p.IsActiveForAssignment).ToList();
+            ViewBag.PersonID = new SelectList(activeStaff, "PersonId", "FullName", assignment?.PersonID);
+
+            ViewBag.RoleID = new SelectList(_context.Roles, "RoleID", "RoleDescription", assignment?.RoleID);
+            ViewBag.HallId = new SelectList(_context.Halls, "HallId", "HallName", assignment?.HallId);
+            ViewBag.BlockId = new SelectList(_context.Blocks, "BlockID", "BlockName", assignment?.BlockId);
+            ViewBag.CommitteeID = new SelectList(_context.Committees, "CommitteeID", "CommitteeNumber", assignment?.CommitteeID);
+
+            var schedules = _context.ExamSchedules.Include(s => s.Exam.Subject).Select(s => new {
+                Id = s.ExamScheduleId,
+                Name = $"{s.Exam.Subject.SubjectName} - {s.ScheduledDate.ToShortDateString()}"
+            });
+            ViewBag.ExamScheduleId = new SelectList(schedules, "Id", "Name", assignment?.ExamScheduleId);
         }
+
+        private bool AssignmentExists(int id) => _context.CommitteesAssignments.Any(e => e.AssignmentID == id);
     }
 }

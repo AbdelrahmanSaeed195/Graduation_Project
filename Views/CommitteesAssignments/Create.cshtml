@@ -1,114 +1,64 @@
 ﻿@model projectweb.Models.CommitteesAssignment
 
-@{
-    ViewData["Title"] = "إضافة تكليف جديد";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
+<div class="container mt-5 text-end" dir="rtl">
+    <div class="card mx-auto shadow border-0" style="max-width: 700px; border-radius: 15px;">
+        <div class="card-header text-white text-center py-3" style="background-color: #1a3a5a;">
+            <h4 class="mb-0">إنشاء تكليف يدوي جديد</h4>
+        </div>
+        <div class="card-body p-4">
+            <form asp-action="Create">
 
-<div class="row justify-content-center" dir="rtl">
-    <div class="col-xl-8">
-        <div class="card academic-card">
-            <div class="card-header academic-card-header text-white p-4">
-                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-plus-square-fill me-2"></i> إضافة تكليف جديد</h4>
-            </div>
-            <div class="card-body p-4" style="background-color: var(--surface-white);">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm border-0 mb-4 py-2"></div>
 
-                <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4">
-                    <i class="bi bi-info-circle-fill fs-3 me-3 text-primary"></i>
-                    <div>
-                        <strong class="d-block mb-1">توضيح:</strong>
-                        <ul class="mb-0 ps-3 small opacity-90">
-                            <li>قم باختيار الموظف واللجنة والدور الوظيفي وجلسة الامتحان لإنشاء التكليف يدوياً.</li>
-                            <li>يمكنك تحديد ما إذا كان التكليف احتياطياً من خلال تفعيل خيار "تكليف احتياطي".</li>
-                            <li>للتكليف التلقائي بناءً على التوفر والخوارزمية، استخدم صفحة التكليف العشوائي.</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <form asp-action="Create" method="post">
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
-
-                    <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3" style="border-color: var(--border-color) !important;">
-                        <i class="bi bi-person-badge me-2"></i> بيانات التكليف الأساسية
-                    </h5>
-
-                    <div class="row g-4 mb-4">
-                        <div class="col-md-6">
-                            <label asp-for="PersonID" class="form-label academic-label required">الموظف / المراقب <span class="text-danger">*</span></label>
-                            <select asp-for="PersonID" asp-items="@(ViewData["PersonID"] as SelectList)" class="form-select academic-input">
-                                <option value="">-- اختر الموظف --</option>
-                            </select>
-                            <span asp-validation-for="PersonID" class="text-danger small mt-1 d-block"></span>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label asp-for="CommitteeID" class="form-label academic-label required">اللجنة <span class="text-danger">*</span></label>
-                            <select asp-for="CommitteeID" asp-items="@(ViewData["CommitteeID"] as SelectList)" class="form-select academic-input">
-                                <option value="">-- اختر اللجنة --</option>
-                            </select>
-                            <span asp-validation-for="CommitteeID" class="text-danger small mt-1 d-block"></span>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label asp-for="RoleID" class="form-label academic-label required">الدور الوظيفي <span class="text-danger">*</span></label>
-                            <select asp-for="RoleID" asp-items="@(ViewData["RoleID"] as SelectList)" class="form-select academic-input">
-                                <option value="">-- اختر الدور --</option>
-                            </select>
-                            <span asp-validation-for="RoleID" class="text-danger small mt-1 d-block"></span>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label asp-for="ExamScheduleId" class="form-label academic-label required">جلسة الامتحان <span class="text-danger">*</span></label>
-                            <select asp-for="ExamScheduleId" asp-items="@(ViewData["ExamScheduleId"] as SelectList)" class="form-select academic-input">
-                                <option value="">-- اختر جلسة الامتحان --</option>
-                            </select>
-                            <span asp-validation-for="ExamScheduleId" class="text-danger small mt-1 d-block"></span>
-                        </div>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="PersonID" class="form-label fw-bold"></label>
+                        <select asp-for="PersonID" class="form-select" asp-items="ViewBag.PersonID"></select>
+                        <span asp-validation-for="PersonID" class="text-danger small"></span>
                     </div>
 
-                    <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3" style="border-color: var(--border-color) !important;">
-                        <i class="bi bi-gear me-2"></i> تفاصيل إضافية
-                    </h5>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="RoleID" class="form-label fw-bold"></label>
+                        <select asp-for="RoleID" class="form-select" asp-items="ViewBag.RoleID"></select>
+                        <span asp-validation-for="RoleID" class="text-danger small"></span>
+                    </div>
 
-                    <div class="row g-4 mb-4">
-                        <div class="col-md-6">
-                            <label asp-for="AssignmentType" class="form-label academic-label">نوع التكليف</label>
-                            <select asp-for="AssignmentType" class="form-select academic-input">
-                                <option value="">-- اختر نوع التكليف --</option>
-                                <option value="يدوي">يدوي</option>
-                                <option value="تلقائي">تلقائي</option>
-                            </select>
-                            <span asp-validation-for="AssignmentType" class="text-danger small mt-1 d-block"></span>
-                        </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ExamScheduleId" class="form-label fw-bold"></label>
+                        <select asp-for="ExamScheduleId" class="form-select" asp-items="ViewBag.ExamScheduleId"></select>
+                        <span asp-validation-for="ExamScheduleId" class="text-danger small"></span>
+                    </div>
 
-                        <div class="col-md-6">
-                            <label asp-for="RoleID" class="form-label academic-label required">الدور الوظيفي <span class="text-danger">*</span></label>
-                            <select asp-for="RoleID" asp-items="@(ViewData["RoleID"] as SelectList)" class="form-select academic-input">
-                                <option value="">-- اختر الدور --</option>
-                            </select>
-                            <span asp-validation-for="RoleID" class="text-danger small mt-1 d-block"></span>
-                        </div>
-
-                        <div class="col-md-6 d-flex align-items-center">
-                            <div class="form-check form-switch mt-auto mb-2">
-                                <input asp-for="isReserve" class="form-check-input" type="checkbox" role="switch" style="width: 3rem; height: 1.5rem;" />
-                                <label asp-for="isReserve" class="form-check-label academic-label me-3">تكليف احتياطي</label>
+                    <div class="col-md-12 my-3 p-3 bg-light rounded border">
+                        <h6 class="fw-bold border-bottom pb-2">نطاق المسئولية (اختر النطاق المناسب للدور فقط)</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="small text-muted">صالة (رئيس صالة/طبي)</label>
+                                <select asp-for="HallId" class="form-select mt-1" asp-items="ViewBag.HallId"><option value="">-- بلا --</option></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-muted">بلوك (مراقب)</label>
+                                <select asp-for="BlockId" class="form-select mt-1" asp-items="ViewBag.BlockId"><option value="">-- بلا --</option></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-muted">لجنة (ملاحظ)</label>
+                                <select asp-for="CommitteeID" class="form-select mt-1" asp-items="ViewBag.CommitteeID"><option value="">-- بلا --</option></select>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
-                        <button type="submit" class="btn btn-academic-primary px-4 fw-bold">
-                            <i class="bi bi-check-circle me-1"></i> حفظ وإنشاء
-                        </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4">إلغاء والعودة</a>
-                    </div>
-                </form>
-            </div>
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-dark btn-lg shadow">حفظ التكليف</button>
+                    <a asp-action="Index" class="btn btn-light">إلغاء</a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

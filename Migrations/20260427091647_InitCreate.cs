@@ -353,19 +353,26 @@ namespace projectweb.Migrations
                 name: "CommitteesAssignments",
                 columns: table => new
                 {
+                    AssignmentID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     PersonID = table.Column<int>(type: "int", nullable: false),
+                    HallId = table.Column<int>(type: "int", nullable: true),
+                    BlockId = table.Column<int>(type: "int", nullable: true),
                     CommitteeID = table.Column<int>(type: "int", nullable: false),
                     RoleID = table.Column<int>(type: "int", nullable: false),
-                    AssignmentID = table.Column<int>(type: "int", nullable: false),
-                    AssignmentType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    isReserve = table.Column<bool>(type: "bit", nullable: false),
-                    RoleType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ExamScheduleId = table.Column<int>(type: "int", nullable: false),
-                    RoleID1 = table.Column<int>(type: "int", nullable: true)
+                    AssignmentType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RoleType = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CommitteesAssignments", x => new { x.PersonID, x.CommitteeID, x.RoleID });
+                    table.PrimaryKey("PK_CommitteesAssignments", x => x.AssignmentID);
+                    table.ForeignKey(
+                        name: "FK_CommitteesAssignments_Blocks_BlockId",
+                        column: x => x.BlockId,
+                        principalTable: "Blocks",
+                        principalColumn: "BlockID",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_CommitteesAssignments_Committees_CommitteeID",
                         column: x => x.CommitteeID,
@@ -379,6 +386,12 @@ namespace projectweb.Migrations
                         principalColumn: "ExamScheduleId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_CommitteesAssignments_Halls_HallId",
+                        column: x => x.HallId,
+                        principalTable: "Halls",
+                        principalColumn: "HallId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_CommitteesAssignments_Persons_PersonID",
                         column: x => x.PersonID,
                         principalTable: "Persons",
@@ -390,11 +403,6 @@ namespace projectweb.Migrations
                         principalTable: "Roles",
                         principalColumn: "RoleID",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_CommitteesAssignments_Roles_RoleID1",
-                        column: x => x.RoleID1,
-                        principalTable: "Roles",
-                        principalColumn: "RoleID");
                 });
 
             migrationBuilder.CreateTable(
@@ -542,6 +550,11 @@ namespace projectweb.Migrations
                 column: "BlockID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CommitteesAssignments_BlockId",
+                table: "CommitteesAssignments",
+                column: "BlockId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CommitteesAssignments_CommitteeID",
                 table: "CommitteesAssignments",
                 column: "CommitteeID");
@@ -552,14 +565,20 @@ namespace projectweb.Migrations
                 column: "ExamScheduleId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CommitteesAssignments_HallId",
+                table: "CommitteesAssignments",
+                column: "HallId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CommitteesAssignments_PersonID_ExamScheduleId",
+                table: "CommitteesAssignments",
+                columns: new[] { "PersonID", "ExamScheduleId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CommitteesAssignments_RoleID",
                 table: "CommitteesAssignments",
                 column: "RoleID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CommitteesAssignments_RoleID1",
-                table: "CommitteesAssignments",
-                column: "RoleID1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Exams_SubjectID",

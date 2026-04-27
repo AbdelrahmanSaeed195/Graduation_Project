@@ -18,9 +18,11 @@ namespace projectweb.Services
 
         public async Task<bool> RunAssignmentAsync(int examScheduleId)
         {
-            // 1. جلب بيانات الجلسة الحالية (اللجنة)
+            // 1. جلب بيانات الجلسة مع الهيكل المكاني كامل (صالة -> بلوك -> لجنة)
             var currentSchedule = await _context.ExamSchedules
                 .Include(s => s.Committee)
+                    .ThenInclude(c => c.Block)
+                        .ThenInclude(b => b.Hall)
                 .FirstOrDefaultAsync(s => s.ExamScheduleId == examScheduleId);
 
             if (currentSchedule == null) return false;
@@ -29,8 +31,9 @@ namespace projectweb.Services
             var endTime = currentSchedule.EndTime;
             var currentDate = currentSchedule.ScheduledDate.Date;
             var yesterday = currentDate.AddDays(-1);
+            var hallId = currentSchedule.Committee.Block.HallId;
 
-            // 2. فحص الأشخاص المشغولين (تجنب التداخل في نفس الوقت)
+            // 2. تحديد الموظفين المشغولين في نفس الوقت لتجنب التضارب
             var busyPersonIds = await _context.CommitteesAssignments
                 .Include(a => a.ExamSchedule)
                 .Where(a => a.ExamSchedule.ScheduledDate.Date == currentDate &&
@@ -40,89 +43,115 @@ namespace projectweb.Services
                 .Distinct()
                 .ToListAsync();
 
-            // 3. جلب الموظفين المتاحين مع تضمين أدوارهم (Enum)
-            // جلب الموظفين المتاحين والنشطين فقط
+            // 3. جلب الموظفين المتاحين والنشطين
             var availableStaff = await _context.Persons
                 .Include(p => p.Role)
                 .Where(p => !busyPersonIds.Contains(p.PersonId) && p.IsActiveForAssignment)
                 .ToListAsync();
 
-            var random = new Random();
             var finalAssignments = new List<CommitteesAssignment>();
+            var random = new Random();
 
-            // --- أ- توزيع ملاحظ اللجنة (شخص واحد لكل لجنة فرعية) ---
+            // --- أ- توزيع رؤساء الصالة (الأولوية لمن عمل أمس) ---
+            var workedYesterdayIds = await _context.CommitteesAssignments
+                .Include(a => a.ExamSchedule)
+                .Where(a => a.ExamSchedule.ScheduledDate.Date == yesterday &&
+                            a.RoleID == (int)StaffPosition.HallManager &&
+                            a.HallId == hallId)
+                .Select(a => a.PersonID)
+                .ToListAsync();
+
+            var managers = availableStaff
+                .Where(p => p.Role?.RoleName == StaffPosition.HallManager)
+                .OrderByDescending(m => workedYesterdayIds.Contains(m.PersonId)) // الأولوية للي كان موجود امبارح
+                .ThenBy(p => random.Next())
+                .Take(2)
+                .ToList();
+
+            foreach (var m in managers)
+            {
+                finalAssignments.Add(new CommitteesAssignment
+                {
+                    PersonID = m.PersonId,
+                    ExamScheduleId = examScheduleId,
+                    RoleID = m.RoleID,
+                    HallId = hallId, // التكليف على مستوى الصالة
+                    AssignmentType = "Auto",
+                    RoleType = "رئيس صالة"
+                });
+                availableStaff.Remove(m);
+            }
+
+            // --- ب- توزيع الطاقم الطبي (طبيب وممرض واحد لكل صالة) ---
+            var doctor = availableStaff.FirstOrDefault(p => p.Role?.RoleName == StaffPosition.Doctor);
+            if (doctor != null)
+            {
+                finalAssignments.Add(new CommitteesAssignment
+                {
+                    PersonID = doctor.PersonId,
+                    ExamScheduleId = examScheduleId,
+                    RoleID = doctor.RoleID,
+                    HallId = hallId,
+                    AssignmentType = "Auto",
+                    RoleType = "طبيب الصالة"
+                });
+                availableStaff.Remove(doctor);
+            }
+
+            var nurse = availableStaff.FirstOrDefault(p => p.Role?.RoleName == StaffPosition.Nurse);
+            if (nurse != null)
+            {
+                finalAssignments.Add(new CommitteesAssignment
+                {
+                    PersonID = nurse.PersonId,
+                    ExamScheduleId = examScheduleId,
+                    RoleID = nurse.RoleID,
+                    HallId = hallId,
+                    AssignmentType = "Auto",
+                    RoleType = "ممرض الصالة"
+                });
+                availableStaff.Remove(nurse);
+            }
+
+            // --- ج- توزيع مراقب البلوك (رئيس مجموعة لجان) ---
+            var blockId = currentSchedule.Committee.BlockID;
+            var leader = availableStaff
+                .OrderBy(p => random.Next())
+                .FirstOrDefault(p => p.Role?.RoleName == StaffPosition.BlockGroupLeader);
+
+            if (leader != null)
+            {
+                finalAssignments.Add(new CommitteesAssignment
+                {
+                    PersonID = leader.PersonId,
+                    ExamScheduleId = examScheduleId,
+                    RoleID = leader.RoleID,
+                    BlockId = blockId, // التكليف على مستوى البلوك
+                    AssignmentType = "Auto",
+                    RoleType = "مراقب بلوك"
+                });
+                availableStaff.Remove(leader);
+            }
+
+            // --- د- توزيع ملاحظ اللجنة ---
             var observer = availableStaff
+                .OrderBy(p => random.Next())
                 .FirstOrDefault(p => p.Role?.RoleName == StaffPosition.CommitteeObserver);
 
             if (observer != null)
             {
-                finalAssignments.Add(CreateAssignment(currentSchedule, observer, "ملاحظ لجنة"));
-                availableStaff.Remove(observer);
-            }
-
-            // --- ب- توزيع رئيس مجموعة البلوكات (شخص واحد للبلوك) ---
-            // نتأكد أن البلوك لم يأخذ رئيساً في لجان أخرى بنفس الموعد
-            bool blockHasLeader = await _context.CommitteesAssignments
-                .AnyAsync(a => a.ExamScheduleId == examScheduleId &&
-                               a.RoleID == (int)StaffPosition.BlockGroupLeader);
-
-            if (!blockHasLeader)
-            {
-                var leader = availableStaff
-                    .FirstOrDefault(p => p.Role?.RoleName == StaffPosition.BlockGroupLeader);
-                if (leader != null)
+                finalAssignments.Add(new CommitteesAssignment
                 {
-                    finalAssignments.Add(CreateAssignment(currentSchedule, leader, "رئيس مجموعة بلوكات"));
-                    availableStaff.Remove(leader);
-                }
+                    PersonID = observer.PersonId,
+                    ExamScheduleId = examScheduleId,
+                    RoleID = observer.RoleID,
+                    CommitteeID = currentSchedule.CommitteeId, // التكليف على مستوى اللجنة
+                    AssignmentType = "Auto",
+                    RoleType = "ملاحظ لجنة"
+                });
             }
 
-            // --- ج- توزيع رئيس الصالة والمساعد (مع شرط الأيام المتتالية) ---
-            bool hallHasManagement = await _context.CommitteesAssignments
-                .AnyAsync(a => a.ExamScheduleId == examScheduleId &&
-                               a.RoleID == (int)StaffPosition.HallManager);
-
-            if (!hallHasManagement)
-            {
-                // تحديد من عمل "أمس" كرئيس صالة لإعطائه الأولوية
-                var workedYesterdayIds = await _context.CommitteesAssignments
-                    .Include(a => a.ExamSchedule)
-                    .Where(a => a.ExamSchedule.ScheduledDate.Date == yesterday &&
-                                a.RoleID == (int)StaffPosition.HallManager)
-                    .Select(a => a.PersonID)
-                    .ToListAsync();
-
-                var managers = availableStaff
-                    .Where(p => p.Role?.RoleName == StaffPosition.HallManager)
-                    .OrderByDescending(m => workedYesterdayIds.Contains(m.PersonId)) // الأولوية لمن عمل أمس
-                    .ThenBy(p => random.Next()) // ثم توزيع عشوائي
-                    .Take(2) // نأخذ 2 (واحد أساسي وواحد مساعد)
-                    .ToList();
-
-                if (managers.Count > 0)
-                    finalAssignments.Add(CreateAssignment(currentSchedule, managers[0], "رئيس صالة"));
-
-                if (managers.Count > 1)
-                    finalAssignments.Add(CreateAssignment(currentSchedule, managers[1], "مساعد رئيس صالة (احتياطي)"));
-
-                foreach (var m in managers) availableStaff.Remove(m);
-            }
-
-            // --- د- توزيع الطاقم الطبي (طبيب وممرض للصالة) ---
-            bool hallHasMedical = await _context.CommitteesAssignments
-                .AnyAsync(a => a.ExamScheduleId == examScheduleId &&
-                               a.RoleID == (int)StaffPosition.Doctor);
-
-            if (!hallHasMedical)
-            {
-                var doctor = availableStaff.FirstOrDefault(p => p.Role?.RoleName == StaffPosition.Doctor);
-                var nurse = availableStaff.FirstOrDefault(p => p.Role?.RoleName == StaffPosition.Nurse);
-
-                if (doctor != null) finalAssignments.Add(CreateAssignment(currentSchedule, doctor, "طبيب الصالة"));
-                if (nurse != null) finalAssignments.Add(CreateAssignment(currentSchedule, nurse, "ممرض الصالة"));
-            }
-
-            // 4. الحفظ النهائي في قاعدة البيانات
+            // 4. الحفظ النهائي
             if (finalAssignments.Any())
             {
                 _context.CommitteesAssignments.AddRange(finalAssignments);
@@ -131,28 +160,10 @@ namespace projectweb.Services
                     await _context.SaveChangesAsync();
                     return true;
                 }
-                catch (Exception)
-                {
-                    return false;
-                }
+                catch { return false; }
             }
 
             return false;
-        }
-
-        // دالة مساعدة لبناء غرض التكليف (Mapping)
-        private CommitteesAssignment CreateAssignment(ExamSchedule schedule, Person person, string typeLabel)
-        {
-            return new CommitteesAssignment
-            {
-                CommitteeID = schedule.CommitteeId,
-                PersonID = person.PersonId,
-                RoleID = person.RoleID,
-                ExamScheduleId = schedule.ExamScheduleId,
-                AssignmentType = "Auto",
-                RoleType = typeLabel,
-                isReserve = typeLabel.Contains("احتياطي")
-            };
         }
     }
 }

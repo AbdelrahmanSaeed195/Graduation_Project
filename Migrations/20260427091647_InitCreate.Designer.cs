@@ -12,8 +12,8 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260425154211_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260427091647_InitCreate")]
+    partial class InitCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -284,44 +284,50 @@ namespace projectweb.Migrations
 
             modelBuilder.Entity("projectweb.Models.CommitteesAssignment", b =>
                 {
-                    b.Property<int>("PersonID")
+                    b.Property<int>("AssignmentID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AssignmentID"));
+
+                    b.Property<string>("AssignmentType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("BlockId")
                         .HasColumnType("int");
 
                     b.Property<int>("CommitteeID")
                         .HasColumnType("int");
 
-                    b.Property<int>("RoleID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("AssignmentID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("AssignmentType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("ExamScheduleId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("RoleID1")
+                    b.Property<int?>("HallId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PersonID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleID")
                         .HasColumnType("int");
 
                     b.Property<string>("RoleType")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("isReserve")
-                        .HasColumnType("bit");
+                    b.HasKey("AssignmentID");
 
-                    b.HasKey("PersonID", "CommitteeID", "RoleID");
+                    b.HasIndex("BlockId");
 
                     b.HasIndex("CommitteeID");
 
                     b.HasIndex("ExamScheduleId");
 
+                    b.HasIndex("HallId");
+
                     b.HasIndex("RoleID");
 
-                    b.HasIndex("RoleID1");
+                    b.HasIndex("PersonID", "ExamScheduleId")
+                        .IsUnique();
 
                     b.ToTable("CommitteesAssignments");
                 });
@@ -725,6 +731,11 @@ namespace projectweb.Migrations
 
             modelBuilder.Entity("projectweb.Models.CommitteesAssignment", b =>
                 {
+                    b.HasOne("projectweb.Models.Block", "Block")
+                        .WithMany()
+                        .HasForeignKey("BlockId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("projectweb.Models.Committee", "Committee")
                         .WithMany("CommitteesAssignments")
                         .HasForeignKey("CommitteeID")
@@ -737,6 +748,11 @@ namespace projectweb.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("projectweb.Models.Hall", "Hall")
+                        .WithMany()
+                        .HasForeignKey("HallId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("projectweb.Models.Person", "Person")
                         .WithMany("CommitteesAssignments")
                         .HasForeignKey("PersonID")
@@ -744,18 +760,18 @@ namespace projectweb.Migrations
                         .IsRequired();
 
                     b.HasOne("projectweb.Models.Role", "Role")
-                        .WithMany()
+                        .WithMany("CommitteesAssignments")
                         .HasForeignKey("RoleID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("projectweb.Models.Role", null)
-                        .WithMany("CommitteesAssignments")
-                        .HasForeignKey("RoleID1");
+                    b.Navigation("Block");
 
                     b.Navigation("Committee");
 
                     b.Navigation("ExamSchedule");
+
+                    b.Navigation("Hall");
 
                     b.Navigation("Person");
 
