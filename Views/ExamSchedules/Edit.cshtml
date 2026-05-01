@@ -1,18 +1,18 @@
 ﻿@model projectweb.Models.ExamSchedule
 
 @{
-    ViewData["Title"] = "تعديل موعد امتحان";
+    ViewData["Title"] = "تعديل توزيع اللجنة";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="content-body" dir="rtl">
     <div class="row justify-content-center mt-4">
-        <div class="col-md-10">
+        <div class="col-md-9">
             <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
 
                 <div class="card-header py-3" style="background-color: #1a2c4e; border-bottom: none;">
                     <h4 class="card-title mb-0 fw-bold text-white text-center">
-                        <i class="bi bi-pencil-square me-2"></i> تعديل بيانات الجلسة
+                        <i class="bi bi-pencil-square me-2"></i> تعديل بيانات توزيع اللجنة
                     </h4>
                 </div>
 
@@ -23,43 +23,36 @@
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4 rounded-3 @(ViewData.ModelState.IsValid ? "d-none" : "")"></div>
 
                         <div class="row g-4">
+                            @* اختيار الامتحان المادة *@
                             <div class="col-md-7 mb-3">
-                                <label asp-for="ExamId" class="form-label fw-bold small text-muted mb-1">اسم المادة / الامتحان <span class="text-danger">*</span></label>
+                                <label asp-for="ExamId" class="form-label fw-bold small text-muted mb-1">اسم المادة / الامتحان المقرر <span class="text-danger">*</span></label>
                                 <select asp-for="ExamId" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.ExamId" style="border-radius: 8px; font-size: 0.95rem;">
                                 </select>
                                 <span asp-validation-for="ExamId" class="text-danger small mt-1 d-block"></span>
                             </div>
 
+                            @* عرض السنة الدراسية كبيان للقراءة فقط *@
                             <div class="col-md-5 mb-3">
-                                <label class="form-label fw-bold small text-muted mb-1 text-center d-block">رقم الدور / السنة الدراسية</label>
+                                <label class="form-label fw-bold small text-muted mb-1 text-center d-block">السنة الدراسية</label>
                                 <div class="p-2 border rounded-3 bg-light text-center fw-bold shadow-sm" style="font-size: 1.1rem; height: calc(3.5rem + 2px); display: flex; align-items: center; justify-content: center;">
                                     @(Model.Exam?.TargetAcademicYear ?? "-")
                                 </div>
                             </div>
 
+                            @* اختيار اللجنة *@
                             <div class="col-12 mb-3">
-                                <label asp-for="CommitteeId" class="form-label fw-bold small text-muted mb-1">مكان اللجنة (المسؤول) <span class="text-danger">*</span></label>
+                                <label asp-for="CommitteeId" class="form-label fw-bold small text-muted mb-1">اللجنة المختصة <span class="text-danger">*</span></label>
                                 <select asp-for="CommitteeId" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.CommitteeId" style="border-radius: 8px; font-size: 0.95rem;">
                                 </select>
                                 <span asp-validation-for="CommitteeId" class="text-danger small mt-1 d-block"></span>
                             </div>
 
-                            <div class="col-md-12 mb-3">
-                                <label asp-for="ScheduledDate" class="form-label fw-bold small text-muted mb-1">تاريخ اليوم المخصص <span class="text-danger">*</span></label>
-                                <input asp-for="ScheduledDate" class="form-control form-control-lg shadow-sm border-light-subtle" type="date" style="border-radius: 8px; font-size: 0.95rem;" />
-                                <span asp-validation-for="ScheduledDate" class="text-danger small mt-1 d-block"></span>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="StartTime" class="form-label fw-bold small text-muted mb-1 text-center d-block">وقت البدء</label>
-                                <input asp-for="StartTime" id="StartTime" class="form-control form-control-lg shadow-sm border-light-subtle text-center fw-bold" type="time" style="border-radius: 8px;" />
-                                <span asp-validation-for="StartTime" class="text-danger small mt-1 d-block"></span>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="EndTime" class="form-label fw-bold small text-muted mb-1 text-center d-block">وقت الانتهاء</label>
-                                <input asp-for="EndTime" id="EndTime" class="form-control form-control-lg shadow-sm border-light-subtle text-center fw-bold" type="time" style="border-radius: 8px;" />
-                                <span asp-validation-for="EndTime" class="text-danger small mt-1 d-block"></span>
+                            @* تنبيه للمستخدم *@
+                            <div class="col-12">
+                                <div class="alert alert-info border-0 shadow-sm mb-0">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    تنبيه: يتم تحديث التاريخ والوقت تلقائياً بناءً على بيانات "الامتحان المقرر" الذي يتم اختياره أعلاه.
+                                </div>
                             </div>
                         </div>
 
@@ -69,7 +62,7 @@
                                     <i class="bi bi-check-circle me-2"></i> حفظ التعديلات
                                 </button>
                                 <a asp-action="Index" class="btn btn-lg btn-outline-secondary px-4" style="border-radius: 8px;">
-                                    العودة للقائمة
+                                    إلغاء والعودة
                                 </a>
                             </div>
                         </div>
@@ -84,18 +77,4 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
-    <script>
-        $(document).ready(function () {
-            // التحقق من الوقت في طرف العميل
-            $('form').submit(function (e) {
-                var start = $('#StartTime').val();
-                var end = $('#EndTime').val();
-                if (start && end && end <= start) {
-                    e.preventDefault();
-                    alert('خطأ: وقت الانتهاء يجب أن يكون بعد وقت البدء');
-                }
-            });
-        });
-    </script>
 }

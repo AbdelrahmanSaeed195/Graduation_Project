@@ -5,54 +5,64 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="row justify-content-center" dir="rtl">
+<div class="row justify-content-center mt-5" dir="rtl">
     <div class="col-xl-6">
-        <div class="card academic-card shadow-sm">
+        <div class="card academic-card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
             <div class="card-body p-4 bg-white">
                 <div class="text-center mb-4">
                     <i class="bi bi-exclamation-octagon text-danger" style="font-size: 4rem;"></i>
-                    <h3 class="academic-heading fw-bold mt-2">تأكيد الحذف</h3>
+                    <h3 class="fw-bold mt-2" style="color: #1a2c4e;">تأكيد حذف الامتحان</h3>
                 </div>
 
+                @* فحص إذا كان الامتحان مرتبط بجداول توزيع (لجان) *@
                 @if (Model.ExamSchedules != null && Model.ExamSchedules.Any())
                 {
-                    <div class="alert alert-danger border-0 mb-4 shadow-sm">
-                        <i class="bi bi-x-circle-fill fs-5 me-2"></i>
-                        <strong>عفواً، لا يمكن حذف هذا الامتحان.</strong>
-                        <p class="mb-0 small opacity-90 mt-1">
-                            النظام يمنع حذف أي امتحان يحتوي على جداول توزيع مسجلة. يرجى حذف الجداول المرتبطة أولاً.
+                    <div class="alert alert-danger border-0 mb-4 shadow-sm" style="border-radius: 10px;">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-x-circle-fill fs-4 me-2"></i>
+                            <strong class="ms-2">عفواً، لا يمكن حذف هذا الامتحان حالياً.</strong>
+                        </div>
+                        <p class="mb-0 small opacity-90 mt-2 ms-4">
+                            هذا الامتحان مرتبط بـ <strong>(@Model.ExamSchedules.Count)</strong> لجنة توزيع.
+                            يرجى حذف جداول توزيع اللجان المرتبطة بهذا الامتحان أولاً قبل محاولة حذفه.
                         </p>
                     </div>
                 }
                 else
                 {
-                    <div class="alert alert-warning border-0 d-flex gap-2 align-items-center mb-4 shadow-sm">
-                        <i class="bi bi-exclamation-triangle-fill fs-4"></i>
-                        <div>
-                            <strong>تأكيد عملية الحذف!</strong><br />
-                            <span class="small">أنت على وشك حذف امتحان مادة "<strong>@(Model.Subject?.SubjectName ?? "غير محدد")</strong>" بتاريخ <strong>@Model.ExamDate.ToString("yyyy/MM/dd")</strong> نهائياً. هل أنت متأكد؟</span>
+                    <div class="alert alert-warning border-0 mb-4 shadow-sm" style="border-radius: 10px;">
+                        <div class="d-flex align-items-start gap-2">
+                            <i class="bi bi-exclamation-triangle-fill fs-4 text-warning"></i>
+                            <div>
+                                <strong class="text-dark">تحذير عملية حذف!</strong><br />
+                                <span class="small text-muted">
+                                    أنت على وشك حذف سجل امتحان مادة "<strong>@(Model.Subject?.SubjectName ?? "غير محدد")</strong>".
+                                    هذا الإجراء سيقوم بمسح كافة بيانات الامتحان نهائياً من النظام.
+                                </span>
+                            </div>
                         </div>
                     </div>
                 }
 
+                @* تفاصيل الامتحان المراد حذفه *@
                 <div class="row g-3 mb-4 text-center">
                     <div class="col-4">
-                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
-                            <div class="small academic-label mb-1">المادة</div>
-                            <div class="fw-bold mt-1" style="color: var(--text-main);">@(Model.Subject?.SubjectName ?? "—")</div>
+                        <div class="rounded p-3 border shadow-sm" style="background-color: #f8f9fa;">
+                            <div class="small text-muted mb-1">المادة</div>
+                            <div class="fw-bold text-dark">@(Model.Subject?.SubjectName ?? "—")</div>
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
-                            <div class="small academic-label mb-1">السنة الدراسية</div>
-                            <div class="fw-bold mt-1" style="color: var(--text-main);">@Model.TargetAcademicYear</div>
+                        <div class="rounded p-3 border shadow-sm" style="background-color: #f8f9fa;">
+                            <div class="small text-muted mb-1">التاريخ</div>
+                            <div class="fw-bold text-dark">@Model.ExamDate.ToString("yyyy/MM/dd")</div>
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
-                            <div class="small academic-label mb-1">جداول التوزيع</div>
-                            <div class="fw-bold mt-1 @(Model.ExamSchedules != null && Model.ExamSchedules.Any() ? "text-danger" : "text-success")">
-                                @(Model.ExamSchedules?.Count ?? 0) جدول
+                        <div class="rounded p-3 border shadow-sm" style="background-color: #f8f9fa;">
+                            <div class="small text-muted mb-1">اللجان المرتبطة</div>
+                            <div class="fw-bold @(Model.ExamSchedules != null && Model.ExamSchedules.Any() ? "text-danger" : "text-success")">
+                                @(Model.ExamSchedules?.Count ?? 0) سجل
                             </div>
                         </div>
                     </div>
@@ -60,20 +70,25 @@
 
                 <form asp-action="Delete" method="post">
                     <input type="hidden" asp-for="ExamId" />
-                    <div class="d-flex justify-content-center gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+
+                    <div class="d-flex justify-content-center gap-3 mt-4 pt-3 border-top">
+                        @* زر الحذف يظهر فقط إذا لم تكن هناك جداول مرتبطة *@
                         @if (Model.ExamSchedules == null || !Model.ExamSchedules.Any())
                         {
-                            <button type="submit" class="btn btn-danger px-4 fw-bold">
-                                <i class="bi bi-trash me-1"></i> تأكيد الحذف
+                            <button type="submit" class="btn btn-danger px-5 fw-bold shadow-sm" style="border-radius: 8px;">
+                                <i class="bi bi-trash me-1"></i> نعم، احذف السجل
                             </button>
                         }
                         else
                         {
-                            <button type="button" class="btn btn-secondary px-4 fw-bold" disabled>
-                                <i class="bi bi-lock-fill me-1"></i> الحذف غير متاح
+                            <button type="button" class="btn btn-secondary px-4 fw-bold shadow-sm" style="border-radius: 8px;" disabled>
+                                <i class="bi bi-lock-fill me-1"></i> الحذف معطل
                             </button>
                         }
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4">تراجع والعودة</a>
+
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4 shadow-sm" style="border-radius: 8px;">
+                            إلغاء وتراجع
+                        </a>
                     </div>
                 </form>
             </div>

@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<projectweb.Models.ExamSchedule>
 
 @{
-    ViewData["Title"] = "إدارة مواعيد الامتحانات";
+    ViewData["Title"] = "إدارة توزيع اللجان";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -17,10 +17,10 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 fw-bold academic-heading">
-            <i class="bi bi-calendar3 me-2"></i> جدول مواعيد الامتحانات
+            <i class="bi bi-calendar3 me-2"></i> جدول توزيع اللجان
         </h1>
         <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm" style="background-color: #1a2c4e; color: white;">
-            <i class="bi bi-plus-circle me-1"></i> إضافة موعد جديد
+            <i class="bi bi-plus-circle me-1"></i> إضافة توزيع جديد
         </a>
     </div>
 
@@ -45,6 +45,7 @@
                                 <td class="ps-4 fw-bold" style="color: #1a2c4e;">
                                     <i class="bi bi-book me-2" style="color: #00a8ff;"></i>
                                     @(item.Exam?.Subject?.SubjectName ?? "غير محدد")
+                                    <small class="text-muted d-block ms-4 fw-normal">(@item.Exam?.TargetAcademicYear)</small>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge bg-light border px-3 py-2 text-dark" style="border-radius: 8px;">
@@ -54,13 +55,15 @@
                                 <td class="text-center">
                                     <span class="badge bg-light border px-3 py-2 text-dark" style="border-radius: 8px;">
                                         <i class="bi bi-calendar-event me-1 text-primary"></i>
-                                        @item.ScheduledDate.ToString("yyyy/MM/dd")
+                                        @* تم التعديل لجلب التاريخ من موديل الامتحان *@
+                                        @item.Exam?.ExamDate.ToString("yyyy/MM/dd")
                                     </span>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge px-3 py-2" style="background-color: #f8f9fa; color: #333; border: 1px solid #dee2e6; border-radius: 8px;">
                                         <i class="bi bi-clock me-1 text-info"></i>
-                                        @item.StartTime.ToString(@"hh\:mm") - @item.EndTime.ToString(@"hh\:mm")
+                                        @* تم التعديل لجلب الوقت من موديل الامتحان *@
+                                        @item.Exam?.StartTime.ToString(@"hh\:mm") - @item.Exam?.EndTime.ToString(@"hh\:mm")
                                     </span>
                                 </td>
                                 <td class="text-center pe-4">
@@ -84,7 +87,7 @@
                         <tr>
                             <td colspan="5" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                                لا توجد مواعيد مسجلة حالياً
+                                لا توجد توزيعات لجان مسجلة حالياً
                             </td>
                         </tr>
                     }

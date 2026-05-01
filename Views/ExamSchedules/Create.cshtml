@@ -1,17 +1,18 @@
 ﻿@model projectweb.Models.ExamSchedule
 
 @{
-    ViewData["Title"] = "إضافة موعد امتحان";
+    ViewData["Title"] = "إضافة توزيع لجنة";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="content-body" dir="rtl">
     <div class="row justify-content-center mt-4">
-        <div class="col-md-10">
+        <div class="col-md-8">
+            @* قمت بتقليل العرض قليلاً لأن الحقول أصبحت أقل *@
             <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
                 <div class="card-header py-3" style="background-color: #1a2c4e; border-bottom: none;">
                     <h4 class="card-title mb-0 fw-bold text-white text-center">
-                        <i class="bi bi-calendar-plus me-2"></i> إضافة موعد / جلسة امتحان
+                        <i class="bi bi-calendar-plus me-2"></i> تخصيص لجنة لامتحان
                     </h4>
                 </div>
 
@@ -20,45 +21,30 @@
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4 rounded-3 d-none"></div>
 
                         <div class="row g-4">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="ExamId" class="form-label fw-bold" style="color: #4a5568;">الامتحان / المادة <span class="text-danger">*</span></label>
+                            @* اختيار الامتحان: يظهر فيه اسم المادة والتاريخ والوقت المسجل مسبقاً *@
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="ExamId" class="form-label fw-bold" style="color: #4a5568;">الامتحان / المادة المحددة <span class="text-danger">*</span></label>
                                 <select asp-for="ExamId" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.ExamId" style="font-size: 0.95rem; border-radius: 8px;">
-                                    <option value="">-- اختر المادة المحددة --</option>
+                                    <option value="">-- اختر الامتحان (المادة - التاريخ) --</option>
                                 </select>
                                 <span asp-validation-for="ExamId" class="text-danger small mt-1 d-block"></span>
+                                <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i> يتم سحب التاريخ والوقت تلقائياً بناءً على اختيار الامتحان.</div>
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            @* اختيار اللجنة *@
+                            <div class="col-md-12 mb-3">
                                 <label asp-for="CommitteeId" class="form-label fw-bold" style="color: #4a5568;">اللجنة المختصة <span class="text-danger">*</span></label>
                                 <select asp-for="CommitteeId" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.CommitteeId" style="font-size: 0.95rem; border-radius: 8px;">
                                     <option value="">-- اختر اللجنة --</option>
                                 </select>
                                 <span asp-validation-for="CommitteeId" class="text-danger small mt-1 d-block"></span>
                             </div>
-
-                            <div class="col-md-12 mb-3">
-                                <label asp-for="ScheduledDate" class="form-label fw-bold" style="color: #4a5568;">تاريخ اليوم المخصص <span class="text-danger">*</span></label>
-                                <input asp-for="ScheduledDate" class="form-control form-control-lg shadow-sm border-light-subtle" type="date" style="font-size: 0.95rem; border-radius: 8px;" />
-                                <span asp-validation-for="ScheduledDate" class="text-danger small mt-1 d-block"></span>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="StartTime" class="form-label fw-bold text-center w-100" style="color: #4a5568;">وقت بدء الجلسة</label>
-                                <input asp-for="StartTime" id="StartTime" class="form-control form-control-lg shadow-sm border-light-subtle text-center" type="time" style="font-size: 1rem; border-radius: 8px;" />
-                                <span asp-validation-for="StartTime" class="text-danger small mt-1 d-block text-center"></span>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="EndTime" class="form-label fw-bold text-center w-100" style="color: #4a5568;">وقت الانتهاء المتوقع</label>
-                                <input asp-for="EndTime" id="EndTime" class="form-control form-control-lg shadow-sm border-light-subtle text-center" type="time" style="font-size: 1rem; border-radius: 8px;" />
-                                <span asp-validation-for="EndTime" class="text-danger small mt-1 d-block text-center"></span>
-                            </div>
                         </div>
 
                         <div class="border-top mt-5 pt-4">
                             <div class="d-flex justify-content-center gap-3">
                                 <button type="submit" class="btn btn-lg px-5 py-2 shadow-sm" style="background-color: #1a2c4e; color: white; border-radius: 8px; font-size: 1rem;">
-                                    <i class="bi bi-check-circle me-2"></i> حفظ وإنشاء
+                                    <i class="bi bi-check-circle me-2"></i> حفظ التوزيع
                                 </button>
                                 <a asp-action="Index" class="btn btn-lg btn-outline-secondary px-5 py-2" style="border-radius: 8px; font-size: 1rem;">
                                     إلغاء
@@ -79,20 +65,10 @@
 
     <script>
         $(document).ready(function () {
-            // إظهار تنبيه الأخطاء
+            // إظهار تنبيه الأخطاء إذا وجدت
             if ($('.validation-summary-errors ul li').length > 0) {
                 $('.alert-danger').removeClass('d-none');
             }
-
-            // منع وقت النهاية قبل البداية (Client Side)
-            $('form').submit(function (e) {
-                var start = $('#StartTime').val();
-                var end = $('#EndTime').val();
-                if (start && end && end <= start) {
-                    e.preventDefault();
-                    alert('عذراً: يجب أن يكون وقت الانتهاء لاحقاً لوقت البدء');
-                }
-            });
         });
     </script>
 }

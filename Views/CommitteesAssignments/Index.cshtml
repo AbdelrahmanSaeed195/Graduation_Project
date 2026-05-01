@@ -11,7 +11,7 @@
         <div class="d-flex gap-2">
             <form asp-action="Index" method="get" class="d-flex gap-2 align-items-center">
                 <select name="scheduleId" class="form-select form-select-sm shadow-sm"
-                        asp-items="ViewBag.Schedules" onchange="this.form.submit()">
+                        asp-items="ViewBag.ExamScheduleId" onchange="this.form.submit()">
                     <option value="">-- اختر الجلسة لعرض التوزيع --</option>
                 </select>
             </form>
@@ -40,14 +40,14 @@
         </div>
     }
 
-    <div class="card shadow-sm border-0" style="border-radius: 12px;">
+    <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
         <table class="table table-hover text-center align-middle mb-0">
             <thead class="table-light">
                 <tr class="text-secondary small text-uppercase">
                     <th>المراقب</th>
                     <th>نطاق المسئولية (المكان)</th>
                     <th>الدور الوظيفي</th>
-                    <th>المادة / التاريخ</th>
+                    <th>المادة / التفاصيل الزمنية</th> @* تم تعديل العنوان *@
                     <th>المصدر</th>
                     <th>الإجراءات</th>
                 </tr>
@@ -60,7 +60,6 @@
                         <td>
                             @if (item.Committee != null)
                             {
-                                @* عرض تفصيلي للمكان: صالة > بلوك > لجنة *@
                                 <div class="small text-muted mb-1">
                                     @item.Committee.Block?.Hall?.HallName <i class="bi bi-chevron-left"></i> @item.Committee.Block?.BlockName
                                 </div>
@@ -80,17 +79,23 @@
                             <span class="badge rounded-pill bg-light text-dark border px-3">@item.RoleType</span>
                         </td>
                         <td>
-                            <div class="fw-bold">@item.ExamSchedule?.Exam?.Subject?.SubjectName</div>
-                            <small class="text-muted">@item.ExamSchedule?.ScheduledDate.ToShortDateString()</small>
+                            <div class="fw-bold text-dark">@item.ExamSchedule?.Exam?.Subject?.SubjectName</div>
+                            <div class="small text-muted">
+                                <i class="bi bi-calendar3 me-1"></i> @item.ExamSchedule?.ScheduledDate.ToShortDateString()
+                            </div>
+                            @* إضافة الوقت المسحوب من جدول Exam *@
+                            <div class="small text-danger fw-bold mt-1">
+                                <i class="bi bi-clock me-1"></i> @item.ExamSchedule?.Exam?.StartTime.ToString(@"hh\:mm") - @item.ExamSchedule?.Exam?.EndTime.ToString(@"hh\:mm")
+                            </div>
                         </td>
                         <td>
                             @if (item.AssignmentType == "Auto")
                             {
-                                <i class="bi bi-robot text-success" title="توزيع تلقائي"></i>
+                                <i class="bi bi-robot text-success fs-5" title="توزيع تلقائي"></i>
                             }
                             else
                             {
-                                <i class="bi bi-person-fill text-secondary" title="إدخال يدوي"></i>
+                                <i class="bi bi-person-fill text-secondary fs-5" title="إدخال يدوي"></i>
                             }
                         </td>
                         <td>

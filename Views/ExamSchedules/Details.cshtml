@@ -1,7 +1,7 @@
 ﻿@model projectweb.Models.ExamSchedule
 
 @{
-    ViewData["Title"] = "تفاصيل موعد الامتحان";
+    ViewData["Title"] = "تفاصيل توزيع اللجنة";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -12,16 +12,16 @@
 
                 <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: #1a2c4e; border-bottom: none;">
                     <h4 class="card-title mb-0 fw-bold text-white">
-                        <i class="bi bi-info-circle me-2"></i> بيانات الجلسة: @(Model.Exam?.Subject?.SubjectName ?? "غير محدد")
+                        <i class="bi bi-info-circle me-2"></i> بيانات التوزيع: @(Model.Exam?.Subject?.SubjectName ?? "غير محدد")
                     </h4>
-                    <span class="badge bg-white text-dark fw-bold px-3 py-2" style="border-radius: 6px;">كود #@Model.ExamScheduleId</span>
+                    <span class="badge bg-white text-dark fw-bold px-3 py-2" style="border-radius: 6px;">كود السجل #@Model.ExamScheduleId</span>
                 </div>
 
                 <div class="card-body p-4 p-md-5 bg-white">
                     <div class="row g-4">
 
                         <div class="col-md-7">
-                            <label class="form-label fw-bold small text-muted mb-1">اسم المادة / القاعة</label>
+                            <label class="form-label fw-bold small text-muted mb-1">اسم المادة الدراسية</label>
                             <div class="p-3 border rounded-3 bg-light-subtle fw-bold fs-5 shadow-sm">
                                 <i class="bi bi-book-half me-2 text-primary"></i>
                                 @(Model.Exam?.Subject?.SubjectName ?? "غير محدد")
@@ -29,41 +29,43 @@
                         </div>
 
                         <div class="col-md-5">
-                            <label class="form-label fw-bold small text-muted mb-1 text-center d-block">السنة الدراسية</label>
+                            <label class="form-label fw-bold small text-muted mb-1 text-center d-block">السنة الدراسية المستهدفة</label>
                             <div class="p-3 border rounded-3 bg-light-subtle fw-bold fs-5 text-center shadow-sm">
-                                الدور @(Model.Exam?.TargetAcademicYear ?? "-")
+                                @(Model.Exam?.TargetAcademicYear ?? "-")
                             </div>
                         </div>
 
                         <div class="col-12 mt-4">
-                            <label class="form-label fw-bold small text-muted mb-1">مكان اللجنة (المسؤول)</label>
+                            <label class="form-label fw-bold small text-muted mb-1">اللجنة والقاعة</label>
                             <div class="p-3 border rounded-3 bg-light-subtle shadow-sm d-flex justify-content-between align-items-center">
                                 <span class="fw-bold text-primary fs-5">
                                     <i class="bi bi-building me-2"></i> لجنة رقم @Model.Committee?.CommitteeNumber
                                 </span>
-                                <span class="text-muted">
-                                    <i class="bi bi-person-badge me-1"></i> مشرف اللجنة
+                                <span class="text-muted small">
+                                    <i class="bi bi-geo-alt me-1"></i> موقع اللجنة المخصص
                                 </span>
                             </div>
                         </div>
 
                         <div class="col-12 mt-5">
                             <h6 class="fw-bold border-bottom pb-2 mb-3">
-                                <i class="bi bi-box-seam me-2"></i> تفاصيل التوقيت (الأجزاء) التابعة
+                                <i class="bi bi-clock-fill me-2"></i> تفاصيل التوقيت (المسجل في جدول الامتحانات)
                             </h6>
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="border rounded-3 p-3 text-center shadow-sm">
                                         <i class="bi bi-calendar-check text-primary fs-2 mb-2"></i>
-                                        <div class="small text-muted">تاريخ الامتحان</div>
-                                        <div class="fw-bold fs-5">@Model.ScheduledDate.ToString("yyyy/MM/dd")</div>
+                                        <div class="small text-muted">تاريخ الامتحان المقرر</div>
+                                        @* جلب التاريخ من الموديل المرتبط *@
+                                        <div class="fw-bold fs-5">@Model.Exam?.ExamDate.ToString("yyyy/MM/dd")</div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="border rounded-3 p-3 text-center shadow-sm">
                                         <i class="bi bi-clock-history text-success fs-2 mb-2"></i>
-                                        <div class="small text-muted">توقيت الجلسة</div>
-                                        <div class="fw-bold fs-5">@Model.StartTime.ToString(@"hh\:mm") - @Model.EndTime.ToString(@"hh\:mm")</div>
+                                        <div class="small text-muted">فترة الامتحان</div>
+                                        @* جلب الوقت من الموديل المرتبط *@
+                                        <div class="fw-bold fs-5">@Model.Exam?.StartTime.ToString(@"hh\:mm") - @Model.Exam?.EndTime.ToString(@"hh\:mm")</div>
                                     </div>
                                 </div>
                             </div>
@@ -73,7 +75,7 @@
 
                     <div class="mt-5 d-flex justify-content-center gap-3">
                         <a asp-action="Edit" asp-route-id="@Model.ExamScheduleId" class="btn btn-lg px-5" style="background-color: #1a2c4e; color: white; border-radius: 8px;">
-                            <i class="bi bi-pencil-square me-2"></i> تعديل
+                            <i class="bi bi-pencil-square me-2"></i> تعديل التوزيع
                         </a>
                         <a asp-action="Index" class="btn btn-lg btn-outline-secondary px-4" style="border-radius: 8px;">
                             العودة للقائمة

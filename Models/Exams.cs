@@ -20,12 +20,12 @@ namespace projectweb.Models
         [Required(ErrorMessage = "وقت البداية مطلوب")]
         [DataType(DataType.Time)]
         [Display(Name = "وقت البدء")]
-        public DateTime StartTime { get; set; }
+        public TimeSpan StartTime { get; set; }
 
         [Required(ErrorMessage = "وقت النهاية مطلوب")]
         [DataType(DataType.Time)]
         [Display(Name = "وقت الانتهاء")]
-        public DateTime EndTime { get; set; }
+        public TimeSpan EndTime { get; set; }
 
         [Required(ErrorMessage = "السنة الدراسية مطلوبة")]
         [Display(Name = "السنة الدراسية المستهدفة")]
@@ -34,10 +34,12 @@ namespace projectweb.Models
         [Required(ErrorMessage = "يجب اختيار المادة")]
         [Display(Name = "المادة الدراسية")]
         public int SubjectID { get; set; }
+
         [ValidateNever]
         [ForeignKey("SubjectID")]
         [Display(Name = "بيانات المادة")]
         public virtual Subject Subject { get; set; }
+
         [ValidateNever]
         [Display(Name = "جدول توزيع اللجان")]
         public virtual ICollection<ExamSchedule> ExamSchedules { get; set; }

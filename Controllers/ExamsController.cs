@@ -17,6 +17,7 @@ namespace projectweb.Controllers
         {
             _context = context;
         }
+
         // =====================================
         // INDEX
         // =====================================
@@ -27,9 +28,10 @@ namespace projectweb.Controllers
                 .OrderByDescending(e => e.ExamDate);
             return View(await exams.ToListAsync());
         }
-        //=====================================
+
+        // =====================================
         // DETAILS
-        //=====================================
+        // =====================================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -42,19 +44,26 @@ namespace projectweb.Controllers
 
             return View(exam);
         }
+
         // =====================================
         // CREATE
         // =====================================
         public IActionResult Create()
         {
-            var subjects = _context.Subjects.OrderBy(s => s.SubjectName).ToList();
-            ViewBag.SubjectId = new SelectList(subjects, "SubjectId", "SubjectName");
+            PopulateSubjects();
             return View();
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ExamId,ExamDate,StartTime,EndTime,TargetAcademicYear,SubjectID")] Exam exam)
         {
+            // التحقق من منطق الوقت
+            if (exam.EndTime <= exam.StartTime)
+            {
+                ModelState.AddModelError("EndTime", "يجب أن يكون وقت انتهاء الامتحان بعد وقت البدء.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(exam);
@@ -62,10 +71,12 @@ namespace projectweb.Controllers
                 TempData["SuccessMessage"] = "تم إضافة بيانات الامتحان بنجاح.";
                 return RedirectToAction(nameof(Index));
             }
+
             TempData["ErrorMessage"] = "فشل في حفظ البيانات، يرجى التأكد من المدخلات.";
-            ViewBag.SubjectId = new SelectList(_context.Subjects.OrderBy(s => s.SubjectName), "SubjectId", "SubjectName", exam.SubjectID);
+            PopulateSubjects(exam.SubjectID);
             return View(exam);
         }
+
         // =====================================
         // EDIT
         // =====================================
@@ -76,7 +87,7 @@ namespace projectweb.Controllers
             var exam = await _context.Exams.FindAsync(id);
             if (exam == null) return NotFound();
 
-            ViewData["SubjectID"] = new SelectList(_context.Subjects, "SubjectId", "SubjectName", exam.SubjectID);
+            PopulateSubjects(exam.SubjectID);
             return View(exam);
         }
 
@@ -85,6 +96,12 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Edit(int id, [Bind("ExamId,ExamDate,StartTime,EndTime,TargetAcademicYear,SubjectID")] Exam exam)
         {
             if (id != exam.ExamId) return NotFound();
+
+            // التحقق من منطق الوقت
+            if (exam.EndTime <= exam.StartTime)
+            {
+                ModelState.AddModelError("EndTime", "يجب أن يكون وقت انتهاء الامتحان بعد وقت البدء.");
+            }
 
             if (ModelState.IsValid)
             {
@@ -106,9 +123,10 @@ namespace projectweb.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["SubjectID"] = new SelectList(_context.Subjects, "SubjectId", "SubjectName", exam.SubjectID);
+            PopulateSubjects(exam.SubjectID);
             return View(exam);
         }
+
         // =====================================
         // DELETE
         // =====================================
@@ -140,12 +158,19 @@ namespace projectweb.Controllers
                 }
                 catch (Exception)
                 {
-                    
-                    TempData["ErrorMessage"] = "لا يمكن حذف هذا الامتحان لوجود جداول امتحانات مرتبطة به.";
+                    TempData["ErrorMessage"] = "لا يمكن حذف هذا الامتحان لوجود جداول امتحانات أو لجان مرتبطة به.";
                 }
             }
             return RedirectToAction(nameof(Index));
         }
+
+        // دالة مساعدة لتعبئة قائمة المواد لتجنب تكرار الكود
+        private void PopulateSubjects(object selectedSubject = null)
+        {
+            var subjectsQuery = _context.Subjects.OrderBy(s => s.SubjectName);
+            ViewBag.SubjectID = new SelectList(subjectsQuery, "SubjectId", "SubjectName", selectedSubject);
+        }
+
         private bool ExamExists(int id)
         {
             return _context.Exams.Any(e => e.ExamId == id);

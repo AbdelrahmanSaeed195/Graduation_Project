@@ -161,7 +161,7 @@ new Role { RoleID = 5, RoleName = StaffPosition.Nurse, RoleDescription = "ممر
                 .HasForeignKey(es => es.CommitteeId)
                 .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<ExamSchedule>()
-                .HasIndex(e => new { e.ScheduledDate, e.CommitteeId, e.StartTime })
+                .HasIndex(e => new { e.ScheduledDate, e.CommitteeId,})
                 .IsUnique();
 
             modelBuilder.Entity<Report>()

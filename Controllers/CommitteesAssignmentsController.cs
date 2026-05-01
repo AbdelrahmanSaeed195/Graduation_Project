@@ -17,7 +17,7 @@ namespace projectweb.Controllers
             _assignmentService = assignmentService;
         }
 
-        // 1. Index: عرض التوزيعات مع تصفية تلقائية لأحدث جلسة
+        // 1. Index: عرض التوزيعات مع تحميل بيانات الوقت والمادة من جدول Exam
         public async Task<IActionResult> Index(int? scheduleId)
         {
             // إذا لم يتم اختيار جلسة، قم بجلب آخر جلسة تم إضافتها تلقائياً
@@ -37,14 +37,16 @@ namespace projectweb.Controllers
                 .Include(a => a.Hall)
                 .Include(a => a.Block)
                 .Include(a => a.Committee)
-                .Include(a => a.ExamSchedule.Exam.Subject)
-                .Where(a => a.ExamScheduleId == scheduleId) // عرض تكليفات الجلسة المحددة فقط
+                .Include(a => a.ExamSchedule) // تحميل بيانات الجلسة
+                    .ThenInclude(es => es.Exam) // الوصول لجدول الامتحان (الوقت الجديد)
+                        .ThenInclude(e => e.Subject) // الوصول لبيانات المادة
+                .Where(a => a.ExamScheduleId == scheduleId)
                 .AsQueryable();
 
             return View(await query.ToListAsync());
         }
 
-        // 2. Details: عرض تفاصيل التكليف بالكامل
+        // 2. Details: عرض تفاصيل التكليف بالكامل مع بيانات الوقت الجديد
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -55,7 +57,9 @@ namespace projectweb.Controllers
                 .Include(a => a.Hall)
                 .Include(a => a.Block)
                 .Include(a => a.Committee)
-                .Include(a => a.ExamSchedule.Exam.Subject)
+                .Include(a => a.ExamSchedule)
+                    .ThenInclude(es => es.Exam) // ضروري لعرضStartTime و EndTime
+                        .ThenInclude(e => e.Subject)
                 .FirstOrDefaultAsync(m => m.AssignmentID == id);
 
             if (assignment == null) return NotFound();
@@ -69,29 +73,14 @@ namespace projectweb.Controllers
             return View();
         }
 
-        // 4. Create (POST): مع إضافة فحص التكرار ومنع الخطأ
+        // 4. Create (POST): التحقق من عدم تكرار الموظف أو حجز اللجنة
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CommitteesAssignment assignment)
         {
             if (ModelState.IsValid)
             {
-                // أ- فحص هل اللجنة المختارة لها مراقب بالفعل في هذه الجلسة؟
-                if (assignment.CommitteeID.HasValue)
-                {
-                    var committeeHasObserver = await _context.CommitteesAssignments
-                        .AnyAsync(a => a.ExamScheduleId == assignment.ExamScheduleId &&
-                                       a.CommitteeID == assignment.CommitteeID);
-
-                    if (committeeHasObserver)
-                    {
-                        ModelState.AddModelError("", "عفواً، هذه اللجنة تم تخصيص مراقب لها بالفعل في هذه الجلسة!");
-                        LoadDropdowns(assignment);
-                        return View(assignment);
-                    }
-                }
-
-                // ب- فحص هل الموظف مشغول بتكليف آخر في نفس الجلسة؟ (لمنع Duplicate Key Error)
+                // فحص انشغال الموظف في نفس الجلسة (منع Duplicate Key)
                 var isBusy = await _context.CommitteesAssignments
                     .AnyAsync(a => a.ExamScheduleId == assignment.ExamScheduleId &&
                                    a.PersonID == assignment.PersonID);
@@ -138,8 +127,7 @@ namespace projectweb.Controllers
             {
                 try
                 {
-                    // 1. فحص هل الموظف الجديد (بعد التعديل) مشغول في نفس الجلسة؟
-                    // بنستثني التكليف الحالي (assignment.AssignmentID) عشان ميفحصش نفسه
+                    // فحص انشغال الموظف (باستثناء السجل الحالي)
                     var isBusy = await _context.CommitteesAssignments
                         .AnyAsync(a => a.ExamScheduleId == assignment.ExamScheduleId &&
                                        a.PersonID == assignment.PersonID &&
@@ -152,23 +140,6 @@ namespace projectweb.Controllers
                         return View(assignment);
                     }
 
-                    // 2. فحص هل اللجنة المختارة محجوزة لشخص آخر؟
-                    if (assignment.CommitteeID.HasValue)
-                    {
-                        var committeeTaken = await _context.CommitteesAssignments
-                            .AnyAsync(a => a.ExamScheduleId == assignment.ExamScheduleId &&
-                                           a.CommitteeID == assignment.CommitteeID &&
-                                           a.AssignmentID != assignment.AssignmentID);
-
-                        if (committeeTaken)
-                        {
-                            ModelState.AddModelError("", "هذه اللجنة تم تخصيص مراقب آخر لها بالفعل!");
-                            LoadDropdowns(assignment);
-                            return View(assignment);
-                        }
-                    }
-
-                    // لو كل الفحوصات سليمة، نفذ التعديل
                     _context.Update(assignment);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index), new { scheduleId = assignment.ExamScheduleId });
@@ -179,7 +150,6 @@ namespace projectweb.Controllers
                     else throw;
                 }
             }
-
             LoadDropdowns(assignment);
             return View(assignment);
         }
@@ -191,7 +161,9 @@ namespace projectweb.Controllers
 
             var assignment = await _context.CommitteesAssignments
                 .Include(a => a.Person)
-                .Include(a => a.ExamSchedule.Exam.Subject)
+                .Include(a => a.ExamSchedule)
+                    .ThenInclude(es => es.Exam)
+                        .ThenInclude(e => e.Subject)
                 .FirstOrDefaultAsync(m => m.AssignmentID == id);
 
             if (assignment == null) return NotFound();
@@ -211,21 +183,20 @@ namespace projectweb.Controllers
             return RedirectToAction(nameof(Index), new { scheduleId = scheduleId });
         }
 
-        // 9. AutoAssign: استدعاء الخدمة الذكية
+        // 9. AutoAssign: استدعاء خدمة التوزيع التلقائي
         [HttpPost]
         public async Task<IActionResult> AutoAssign(int scheduleId)
         {
             var success = await _assignmentService.RunAssignmentAsync(scheduleId);
-            if (success) TempData["Success"] = "تم التوزيع التلقائي بنجاح وفقاً للهيكل الإداري.";
-            else TempData["Error"] = "فشل التوزيع التلقائي، تأكد من توفر الموظفين المتاحين.";
+            if (success) TempData["Success"] = "تم التوزيع التلقائي بنجاح.";
+            else TempData["Error"] = "فشل التوزيع التلقائي.";
 
             return RedirectToAction(nameof(Index), new { scheduleId = scheduleId });
         }
 
-        // دالة موحدة لتحميل البيانات مع تصفية الموظفين النشطين
+        // تحميل القوائم المنسدلة مع مراعاة الهيكلة الجديدة
         private void LoadDropdowns(CommitteesAssignment? assignment = null)
         {
-            // جلب الموظفين النشطين فقط لتسهيل الاختيار
             var activeStaff = _context.Persons.Where(p => p.IsActiveForAssignment).ToList();
             ViewBag.PersonID = new SelectList(activeStaff, "PersonId", "FullName", assignment?.PersonID);
 
@@ -234,10 +205,14 @@ namespace projectweb.Controllers
             ViewBag.BlockId = new SelectList(_context.Blocks, "BlockID", "BlockName", assignment?.BlockId);
             ViewBag.CommitteeID = new SelectList(_context.Committees, "CommitteeID", "CommitteeNumber", assignment?.CommitteeID);
 
-            var schedules = _context.ExamSchedules.Include(s => s.Exam.Subject).Select(s => new {
-                Id = s.ExamScheduleId,
-                Name = $"{s.Exam.Subject.SubjectName} - {s.ScheduledDate.ToShortDateString()}"
-            });
+            var schedules = _context.ExamSchedules
+                .Include(s => s.Exam)
+                    .ThenInclude(e => e.Subject)
+                .Select(s => new {
+                    Id = s.ExamScheduleId,
+                    Name = $"{s.Exam.Subject.SubjectName} - {s.ScheduledDate.ToShortDateString()}"
+                }).ToList();
+
             ViewBag.ExamScheduleId = new SelectList(schedules, "Id", "Name", assignment?.ExamScheduleId);
         }
 
