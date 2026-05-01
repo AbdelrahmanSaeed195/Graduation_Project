@@ -12,7 +12,7 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260427091647_InitCreate")]
+    [Migration("20260501094036_InitCreate")]
     partial class InitCreate
     {
         /// <inheritdoc />
@@ -238,6 +238,9 @@ namespace projectweb.Migrations
                     b.Property<int>("HallId")
                         .HasColumnType("int");
 
+                    b.Property<int>("MaxCommittees")
+                        .HasColumnType("int");
+
                     b.HasKey("BlockID");
 
                     b.HasIndex("HallId");
@@ -417,6 +420,9 @@ namespace projectweb.Migrations
                     b.Property<int?>("HallSupervisorID")
                         .HasColumnType("int");
 
+                    b.Property<int>("MaxBlocks")
+                        .HasColumnType("int");
+
                     b.HasKey("HallId");
 
                     b.HasIndex("HallSupervisorID");
@@ -458,6 +464,9 @@ namespace projectweb.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("PersonId");
+
+                    b.HasIndex("NationalId")
+                        .IsUnique();
 
                     b.HasIndex("RoleID");
 
@@ -635,6 +644,9 @@ namespace projectweb.Migrations
 
                     b.HasIndex("CommitteeId");
 
+                    b.HasIndex("NationalId")
+                        .IsUnique();
+
                     b.ToTable("Students");
                 });
 
@@ -645,6 +657,14 @@ namespace projectweb.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubjectId"));
+
+                    b.Property<string>("AcademicYear")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SubjectCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SubjectName")
                         .IsRequired()

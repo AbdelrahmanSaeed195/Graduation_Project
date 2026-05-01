@@ -3,22 +3,47 @@
 <div class="container mt-5" dir="rtl" style="text-align: right;">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card border-danger shadow">
-                <div class="card-header bg-danger text-white">
-                    <h4 class="mb-0">تأكيد الحذف</h4>
+            <div class="card shadow-sm border-0" style="border-radius: 12px;">
+                <!-- رأس الكارت: استخدمنا الأحمر للتحذير مع الحفاظ على الحواف الدائرية -->
+                <div class="card-header text-white" style="background-color: #dc3545; border-radius: 12px 12px 0 0; padding: 15px 20px;">
+                    <h4 class="mb-0 font-weight-bold"><i class="fas fa-exclamation-triangle ml-2"></i> تأكيد الحذف</h4>
                 </div>
-                <div class="card-body">
-                    <h5 class="text-danger mb-4">هل أنت متأكد من رغبتك في حذف هذه المادة؟</h5>
-                    <div class="bg-light p-3 rounded">
-                        <p><strong>اسم المادة:</strong> @Model.SubjectName</p>
-                        <p><strong>كود المادة:</strong> @Model.SubjectId</p>
+
+                <div class="card-body p-4">
+                    <h5 class="text-danger mb-3 font-weight-bold">هل أنت متأكد من رغبتك في حذف هذه المادة؟</h5>
+                    <p class="text-muted small mb-4">
+                        <i class="fas fa-info-circle ml-1"></i> ملاحظة: لا يمكن حذف المادة إذا كانت مرتبطة بجداول امتحانات قائمة.
+                    </p>
+
+                    <!-- بوكس البيانات: خلفية فاتحة مع حدود ناعمة -->
+                    <div class="p-3 mb-2" style="background-color: #f8f9fa; border-right: 5px solid #dc3545; border-radius: 8px;">
+                        <div class="mb-2">
+                            <span class="text-muted small">كود المادة:</span>
+                            <span class="d-block font-weight-bold" style="color: #0d1b3e;">@Model.SubjectCode</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-muted small">اسم المادة:</span>
+                            <span class="d-block font-weight-bold">@Model.SubjectName</span>
+                        </div>
+                        <div class="mb-0">
+                            <span class="text-muted small">السنة الدراسية:</span>
+                            <span class="d-block font-weight-bold">
+                                <i class="fas fa-graduation-cap ml-1 text-muted"></i> @Model.AcademicYear
+                            </span>
+                        </div>
                     </div>
                 </div>
-                <div class="card-footer bg-white text-left">
+
+                <!-- تذييل الكارت: الأزرار بنفس أبعاد ونظام التصميم الموحد -->
+                <div class="card-footer bg-white d-flex justify-content-start py-3" style="border-radius: 0 0 12px 12px; border-top: 1px solid #f0f0f0;">
                     <form asp-action="Delete">
                         <input type="hidden" asp-for="SubjectId" />
-                        <button type="submit" class="btn btn-danger px-4">تأكيد الحذف النهائي</button>
-                        <a asp-action="Index" class="btn btn-secondary px-4">تراجع</a>
+                        <button type="submit" class="btn text-white px-4 ml-3 shadow-sm" style="background-color: #dc3545; border-radius: 8px; font-weight: 500;">
+                            <i class="fas fa-trash-alt ml-1"></i> تأكيد الحذف النهائي
+                        </button>
+                        <a asp-action="Index" class="btn btn-light px-4 shadow-sm border" style="border-radius: 8px; font-weight: 500;">
+                            تراجع
+                        </a>
                     </form>
                 </div>
             </div>

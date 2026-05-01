@@ -12,13 +12,21 @@ namespace projectweb.Controllers
         {
             _context = context;
         }
+
         // =====================================
         // INDEX
         // =====================================
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Subjects.OrderBy(s => s.SubjectName).ToListAsync()); 
+            
+            var subjects = await _context.Subjects
+                .Include(s => s.Exams)
+                .OrderBy(s => s.SubjectName)
+                .ToListAsync();
+
+            return View(subjects);
         }
+
         // =====================================
         // DETAILS
         // =====================================
@@ -39,6 +47,7 @@ namespace projectweb.Controllers
 
             return View(subject);
         }
+
         // =====================================
         // CREATE
         // =====================================
@@ -49,7 +58,8 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("SubjectId,SubjectName")] Subject subject)
+        // تم تحديث الـ Bind ليشمل كود المادة والسنة الدراسية
+        public async Task<IActionResult> Create([Bind("SubjectId,SubjectCode,SubjectName,AcademicYear")] Subject subject)
         {
             if (ModelState.IsValid)
             {
@@ -60,6 +70,7 @@ namespace projectweb.Controllers
             }
             return View(subject);
         }
+
         // =====================================
         // EDIT
         // =====================================
@@ -80,7 +91,8 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("SubjectId,SubjectName")] Subject subject)
+        // تم تحديث الـ Bind هنا أيضاً لضمان تحديث الحقول الجديدة
+        public async Task<IActionResult> Edit(int id, [Bind("SubjectId,SubjectCode,SubjectName,AcademicYear")] Subject subject)
         {
             if (id != subject.SubjectId)
             {
@@ -110,6 +122,7 @@ namespace projectweb.Controllers
             }
             return View(subject);
         }
+
         // =====================================
         // DELETE
         // =====================================
@@ -139,7 +152,7 @@ namespace projectweb.Controllers
                 .FirstOrDefaultAsync(s => s.SubjectId == id);
 
             if (subject != null)
-            {               
+            {
                 if (subject.Exams != null && subject.Exams.Any())
                 {
                     TempData["ErrorMessage"] = "لا يمكن حذف المادة لوجود امتحانات مرتبطة بها في النظام.";

@@ -72,7 +72,9 @@ namespace projectweb.Migrations
                 {
                     SubjectId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    SubjectName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
+                    SubjectCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SubjectName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    AcademicYear = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -240,6 +242,7 @@ namespace projectweb.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     HallName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Floor = table.Column<int>(type: "int", nullable: false),
+                    MaxBlocks = table.Column<int>(type: "int", nullable: false),
                     HallSupervisorID = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -260,6 +263,7 @@ namespace projectweb.Migrations
                     BlockID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BlockName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MaxCommittees = table.Column<int>(type: "int", nullable: false),
                     HallId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -607,6 +611,12 @@ namespace projectweb.Migrations
                 column: "HallSupervisorID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Persons_NationalId",
+                table: "Persons",
+                column: "NationalId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Persons_RoleID",
                 table: "Persons",
                 column: "RoleID");
@@ -640,6 +650,12 @@ namespace projectweb.Migrations
                 name: "IX_Students_CommitteeId",
                 table: "Students",
                 column: "CommitteeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Students_NationalId",
+                table: "Students",
+                column: "NationalId",
+                unique: true);
         }
 
         /// <inheritdoc />

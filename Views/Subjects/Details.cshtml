@@ -1,25 +1,76 @@
 ﻿@model projectweb.Models.Subject
 
 <div class="container mt-5" dir="rtl" style="text-align: right;">
-    <div class="card shadow">
-        <div class="card-header bg-info text-white">
-            <h4 class="mb-0">تفاصيل المادة الدراسية</h4>
-        </div>
-        <div class="card-body">
-            <dl class="row">
-                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.SubjectId)</dt>
-                <dd class="col-sm-9">@Html.DisplayFor(model => model.SubjectId)</dd>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0" style="border-radius: 12px;">
+                <!-- رأس الكارت باللون الكحلي الموحد -->
+                <div class="card-header text-white d-flex align-items-center" style="background-color: #0d1b3e; border-radius: 12px 12px 0 0; padding: 15px 20px;">
+                    <h4 class="mb-0 font-weight-bold"><i class="fas fa-info-circle ml-2"></i> تفاصيل المادة الدراسية</h4>
+                </div>
 
-                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.SubjectName)</dt>
-                <dd class="col-sm-9">@Html.DisplayFor(model => model.SubjectName)</dd>
+                <div class="card-body p-4">
+                    <div class="row mb-0">
+                        <!-- كود المادة بخلفية مميزة -->
+                        <div class="col-12 mb-3">
+                            <div class="p-3" style="background-color: #f8f9fa; border-right: 5px solid #0d1b3e; border-radius: 8px;">
+                                <span class="text-muted d-block small mb-1">كود المادة الدراسي:</span>
+                                <h5 class="mb-0 font-weight-bold" style="color: #0d1b3e;">@Model.SubjectCode</h5>
+                            </div>
+                        </div>
 
-                <dt class="col-sm-3">عدد الامتحانات المرتبطة</dt>
-                <dd class="col-sm-9">@(Model.Exams?.Count ?? 0)</dd>
-            </dl>
-        </div>
-        <div class="card-footer bg-light">
-            <a asp-action="Edit" asp-route-id="@Model.SubjectId" class="btn btn-warning px-4">تعديل</a>
-            <a asp-action="Index" class="btn btn-secondary px-4">العودة للقائمة</a>
+                        <!-- اسم المادة -->
+                        <div class="col-md-6 mb-3">
+                            <span class="text-muted d-block small mb-1">اسم المادة:</span>
+                            <p class="font-weight-500 text-dark border-bottom pb-2">@Model.SubjectName</p>
+                        </div>
+
+                        <!-- السنة الدراسية -->
+                        <div class="col-md-6 mb-3">
+                            <span class="text-muted d-block small mb-1">السنة الدراسية:</span>
+                            <p class="pb-2 border-bottom">
+                                <span class="badge px-3 py-2" style="background-color: #e8eaf6; color: #0d1b3e; border-radius: 6px;">
+                                    <i class="fas fa-graduation-cap ml-1"></i> @Model.AcademicYear
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- عرض الامتحانات المرتبطة بتصميم أنيق -->
+                    @if (Model.Exams != null && Model.Exams.Any())
+                    {
+                        <div class="mt-4 pt-3">
+                            <h6 class="font-weight-bold mb-3" style="color: #0d1b3e;"><i class="fas fa-calendar-alt ml-1"></i> الجداول الزمنية المرتبطة بالمادة:</h6>
+                            <div class="list-group">
+                                @foreach (var exam in Model.Exams)
+                                {
+                                    <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center mb-2 border shadow-xs" style="border-radius: 8px;">
+                                        <div>
+                                            <span class="d-block font-weight-bold">امتحان @Model.SubjectName</span>
+                                            <small class="text-muted">المرحلة: @exam.TargetAcademicYear</small>
+                                        </div>
+                                        <div class="text-left">
+                                            <span class="badge badge-pill badge-light border px-3">
+                                                <i class="far fa-calendar-check ml-1 text-info"></i> @exam.ExamDate.ToShortDateString()
+                                            </span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- تذييل الكارت بالأزرار الموحدة -->
+                <div class="card-footer bg-white d-flex justify-content-start py-3" style="border-radius: 0 0 12px 12px; border-top: 1px solid #f0f0f0;">
+                    <a asp-action="Edit" asp-route-id="@Model.SubjectId" class="btn btn-warning px-4 ml-3 shadow-sm font-weight-500">
+                        <i class="fas fa-edit ml-1"></i> تعديل البيانات
+                    </a>
+                    <a asp-action="Index" class="btn btn-light px-4 shadow-sm border font-weight-500">
+                        <i class="fas fa-arrow-right ml-1"></i> العودة للقائمة
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

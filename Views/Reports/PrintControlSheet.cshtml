@@ -1,0 +1,177 @@
+﻿@model projectweb.Models.ViewModels.ExamControlSheetViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            padding: 10px;
+            background: white;
+        }
+
+        .outer-frame {
+            border: 2px solid black;
+            padding: 20px;
+            min-height: 95vh;
+            position: relative;
+        }
+
+        /* الترويسة */
+        .header-table {
+            width: 100%;
+            border: none;
+            margin-bottom: 10px;
+        }
+
+            .header-table td {
+                border: none !important;
+                font-weight: bold;
+                font-size: 14pt;
+            }
+
+        .main-title {
+            text-align: center;
+            text-decoration: underline;
+            font-size: 16pt;
+            margin: 10px 0;
+        }
+
+        /* شبكة البيانات الأساسية */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 13pt;
+        }
+
+        .line-draw {
+            border-bottom: 1px dotted black;
+            display: inline-block;
+            min-width: 150px;
+        }
+
+        /* الجدول الرئيسي */
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+            .main-table th, .main-table td {
+                border: 1px solid black;
+                padding: 8px;
+                text-align: center;
+                font-size: 12pt;
+            }
+
+            .main-table thead th {
+                background-color: #f2f2f2 !important;
+                font-weight: bold;
+            }
+
+        /* القسم السفلي والاحتياطي */
+        .bottom-section {
+            margin-top: 30px;
+            font-weight: bold;
+            font-size: 12pt;
+            line-height: 2;
+        }
+
+        .footer-sigs {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 50px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        @@media print {
+            .no-print {
+                display: none !important;
+            }
+
+            .outer-frame {
+                border: 2px solid black;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print" style="margin-bottom: 15px;">
+        <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer;">🖨️ طباعة الكشف (PDF)</button>
+    </div>
+
+    <div class="outer-frame">
+        <table class="header-table">
+            <tr>
+                <td style="text-align: right;">جامعة أسيوط<br>كلية التربية الرياضية<br>شئون الطلاب</td>
+                <td style="text-align: left;">كود النموذج: AU-EX-02</td>
+            </tr>
+        </table>
+
+        <div class="main-title">امتحانات @Model.Semester للعام الجامعي @Model.AcademicYear</div>
+        <div style="text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 15px;">كشف استلام كراسات الإجابة ومتابعة أعمال اللجنة</div>
+
+        <div class="info-grid">
+            <div>التاريخ: <span class="line-draw">@DateTime.Now.ToShortDateString()</span></div>
+            <div>رئيس اللجان الأساسي: <span class="line-draw">........................</span></div>
+            <div>الفرقة: <span class="line-draw">@Model.TargetYear</span></div>
+            <div>مراقب اللجان الأساسي: <span class="line-draw">........................</span></div>
+            <div>المادة: <span class="line-draw">@Model.SubjectName</span></div>
+            <div>الزمن: <span class="line-draw">@Model.ExamTime</span></div>
+        </div>
+
+        <table class="main-table">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">م</th>
+                    <th>اسم الملاحظ</th>
+                    <th style="width: 100px;">عدد الكراسات</th>
+                    <th>التوقيع بالاستلام</th>
+                    <th>ملاحظات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int i = 1;
+                }
+                @foreach (var item in Model.ObserverRows)
+                {
+                    <tr>
+                        <td>@(i++)</td>
+                        <td style="text-align: right; padding-right: 15px;">@item.ObserverName</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                }
+                @for (int j = i; j <= 15; j++) // تكملة الجدول لصفوف فارغة كما في الصورة
+                {
+                    <tr style="height: 35px;"><td>@j</td><td></td><td></td><td></td><td></td></tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="bottom-section">
+            <div>احتياطي رئيس اللجان: ........................................ التوقيع: .................</div>
+            <div>احتياطي مراقب اللجان: ........................................ التوقيع: .................</div>
+            <div>طبيب اللجان: ................................................ التوقيع: .................</div>
+        </div>
+
+        <div class="footer-sigs">
+            <div>شئون طلاب<br><br>..................</div>
+            <div>مراقب اللجنة<br><br>..................</div>
+            <div>رئيس اللجنة<br><br>..................</div>
+        </div>
+    </div>
+
+</body>
+</html>

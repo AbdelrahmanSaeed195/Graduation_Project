@@ -15,6 +15,11 @@ namespace projectweb.Models
         [Display(Name = "اسم البلوك (الجزء)")]
         public string BlockName { get; set; }
 
+        [Required(ErrorMessage = "يرجى تحديد عدد اللجان المسموح بها في هذا البلوك")]
+        [Range(1, 50, ErrorMessage = "عدد اللجان يجب أن يكون بين 1 و 50")]
+        [Display(Name = "عدد اللجان المتاحة")]
+        public int MaxCommittees { get; set; }
+
         [Required(ErrorMessage = "يجب تحديد الصالة التابع لها")]
         [Display(Name = "الصالة / القاعة")]
         public int HallId { get; set; }

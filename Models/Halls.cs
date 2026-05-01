@@ -18,6 +18,10 @@ namespace projectweb.Models
 
         [Display(Name = "رقم الدور")]
         public int Floor { get; set; }
+        [Required(ErrorMessage = "يرجى تحديد عدد البلوكات المسموح بها")]
+        [Range(1, 20, ErrorMessage = "عدد البلوكات يجب أن يكون بين 1 و 20")]
+        [Display(Name = "عدد البلوكات المتاحة")]
+        public int MaxBlocks { get; set; }
 
         [Display(Name = "مشرف الصالة")]
         public int? HallSupervisorID { get; set; }

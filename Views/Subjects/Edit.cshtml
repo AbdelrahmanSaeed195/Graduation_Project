@@ -3,24 +3,54 @@
 <div class="container mt-5" dir="rtl" style="text-align: right;">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-warning text-dark">
-                    <h4 class="mb-0">تعديل بيانات المادة</h4>
+            <div class="card shadow-sm border-0" style="border-radius: 12px;">
+                <!-- الهيدر بنفس لون الأزرار الرئيسية في السيستم -->
+                <div class="card-header text-white" style="background-color: #0d1b3e; border-radius: 12px 12px 0 0; padding: 15px 20px;">
+                    <h4 class="mb-0 font-weight-bold"><i class="fas fa-edit ml-2"></i> تعديل بيانات المادة</h4>
                 </div>
-                <div class="card-body">
+
+                <div class="card-body p-4">
                     <form asp-action="Edit">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <input type="hidden" asp-for="SubjectId" />
 
-                        <div class="form-group">
-                            <label asp-for="SubjectName" class="control-label font-weight-bold"></label>
-                            <input asp-for="SubjectName" class="form-control" />
-                            <span asp-validation-for="SubjectName" class="text-danger"></span>
+                        <!-- كود المادة -->
+                        <div class="form-group mb-4">
+                            <label asp-for="SubjectCode" class="text-muted font-weight-bold mb-2"></label>
+                            <input asp-for="SubjectCode" class="form-control" style="background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 10px;" />
+                            <span asp-validation-for="SubjectCode" class="text-danger small"></span>
                         </div>
-                        <hr />
-                        <div class="form-group mb-0">
-                            <button type="submit" class="btn btn-success px-4">تحديث البيانات</button>
-                            <a asp-action="Index" class="btn btn-secondary px-4">إلغاء</a>
+
+                        <!-- اسم المادة -->
+                        <div class="form-group mb-4">
+                            <label asp-for="SubjectName" class="text-muted font-weight-bold mb-2"></label>
+                            <input asp-for="SubjectName" class="form-control" style="background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 10px;" />
+                            <span asp-validation-for="SubjectName" class="text-danger small"></span>
+                        </div>
+
+                        <!-- السنة الدراسية -->
+                        <div class="form-group mb-4">
+                            <label asp-for="AcademicYear" class="text-muted font-weight-bold mb-2"></label>
+                            <select asp-for="AcademicYear" class="form-control" style="background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 8px;">
+                                <option value="">-- اختر السنة الدراسية --</option>
+                                <option value="الأولى">الفرقة الأولى</option>
+                                <option value="الثانية">الفرقة الثانية</option>
+                                <option value="الثالثة">الفرقة الثالثة</option>
+                                <option value="الرابعة">الفرقة الرابعة</option>
+                            </select>
+                            <span asp-validation-for="AcademicYear" class="text-danger small"></span>
+                        </div>
+
+                        <hr class="my-4" style="border-top: 1px solid #eee;" />
+
+                        <div class="form-group mb-0 d-flex justify-content-start">
+                            <!-- زر التحديث بلون أخضر هادئ ومتناسق مع الألوان الداكنة -->
+                            <button type="submit" class="btn text-white px-4 ml-3 shadow-sm" style="background-color: #28a745; border-radius: 8px; font-weight: 500;">
+                                <i class="fas fa-save ml-1"></i> تحديث البيانات
+                            </button>
+                            <a asp-action="Index" class="btn btn-light px-4 shadow-sm" style="border-radius: 8px; border: 1px solid #ddd; font-weight: 500;">
+                                <i class="fas fa-times ml-1"></i> إلغاء
+                            </a>
                         </div>
                     </form>
                 </div>

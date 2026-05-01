@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
+using projectweb.Models.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace projectweb.Controllers
 {
@@ -32,20 +33,20 @@ namespace projectweb.Controllers
                     .ThenInclude(s => s.Committee)
                 .AsQueryable();
 
-          
+
             if (reportType.HasValue && reportType.Value > 0)
             {
-              
+
                 var status = (ReportStatus)reportType.Value;
 
-               
+
                 reportsQuery = reportsQuery.Where(r => r.Status == status);
 
-              
+
                 ViewBag.SelectedReportType = reportType.Value;
             }
 
-         
+
             var reports = await reportsQuery
                 .OrderByDescending(r => r.CreatedDate)
                 .ToListAsync();
@@ -82,7 +83,7 @@ namespace projectweb.Controllers
             return View();
         }
 
-     
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ReportID,Status,Notes,ScheduleID")] Report report)
@@ -114,7 +115,7 @@ namespace projectweb.Controllers
             return View(report);
         }
 
-       
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ReportID,CreatedDate,Status,Notes,ScheduleID")] Report report)
@@ -158,7 +159,7 @@ namespace projectweb.Controllers
             return View(report);
         }
 
-        
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -193,13 +194,111 @@ namespace projectweb.Controllers
             var dropdownList = schedules.Select(s => new
             {
                 ID = s.ExamScheduleId,
-               
+
                 Text = $"{(s.Exam?.Subject?.SubjectName ?? "مادة غير محددة")} | اللجنة: {(s.Committee?.CommitteeNumber ?? 0)} | التاريخ: {s.ScheduledDate.ToString("dd/MM/yyyy")}"
             }).ToList();
 
             ViewData["ScheduleID"] = new SelectList(dropdownList, "ID", "Text", selectedSchedule);
         }
+        // =====================================
+        // PRINT ASSIGNMENTS (توزيع المراقبين)
+        // ====================================
+        // أضف id هنا لاستلام رقم الشخص المراد طباعة تقريره
+        public async Task<IActionResult> PrintAssignments(int id)
+        {
+            var rawAssignments = await _context.CommitteesAssignments
+                .Include(a => a.Person).Include(a => a.Role)
+                .Include(a => a.ExamSchedule).ThenInclude(es => es.Exam).ThenInclude(e => e.Subject)
+                .Where(a => a.PersonID == id)
+                .ToListAsync();
 
+            if (!rawAssignments.Any()) return Content("لا توجد بيانات");
+
+            // استخراج المواعيد تلقائياً: بنشوف كل فرقة ميعادها إيه في السيستم
+            var yearTimes = rawAssignments
+                .Where(a => a.ExamSchedule != null)
+                .GroupBy(a => a.ExamSchedule.Exam.TargetAcademicYear)
+                .ToDictionary(
+                    g => g.Key,
+                    g => {
+                        var first = g.First().ExamSchedule;
+                        return $"{DateTime.Today.Add(first.StartTime):hh:mm} - {DateTime.Today.Add(first.EndTime):hh:mm}";
+                    }
+                );
+
+            var groupedRows = rawAssignments
+                .GroupBy(a => a.ExamSchedule.ScheduledDate.Date)
+                .Select(g => new AssignmentRowGroup
+                {
+                    Date = g.Key,
+                    Day = g.Key.ToString("dddd", new System.Globalization.CultureInfo("ar-EG")),
+                    DailyItems = g.Select(a => new AssignmentReportItem
+                    {
+                        SubjectName = a.ExamSchedule?.Exam?.Subject?.SubjectName ?? "",
+                        TargetYear = a.ExamSchedule?.Exam?.TargetAcademicYear ?? "",
+                        // نترك الـ TimeRange فارغاً هنا لأننا سنعرضه في الهيدر
+                        PersonFullName = a.Person?.FullName ?? ""
+                    }).ToList()
+                }).OrderBy(x => x.Date).ToList();
+
+            var model = new PrintReportViewModel
+            {
+                Rows = groupedRows,
+                PersonRoleInReport = GetArabicRoleName(rawAssignments.First().Role?.RoleName.ToString() ?? ""),
+                // سنحتاج إضافة خاصية جديدة في الـ ViewModel باسم YearTimes من نوع Dictionary
+                YearTimes = yearTimes
+            };
+
+            return View(model);
+        }
+
+        // ميثود تحويل الرتب للعربي
+        private string GetArabicRoleName(string englishName)
+        {
+            return englishName switch
+            {
+                "HallManager" => "رئيس صالة",
+                "BlockGroupLeader" => "مراقب",
+                "CommitteeObserver" => "ملاحظ",
+                _ => englishName
+            };
+        }
+
+        // أضف علامة الاستفهام بجانب int
+        public async Task<IActionResult> PrintControlSheet(int? scheduleId)
+        {
+            // 1. إذا لم يتم إرسال ID، نعرض صفحة فارغة أو نرجع للـ Index
+            if (scheduleId == null)
+            {
+                // يمكنك إرجاع View فارغ لملئه يدوياً كما في الورقة الأصلية
+                return View(new ExamControlSheetViewModel { ObserverRows = new List<ObserverRowItem>() });
+            }
+
+            var schedule = await _context.ExamSchedules
+                .Include(s => s.Exam).ThenInclude(e => e.Subject)
+                .Include(s => s.Committee)
+                .FirstOrDefaultAsync(s => s.ExamScheduleId == scheduleId);
+
+            if (schedule == null) return NotFound();
+
+            var observers = await _context.CommitteesAssignments
+                .Where(a => a.ExamScheduleId == scheduleId)
+                .Include(a => a.Person)
+                .Select(a => new ObserverRowItem
+                {
+                    ObserverName = a.Person.FullName
+                }).ToListAsync();
+
+            var viewModel = new ExamControlSheetViewModel
+            {
+                SubjectName = schedule.Exam?.Subject?.SubjectName ?? "................",
+                TargetYear = schedule.Exam?.TargetAcademicYear ?? "................",
+                ExamTime = $"{schedule.StartTime:hh\\:mm} - {schedule.EndTime:hh\\:mm}",
+                ObserverRows = observers
+            };
+
+            return View(viewModel);
+        }
         private bool ReportExists(int id)
         {
             return _context.Reports.Any(e => e.ReportID == id);
