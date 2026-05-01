@@ -8,7 +8,7 @@
 <div class="row justify-content-center" dir="rtl">
     <div class="col-lg-6">
         <div class="card academic-card">
-            <div class="card-body p-4" style="background-color: var(--surface-white);">
+            <div class="card-body p-4">
                 <div class="alert alert-danger d-flex gap-2 align-items-center mb-4 border-0">
                     <i class="bi bi-exclamation-triangle-fill fs-4"></i>
                     <span>هل أنت متأكد من أنك تريد حذف هذا الطالب نهائياً؟ <strong>هذا الإجراء لا يمكن التراجع عنه.</strong></span>
@@ -16,20 +16,20 @@
 
                 <div class="data-panel mb-3">
                     <div class="panel-label">اسم الطالب</div>
-                    <div class="panel-value fs-5">@Model.FullName</div>
+                    <div class="panel-value">@Model.FullName</div>
                 </div>
 
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <div class="data-panel">
                             <div class="panel-label">الرقم القومي</div>
-                            <div class="panel-value mt-1">@Model.NationalId</div>
+                            <div class="panel-value">@Model.NationalId</div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="data-panel">
                             <div class="panel-label">السنة الدراسية</div>
-                            <div class="panel-value mt-1">المستوى @Model.AcademicYear</div>
+                            <div class="panel-value">المستوى @Model.AcademicYear</div>
                         </div>
                     </div>
                 </div>
@@ -40,7 +40,7 @@
                         <button type="submit" class="btn btn-danger px-4 fw-bold">
                             <i class="bi bi-trash"></i> تأكيد الحذف
                         </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4">إلغاء</a>
+                        <a asp-action="Index" class="btn btn-outline-academic px-4">إلغاء</a>
                     </div>
                 </form>
             </div>

@@ -11,22 +11,28 @@
             <div class="card-header academic-card-header text-white p-4">
                 <h4 class="mb-0 fw-bold text-white"><i class="bi bi-pencil-square me-2"></i> تعديل بيانات الصالة</h4>
             </div>
-            <div class="card-body p-4" style="background-color: var(--surface-white);">
+            <div class="card-body p-4 bg-white">
                 <form asp-action="Edit" method="post">
                     <input type="hidden" asp-for="HallId" />
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3 border-0 shadow-sm"></div>
 
                     <div class="row g-4 mb-4">
-                        <div class="col-md-8">
+                        <div class="col-md-6">
                             <label asp-for="HallName" class="form-label academic-label required">اسم الصالة</label>
                             <input asp-for="HallName" class="form-control academic-input" maxlength="100" />
-                            <span asp-validation-for="HallName" class="text-danger small"></span>
+                            <span asp-validation-for="HallName" class="text-danger small mt-1 d-block"></span>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label asp-for="Floor" class="form-label academic-label required">رقم الدور</label>
                             <input asp-for="Floor" class="form-control academic-input" type="number" />
-                            <span asp-validation-for="Floor" class="text-danger small"></span>
+                            <span asp-validation-for="Floor" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label asp-for="MaxBlocks" class="form-label academic-label required">السعة (عدد البلوكات)</label>
+                            <input asp-for="MaxBlocks" type="number" min="1" max="20" class="form-control academic-input" />
+                            <span asp-validation-for="MaxBlocks" class="text-danger small mt-1 d-block"></span>
                         </div>
 
                         <div class="col-md-12">
@@ -34,13 +40,13 @@
                             <select asp-for="HallSupervisorID" asp-items="ViewBag.HallSupervisorID" class="form-select academic-input">
                                 <option value="">-- اختر مشرفاً للصالة --</option>
                             </select>
-                            <span asp-validation-for="HallSupervisorID" class="text-danger small"></span>
+                            <span asp-validation-for="HallSupervisorID" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
                     <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
                         <button type="submit" class="btn btn-academic-primary px-4 fw-bold">
-                            <i class="bi bi-check2-circle"></i> حفظ التعديلات
+                            <i class="bi bi-check2-circle me-1"></i> حفظ التعديلات
                         </button>
                         <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
                     </div>

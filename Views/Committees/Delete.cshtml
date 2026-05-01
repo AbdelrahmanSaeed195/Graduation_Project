@@ -3,24 +3,46 @@
 @{
     ViewData["Title"] = "تأكيد حذف لجنة";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+
+    bool hasDependencies = (Model.Students != null && Model.Students.Any()) ||
+                           (Model.CommitteesAssignments != null && Model.CommitteesAssignments.Any()) ||
+                           (Model.ExamSchedules != null && Model.ExamSchedules.Any());
 }
 
 <div class="row justify-content-center" dir="rtl">
     <div class="col-lg-6">
-        <div class="card academic-card">
-            <div class="card-body p-4" style="background-color: var(--surface-white);">
+        <div class="card academic-card shadow-sm">
+            <div class="card-body p-4 bg-white">
                 <div class="text-center mb-4">
                     <i class="bi bi-exclamation-octagon text-danger" style="font-size: 4rem;"></i>
+                    <h3 class="academic-heading fw-bold mt-2">تأكيد الحذف</h3>
                 </div>
-                <div class="alert alert-danger d-flex gap-2 align-items-center mb-4 border-0">
-                    <div>
-                        <strong>تنبيه هام!</strong> أنت على وشك حذف اللجنة رقم (<strong>@Model.CommitteeNumber</strong>) نهائياً من النظام. إذا كانت اللجنة تحتوي على طلاب أو جداول امتحانات مسجلة، سيقوم النظام بمنع عملية الحذف.
+
+                @if (hasDependencies)
+                {
+                    <div class="alert alert-danger border-0 mb-4 shadow-sm">
+                        <i class="bi bi-x-circle-fill fs-5 me-2"></i>
+                        <strong>عفواً، لا يمكن حذف هذه اللجنة.</strong>
+                        <p class="mb-0 small opacity-90 mt-1">
+                            النظام يمنع حذف أي لجنة تحتوي على طلاب موزعين، جداول امتحانات مسجلة، أو طاقم مراقبين معينين. يرجى إزالة هذه الارتباطات أولاً.
+                        </p>
                     </div>
-                </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning d-flex gap-2 align-items-center mb-4 border-0 shadow-sm">
+                        <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                        <div>
+                            <strong>تنبيه هام!</strong><br />
+                            <span class="small">أنت على وشك حذف اللجنة رقم (<strong>@Model.CommitteeNumber</strong>) نهائياً من النظام. هل أنت متأكد من هذا الإجراء؟</span>
+                        </div>
+                    </div>
+                }
 
                 <div class="row g-3 mb-4 text-center">
                     <div class="col-6">
-                        <div class="data-panel">
+                        <div class="data-panel h-100">
                             <div class="panel-label">الموقع / القاعة</div>
                             <div class="panel-value mt-1">
                                 @(Model.Block != null ? $"قاعة {Model.Block.HallId} / بلوك {Model.Block.BlockID}" : "غير محدد")
@@ -28,7 +50,7 @@
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="data-panel">
+                        <div class="data-panel h-100">
                             <div class="panel-label">حالة اللجنة</div>
                             <div class="panel-value mt-1">@Model.StatusOfCommittee</div>
                         </div>
@@ -38,9 +60,18 @@
                 <form asp-action="Delete" method="post">
                     <input type="hidden" asp-for="CommitteeID" />
                     <div class="d-flex justify-content-center gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
-                        <button type="submit" class="btn btn-danger px-4 fw-bold">
-                            <i class="bi bi-trash"></i> تأكيد عملية الحذف
-                        </button>
+                        @if (hasDependencies)
+                        {
+                            <button type="button" class="btn btn-secondary px-4 fw-bold" disabled>
+                                <i class="bi bi-lock-fill me-1"></i> الحذف غير متاح
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn btn-danger px-4 fw-bold">
+                                <i class="bi bi-trash me-1"></i> تأكيد عملية الحذف
+                            </button>
+                        }
                         <a asp-action="Index" class="btn btn-outline-secondary px-4">إلغاء وتراجع</a>
                     </div>
                 </form>

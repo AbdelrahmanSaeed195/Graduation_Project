@@ -8,10 +8,10 @@
 <div class="row justify-content-center" dir="rtl">
     <div class="col-xl-8">
         <div class="card academic-card">
-            <div class="card-header academic-card-header text-white p-4">
-                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-pencil-square me-2"></i> تعديل بيانات الطالب</h4>
+            <div class="card-header academic-card-header p-4">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i> تعديل بيانات الطالب</h4>
             </div>
-            <div class="card-body p-4" style="background-color: var(--surface-white);">
+            <div class="card-body p-4">
                 <form asp-action="Edit" method="post">
                     <input type="hidden" name="id" value="@ViewBag.StudentId" />
 
@@ -43,14 +43,14 @@
                     </div>
 
                     <div class="alert alert-warning mt-4 small border-0">
-                        <i class="bi bi-exclamation-triangle me-1"></i> تغيير السنة الدراسية سيؤدي إلى إعادة توزيع الطالب على لجنة جديدة وتغيير رقم الجلوس.
+                        <i class="bi bi-exclamation-triangle me-1"></i> تنبيه: تغيير السنة الدراسية قد يؤثر على توزيع الطالب على اللجان في التوزيع القادم.
                     </div>
 
                     <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
                         <button type="submit" class="btn btn-academic-primary px-4 fw-bold">
                             <i class="bi bi-check2-circle"></i> حفظ التعديلات
                         </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
+                        <a asp-action="Index" class="btn btn-outline-academic px-4">العودة للقائمة</a>
                     </div>
                 </form>
             </div>

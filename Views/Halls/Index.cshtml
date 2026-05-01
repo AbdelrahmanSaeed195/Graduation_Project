@@ -6,14 +6,30 @@
 }
 
 <div class="content-body" dir="rtl">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-building me-2"></i> إدارة الصالات والقاعات</h1>
-        <a asp-action="Create" class="btn btn-academic-primary px-4">
+        <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
             <i class="bi bi-plus-circle me-1"></i> إضافة صالة جديدة
         </a>
     </div>
 
-    <div class="academic-card">
+    <div class="card academic-card overflow-hidden">
         <div class="table-responsive">
             <table class="table academic-table table-hover align-middle mb-0">
                 <thead>
@@ -22,7 +38,8 @@
                         <th>اسم الصالة / القاعة</th>
                         <th class="text-center">الدور</th>
                         <th>المشرف المسؤول</th>
-                        <th class="text-center">البلوكات التابعة</th>
+                        <th class="text-center">السعة (أقصى بلوكات)</th>
+                        <th class="text-center">البلوكات الحالية</th>
                         <th class="text-center pe-4">الإجراءات</th>
                     </tr>
                 </thead>
@@ -49,6 +66,9 @@
                                         <span class="text-muted small">لم يتم التحديد</span>
                                     }
                                 </td>
+                                <td class="text-center fw-bold">
+                                    @item.MaxBlocks
+                                </td>
                                 <td class="text-center">
                                     <span class="badge @(item.Blocks != null && item.Blocks.Any() ? "bg-success" : "bg-secondary") px-3 py-2">
                                         @(item.Blocks?.Count ?? 0) بلوك
@@ -73,7 +93,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">لا توجد صالات مسجلة في النظام.</td>
+                            <td colspan="7" class="text-center py-5 text-muted">لا توجد صالات مسجلة في النظام.</td>
                         </tr>
                     }
                 </tbody>

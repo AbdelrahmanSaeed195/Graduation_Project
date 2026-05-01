@@ -36,14 +36,20 @@
                 }
 
                 <div class="row g-3 mb-4 text-center">
-                    <div class="col-6">
-                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
+                    <div class="col-4">
+                        <div class="rounded p-3 border h-100" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
                             <div class="small academic-label mb-1">الصالة التابع لها</div>
                             <div class="fw-bold mt-1" style="color: var(--text-main);">صالة رقم @Model.HallId</div>
                         </div>
                     </div>
-                    <div class="col-6">
-                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
+                    <div class="col-4">
+                        <div class="rounded p-3 border h-100" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
+                            <div class="small academic-label mb-1">السعة (أقصى لجان)</div>
+                            <div class="fw-bold mt-1" style="color: var(--text-main);">@Model.MaxCommittees</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="rounded p-3 border h-100" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
                             <div class="small academic-label mb-1">اللجان المرتبطة</div>
                             <div class="fw-bold mt-1 @(Model.Committees != null && Model.Committees.Any() ? "text-danger" : "text-success")">
                                 @(Model.Committees?.Count ?? 0) لجنة

@@ -8,33 +8,33 @@
 <div class="row justify-content-center" dir="rtl">
     <div class="col-lg-7">
         <div class="card academic-card">
-            <div class="card-header academic-card-header text-white p-4 text-center">
-                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-building-check me-2"></i> إشعار توزيع اللجنة</h4>
+            <div class="card-header academic-card-header p-4 text-center">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-building-check me-2"></i> إشعار توزيع اللجنة</h4>
             </div>
-            <div class="card-body p-4" style="background-color: var(--surface-white);">
+            <div class="card-body p-4">
                 <div class="text-center mb-4">
                     <i class="bi bi-person-check-fill text-success" style="font-size: 4rem;"></i>
-                    <h5 class="mt-2 fw-bold" style="color: var(--text-main);">@Model.FullName</h5>
-                    <p class="text-muted">المستوى الدراسي: @Model.AcademicYear</p>
+                    <h5 class="mt-2 fw-bold text-navy">@Model.FullName</h5>
+                    <p style="color: var(--text-muted);">المستوى الدراسي: @Model.AcademicYear</p>
                 </div>
 
                 <div class="row g-3">
                     <div class="col-6">
                         <div class="data-panel text-center">
                             <div class="panel-label">رقم اللجنة</div>
-                            <span class="panel-value fs-4 academic-heading">@Model.CommitteeNumber</span>
+                            <div class="panel-value fs-3">@Model.CommitteeNumber</div>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="data-panel text-center">
                             <div class="panel-label">رقم الجلوس</div>
-                            <span class="panel-value fs-4" style="color: var(--accent-blue);">@Model.SeatNumber</span>
+                            <div class="panel-value fs-3" style="color: var(--accent-blue);">@Model.SeatNumber</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-4 pt-3 border-top text-center" style="border-color: var(--border-color) !important;">
-                    <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-bold">العودة لقائمة الطلاب</a>
+                    <a asp-action="Index" class="btn btn-outline-academic px-4 fw-bold">العودة لقائمة الطلاب</a>
                 </div>
             </div>
         </div>

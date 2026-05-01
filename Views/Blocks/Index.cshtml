@@ -37,6 +37,7 @@
                         <th class="ps-4">كود البلوك</th>
                         <th>اسم البلوك (الجزء)</th>
                         <th>رقم الصالة/القاعة</th>
+                        <th class="text-center">السعة (أقصى عدد)</th>
                         <th class="text-center">عدد اللجان المرتبطة</th>
                         <th class="text-center pe-4">الإجراءات</th>
                     </tr>
@@ -54,6 +55,9 @@
                                         <i class="bi bi-building me-1"></i> صالة رقم @item.HallId
                                     </span>
                                 </td>
+                                <td class="text-center fw-bold">
+                                    @item.MaxCommittees
+                                </td>
                                 <td class="text-center">
                                     <span class="badge @(item.Committees != null && item.Committees.Any() ? "bg-success" : "bg-secondary") px-3 py-2">
                                         @(item.Committees?.Count ?? 0) لجان
@@ -61,6 +65,9 @@
                                 </td>
                                 <td class="text-center pe-4">
                                     <div class="d-flex justify-content-center gap-2">
+                                        <a asp-action="AssignCommittees" asp-route-blockId="@item.BlockID" class="btn btn-sm btn-outline-success" title="توزيع اللجان والملاحظين">
+                                            <i class="bi bi-diagram-3"></i>
+                                        </a>
                                         <a asp-action="Details" asp-route-id="@item.BlockID" class="btn btn-sm btn-outline-info" title="عرض التفاصيل">
                                             <i class="bi bi-eye"></i>
                                         </a>
@@ -78,7 +85,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">لا توجد بلوكات مسجلة في النظام.</td>
+                            <td colspan="6" class="text-center py-5 text-muted">لا توجد بلوكات مسجلة في النظام.</td>
                         </tr>
                     }
                 </tbody>

@@ -17,13 +17,19 @@
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
 
                     <div class="row g-4 mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label asp-for="BlockName" class="form-label academic-label required">اسم البلوك (الجزء)</label>
                             <input asp-for="BlockName" class="form-control academic-input" />
                             <span asp-validation-for="BlockName" class="text-danger small"></span>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <label asp-for="MaxCommittees" class="form-label academic-label required">عدد اللجان المتاحة</label>
+                            <input asp-for="MaxCommittees" type="number" min="1" max="50" class="form-control academic-input" />
+                            <span asp-validation-for="MaxCommittees" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="col-md-4">
                             <label asp-for="HallId" class="form-label academic-label required">الصالة / القاعة التابع لها</label>
                             <select asp-for="HallId" asp-items="ViewBag.HallId" class="form-select academic-input">
                                 <option value="">-- اختر الصالة --</option>

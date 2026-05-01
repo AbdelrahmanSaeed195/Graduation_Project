@@ -3,38 +3,80 @@
 @{
     ViewData["Title"] = "تأكيد حذف الصالة";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // التحقق من وجود بلوكات مرتبطة لمنع الحذف
+    bool hasBlocks = Model.Blocks != null && Model.Blocks.Any();
 }
 
 <div class="row justify-content-center" dir="rtl">
     <div class="col-xl-6">
-        <div class="card academic-card">
-            <div class="card-body p-5 text-center" style="background-color: var(--surface-white);">
-                <div class="mb-4">
-                    <i class="bi bi-exclamation-octagon text-danger" style="font-size: 5rem;"></i>
+        <div class="card academic-card shadow-sm">
+            <div class="card-body p-4 bg-white">
+                <div class="text-center mb-4">
+                    <i class="bi bi-exclamation-octagon text-danger" style="font-size: 4rem;"></i>
+                    <h3 class="academic-heading fw-bold mt-2">تأكيد الحذف</h3>
                 </div>
 
-                <h3 class="fw-bold academic-heading mb-3">تأكيد عملية الحذف!</h3>
-                <p class="text-muted fs-6 mb-4">
-                    أنت على وشك حذف الصالة "<strong>@Model.HallName</strong>" (الدور @Model.Floor) نهائياً من النظام.
-                </p>
-
-                @if (Model.Blocks != null && Model.Blocks.Any())
+                @if (hasBlocks)
                 {
-                    <div class="alert alert-danger border-0 text-start d-flex gap-2 align-items-center mb-4">
-                        <i class="bi bi-x-circle-fill fs-5"></i>
+                    <div class="alert alert-danger border-0 mb-4 shadow-sm">
+                        <i class="bi bi-x-circle-fill fs-5 me-2"></i>
+                        <strong>عفواً، لا يمكن حذف هذه الصالة.</strong>
+                        <p class="mb-0 small opacity-90 mt-1">
+                            النظام يمنع حذف أي صالة تحتوي على بلوكات مرتبطة (يوجد @Model.Blocks.Count بلوك). يرجى حذف البلوكات التابعة أو نقلها أولاً.
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning border-0 d-flex gap-2 align-items-center mb-4 shadow-sm">
+                        <i class="bi bi-exclamation-triangle-fill fs-4"></i>
                         <div>
-                            <strong>انتباه:</strong> هذه الصالة مرتبطة بـ (@Model.Blocks.Count) بلوكات. قد يمنع النظام الحذف ما لم تقم بنقل أو حذف البلوكات التابعة أولاً.
+                            <strong>تنبيه هام!</strong><br />
+                            <span class="small">أنت على وشك حذف الصالة "<strong>@Model.HallName</strong>" نهائياً من النظام. هل أنت متأكد من هذا الإجراء؟</span>
                         </div>
                     </div>
                 }
 
+                <div class="row g-3 mb-4 text-center">
+                    <div class="col-4">
+                        <div class="data-panel h-100">
+                            <div class="panel-label">رقم الدور</div>
+                            <div class="panel-value mt-1">الدور @Model.Floor</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="data-panel h-100">
+                            <div class="panel-label">السعة (أقصى بلوكات)</div>
+                            <div class="panel-value mt-1">@Model.MaxBlocks</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="data-panel h-100">
+                            <div class="panel-label">البلوكات الحالية</div>
+                            <div class="panel-value mt-1 @(hasBlocks ? "text-danger" : "text-success")">
+                                @(Model.Blocks?.Count ?? 0) بلوك
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <form asp-action="Delete" method="post">
                     <input type="hidden" asp-for="HallId" />
-                    <div class="d-flex justify-content-center gap-2 mt-2">
-                        <button type="submit" class="btn btn-danger px-4 fw-bold">
-                            <i class="bi bi-trash"></i> تأكيد عملية الحذف
-                        </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4">تراجع والعودة</a>
+                    <div class="d-flex justify-content-center gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+                        @if (hasBlocks)
+                        {
+                            <button type="button" class="btn btn-secondary px-4 fw-bold" disabled>
+                                <i class="bi bi-lock-fill me-1"></i> الحذف غير متاح
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn btn-danger px-4 fw-bold">
+                                <i class="bi bi-trash me-1"></i> تأكيد عملية الحذف
+                            </button>
+                        }
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">إلغاء وتراجع</a>
                     </div>
                 </form>
             </div>

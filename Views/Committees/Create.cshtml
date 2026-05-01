@@ -11,21 +11,22 @@
             <div class="card-header academic-card-header text-white p-4">
                 <h4 class="mb-0 fw-bold text-white"><i class="bi bi-plus-circle-fill me-2"></i> إضافة لجنة امتحانات جديدة</h4>
             </div>
-            <div class="card-body p-4" style="background-color: var(--surface-white);">
+            <div class="card-body p-4 bg-white">
                 <form asp-action="Create" method="post">
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
+                    <!-- سيعرض رسالة الخطأ إذا كان رقم اللجنة مكرراً كما في الـ Controller -->
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3 border-0 shadow-sm"></div>
 
                     <div class="row g-4 mb-4">
                         <div class="col-md-6">
                             <label asp-for="CommitteeNumber" class="form-label academic-label required">رقم اللجنة</label>
                             <input asp-for="CommitteeNumber" class="form-control academic-input" type="number" placeholder="أدخل رقم اللجنة" />
-                            <span asp-validation-for="CommitteeNumber" class="text-danger small"></span>
+                            <span asp-validation-for="CommitteeNumber" class="text-danger small mt-1 d-block"></span>
                         </div>
 
                         <div class="col-md-6">
                             <label asp-for="NumberOfStudent" class="form-label academic-label required">سعة الطلاب (الاستيعاب)</label>
                             <input asp-for="NumberOfStudent" class="form-control academic-input" type="number" placeholder="مثال: 30" />
-                            <span asp-validation-for="NumberOfStudent" class="text-danger small"></span>
+                            <span asp-validation-for="NumberOfStudent" class="text-danger small mt-1 d-block"></span>
                         </div>
 
                         <div class="col-md-6">
@@ -33,7 +34,7 @@
                             <select asp-for="BlockID" asp-items="ViewBag.BlockID" class="form-select academic-input">
                                 <option value="">-- اختر البلوك / القاعة --</option>
                             </select>
-                            <span asp-validation-for="BlockID" class="text-danger small"></span>
+                            <span asp-validation-for="BlockID" class="text-danger small mt-1 d-block"></span>
                         </div>
 
                         <div class="col-md-6">
@@ -41,32 +42,32 @@
                             <select asp-for="StatusOfCommittee" asp-items="ViewBag.StatusList" class="form-select academic-input">
                                 <option value="">-- اختر الحالة --</option>
                             </select>
-                            <span asp-validation-for="StatusOfCommittee" class="text-danger small"></span>
+                            <span asp-validation-for="StatusOfCommittee" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
-                    <h5 class="fw-bold academic-heading border-bottom pb-2 mb-5" style="border-color: var(--border-color) !important;"><i class="bi bi-person-badge me-2"></i> الطاقم المطلوب للجنة</h5>
-                    <div class="row g-4 mb-4 p-3 rounded" style="background-color: var(--bg-light); border: 1px solid var(--border-color);">
+                    <h5 class="fw-bold academic-heading border-bottom pb-2 mb-4 mt-5" style="border-color: var(--border-color) !important;"><i class="bi bi-person-badge me-2"></i> الطاقم المطلوب للجنة</h5>
+                    <div class="row g-4 mb-4 p-4 rounded" style="background-color: var(--bg-light); border: 1px solid var(--border-color);">
                         <div class="col-md-4">
                             <label asp-for="RequiredHeads" class="form-label academic-label">عدد رؤساء اللجان</label>
                             <input asp-for="RequiredHeads" class="form-control academic-input" type="number" value="1" min="0" />
-                            <span asp-validation-for="RequiredHeads" class="text-danger small"></span>
+                            <span asp-validation-for="RequiredHeads" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-md-4">
                             <label asp-for="RequiredObservers" class="form-label academic-label">عدد المراقبين الملاحظين</label>
                             <input asp-for="RequiredObservers" class="form-control academic-input" type="number" value="2" min="0" />
-                            <span asp-validation-for="RequiredObservers" class="text-danger small"></span>
+                            <span asp-validation-for="RequiredObservers" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-md-4">
                             <label asp-for="RequiredMentors" class="form-label academic-label">عدد المعاونين</label>
                             <input asp-for="RequiredMentors" class="form-control academic-input" type="number" value="1" min="0" />
-                            <span asp-validation-for="RequiredMentors" class="text-danger small"></span>
+                            <span asp-validation-for="RequiredMentors" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
                     <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
                         <button type="submit" class="btn btn-academic-primary px-4 fw-bold">
-                            <i class="bi bi-check-circle"></i> حفظ وإنشاء
+                            <i class="bi bi-check-circle me-1"></i> حفظ وإنشاء
                         </button>
                         <a asp-action="Index" class="btn btn-outline-secondary px-4">إلغاء</a>
                     </div>

@@ -9,88 +9,68 @@
 
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 fw-bold academic-heading">
+        <h1 class="h3 mb-0 academic-heading">
             <i class="bi bi-mortarboard-fill me-2"></i> سجل الطلاب
         </h1>
 
         <div class="d-flex gap-2">
-
             <a asp-action="DistributeStudents"
                class="btn btn-success px-4"
                onclick="return confirm('هل تريد توزيع الطلاب الآن؟');">
                 <i class="bi bi-diagram-3 me-1"></i> توزيع الطلاب
             </a>
 
-            <a asp-action="Create" class="btn btn-primary px-4">
+            <a asp-action="Create" class="btn btn-academic-primary px-4">
                 <i class="bi bi-plus-circle me-1"></i> إضافة طالب
             </a>
-
         </div>
     </div>
 
     <!-- Table -->
     <div class="academic-card">
         <div class="table-responsive">
-
-            <table class="table table-hover align-middle mb-0">
-
+            <table class="table academic-table align-middle mb-0 text-center">
                 <thead>
                     <tr>
                         <th>كود</th>
                         <th>الاسم</th>
                         <th>الرقم القومي</th>
-                        <th class="text-center">السنة</th>
-                        <th class="text-center">رقم الجلوس</th>
-                        <th class="text-center">اللجنة / الجلسة</th>
-                        <th class="text-center">إجراءات</th>
+                        <th>السنة</th>
+                        <th>رقم الجلوس</th>
+                        <th>اللجنة / الجلسة</th>
+                        <th>إجراءات</th>
                     </tr>
                 </thead>
-
                 <tbody>
-
                     @if (Model != null && Model.Any())
                     {
                         foreach (var s in Model)
                         {
                             <tr>
-
                                 <td>@s.StudentId</td>
-
                                 <td class="fw-bold">@s.FullName</td>
-
-                                <td class="text-muted">@s.NationalId</td>
-
-                                <td class="text-center">
-                                    <span class="badge bg-light text-dark border">
+                                <td><span style="color: var(--text-muted);">@s.NationalId</span></td>
+                                <td>
+                                    <span class="badge" style="background-color: var(--bg-light); color: var(--primary-navy); border: 1px solid var(--border-color);">
                                         سنة @s.AcademicYear
                                     </span>
                                 </td>
-
-                                <td class="text-center">
-                                    @(s.SeatNumber > 0 ? s.SeatNumber.ToString() : "-")
+                                <td>
+                                    <span class="fw-bold" style="color: var(--accent-blue);">
+                                        @(s.SeatNumber > 0 ? s.SeatNumber.ToString() : "-")
+                                    </span>
                                 </td>
-
-                                <!-- 🔥 أهم جزء -->
-                                <td class="text-center">
-
+                                <td>
                                     @if (s.ExamSchedule != null && s.ExamSchedule.Committee != null)
                                     {
                                         <div>
-
-                                            <span class="badge bg-success px-3 py-2">
+                                            <span class="badge bg-success px-3 py-2 mb-1">
                                                 لجنة @s.ExamSchedule.Committee.CommitteeNumber
                                             </span>
-
                                             <br />
-
-                                            <small class="text-muted d-block">
-                                                @s.ExamSchedule.ScheduledDate.ToString("yyyy-MM-dd")
+                                            <small style="color: var(--text-muted);">
+                                                جلسة: @s.ExamSchedule.ExamScheduleId
                                             </small>
-
-                                            <small class="text-muted d-block">
-                                                @s.ExamSchedule.StartTime - @s.ExamSchedule.EndTime
-                                            </small>
-
                                         </div>
                                     }
                                     else
@@ -99,49 +79,34 @@
                                             غير موزع
                                         </span>
                                     }
-
                                 </td>
-
-                                <!-- Actions -->
-                                <td class="text-center">
-
-                                    <a asp-action="Details"
-                                       asp-route-id="@s.StudentId"
-                                       class="btn btn-sm btn-info">
+                                <td>
+                                    <a asp-action="Committee" asp-route-id="@s.StudentId" class="btn btn-sm btn-dark" title="استعراض اللجنة">
+                                        <i class="bi bi-building-check"></i>
+                                    </a>
+                                    <a asp-action="Details" asp-route-id="@s.StudentId" class="btn btn-sm btn-info text-white" title="التفاصيل">
                                         <i class="bi bi-eye"></i>
                                     </a>
-
-                                    <a asp-action="Edit"
-                                       asp-route-id="@s.StudentId"
-                                       class="btn btn-sm btn-warning">
+                                    <a asp-action="Edit" asp-route-id="@s.StudentId" class="btn btn-sm btn-warning" title="تعديل">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-
-                                    <a asp-action="Delete"
-                                       asp-route-id="@s.StudentId"
-                                       class="btn btn-sm btn-danger"
-                                       onclick="return confirm('تأكيد الحذف؟');">
+                                    <a asp-action="Delete" asp-route-id="@s.StudentId" class="btn btn-sm btn-danger" title="حذف" onclick="return confirm('تأكيد الحذف؟ سيتم إعادة ترتيب أرقام الجلوس إذا كان الطالب موزعاً.');">
                                         <i class="bi bi-trash"></i>
                                     </a>
-
                                 </td>
-
                             </tr>
                         }
                     }
                     else
                     {
                         <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">
-                                لا توجد بيانات
+                            <td colspan="7" class="py-4" style="color: var(--text-muted);">
+                                لا توجد بيانات للطلاب
                             </td>
                         </tr>
                     }
-
                 </tbody>
-
             </table>
-
         </div>
     </div>
 </div>

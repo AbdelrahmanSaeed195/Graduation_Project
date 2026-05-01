@@ -7,63 +7,76 @@
 
 <div class="row justify-content-center" dir="rtl">
     <div class="col-xl-9">
-        <div class="card academic-card mb-4">
-            <div class="card-header academic-card-header text-white p-4 d-flex justify-content-between align-items-center">
-                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-info-circle-fill me-2"></i> بيانات الصالة: @Model.HallName</h4>
-                <span class="badge fs-6" style="background-color: var(--bg-light); color: var(--primary-navy);">كود #@Model.HallId</span>
+        <div class="card academic-card shadow-sm">
+            <div class="card-header academic-card-header text-white p-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-white"><i class="bi bi-info-circle-fill me-2"></i> بيانات الصالة: @Model.HallName</h5>
+                <span class="badge bg-white text-navy px-3">كود الصالة: #@Model.HallId</span>
             </div>
-            <div class="card-body p-4" style="background-color: var(--surface-white);">
 
-                <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                        <div class="data-panel">
-                            <div class="panel-label">اسم الصالة / القاعة</div>
-                            <div class="panel-value fs-5">@Model.HallName</div>
+            <div class="card-body p-0">
+       
+                <table class="table table-bordered mb-0">
+                    <tbody>
+                        <tr>
+                            <th class="bg-light" style="width: 25%;">اسم الصالة / القاعة</th>
+                            <td style="width: 25%;">@Model.HallName</td>
+                            <th class="bg-light" style="width: 25%;">الدور</th>
+                            <td style="width: 25%;">الدور @Model.Floor</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">مشرف الصالة</th>
+                            <td>@(Model.HallSupervisor?.FullName ?? "لم يتم التعيين")</td>
+                            <th class="bg-light">السعة المتاحة</th>
+                            <td>@Model.MaxBlocks بلوكات</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="p-4">
+                    <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3">
+                        <i class="bi bi-collection-fill me-2"></i> البلوكات (الأجزاء) التابعة
+                    </h5>
+
+                    @if (Model.Blocks != null && Model.Blocks.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table academic-table align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>كود البلوك</th>
+                                        <th>اسم البلوك</th>
+                                        <th class="text-center">عدد اللجان المرتبطة</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var block in Model.Blocks)
+                                    {
+                                        <tr>
+                                            <td class="fw-bold">#@block.BlockID</td>
+                                            <td>@block.BlockName</td>
+                                            <td class="text-center">
+                                                <span class="badge @(block.Committees?.Count > 0 ? "bg-success" : "bg-secondary")">
+                                                    @(block.Committees?.Count ?? 0) لجان
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="data-panel">
-                            <div class="panel-label">رقم الدور</div>
-                            <div class="panel-value fs-5 academic-heading">الدور @Model.Floor</div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-light border text-center text-muted mb-0">
+                            لا توجد بلوكات مسجلة حالياً لهذه الصالة.
                         </div>
-                    </div>
-                    <div class="col-md-12">
-                        <div class="data-panel">
-                            <div class="panel-label">مشرف الصالة (المسؤول)</div>
-                            <div class="panel-value fs-5" style="color: var(--accent-blue);">
-                                @(Model.HallSupervisor != null ? Model.HallSupervisor.FullName : "لم يتم تعيين مشرف")
-                            </div>
-                        </div>
-                    </div>
+                    }
                 </div>
 
-                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 mt-4" style="border-color: var(--border-color) !important;"><i class="bi bi-collection-fill me-2"></i> البلوكات (الأجزاء) التابعة</h5>
 
-                @if (Model.Blocks != null && Model.Blocks.Any())
-                {
-                    <div class="row g-3">
-                        @foreach (var block in Model.Blocks)
-                        {
-                            <div class="col-md-4">
-                                <div class="card h-100" style="border: 1px solid var(--border-color);">
-                                    <div class="card-body text-center">
-                                        <i class="bi bi-box fs-2 mb-2" style="color: var(--accent-blue);"></i>
-                                        <h6 class="fw-bold" style="color: var(--text-main);">@block.BlockName</h6>
-                                        <span class="text-muted small">كود: #@block.BlockID</span>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <div class="alert alert-secondary border-0 text-center" style="background-color: var(--bg-light); color: var(--text-main);">لا توجد بلوكات مرتبطة بهذه الصالة حالياً.</div>
-                }
-
-                <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+                <div class="card-footer bg-light p-3 d-flex justify-content-end gap-2">
                     <a asp-action="Edit" asp-route-id="@Model.HallId" class="btn btn-academic-primary px-4 fw-bold">
-                        <i class="bi bi-pencil-square"></i> تعديل
+                        <i class="bi bi-pencil-square me-1"></i> تعديل
                     </a>
                     <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
                 </div>

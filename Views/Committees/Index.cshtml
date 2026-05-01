@@ -9,14 +9,14 @@
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show border-0" role="alert">
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show border-0" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
             <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -24,12 +24,12 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-clipboard-check-fill me-2"></i> إدارة اللجان</h1>
-        <a asp-action="Create" class="btn btn-academic-primary px-4">
+        <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
             <i class="bi bi-plus-circle me-1"></i> إضافة لجنة
         </a>
     </div>
 
-    <div class="academic-card">
+    <div class="card academic-card overflow-hidden">
         <div class="table-responsive">
             <table class="table academic-table table-hover align-middle mb-0">
                 <thead>
@@ -60,9 +60,9 @@
                                     </span>
                                 </td>
                                 <td class="text-center text-muted small">
-                                    <span class="badge bg-secondary">@item.RequiredHeads</span> /
-                                    <span class="badge bg-info text-dark">@item.RequiredObservers</span> /
-                                    <span class="badge px-2 py-1" style="background-color: var(--bg-light); color: var(--text-main); border: 1px solid var(--border-color);">@item.RequiredMentors</span>
+                                    <span class="badge bg-secondary" title="رؤساء">@item.RequiredHeads</span> /
+                                    <span class="badge bg-info text-dark" title="مراقبين">@item.RequiredObservers</span> /
+                                    <span class="badge px-2 py-1" style="background-color: var(--bg-light); color: var(--text-main); border: 1px solid var(--border-color);" title="معاونين">@item.RequiredMentors</span>
                                 </td>
                                 <td class="text-center">
                                     @if (item.StatusOfCommittee == "نشطة")
