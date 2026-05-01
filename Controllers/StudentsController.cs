@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using projectweb.Models;
 using projectweb.ViewModel;
 
@@ -20,7 +21,8 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Index()
         {
             var students = await _context.Students
-                .Include(s => s.Committee)
+                .Include(s => s.ExamSchedule)
+                .ThenInclude(e => e.Committee)
                 .OrderBy(s => s.AcademicYear)
                 .ThenBy(s => s.FullName)
                 .ToListAsync();
@@ -34,7 +36,8 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var student = await _context.Students
-                .Include(s => s.Committee)
+                .Include(s => s.ExamSchedule)
+                .ThenInclude(e => e.Committee)
                 .Include(s => s.Relatives)
                 .FirstOrDefaultAsync(s => s.StudentId == id);
 
@@ -45,16 +48,13 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // GET: CREATE
+        // CREATE
         // =====================================
         public IActionResult Create()
         {
             return View();
         }
 
-        // =====================================
-        // POST: CREATE
-        // =====================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(StudentCreateViewModel model)
@@ -62,31 +62,43 @@ namespace projectweb.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            model.NationalId = model.NationalId?.Replace(" ", "").Trim();
+
+            bool exists = await _context.Students
+                .AnyAsync(s => s.NationalId == model.NationalId);
+
+            if (exists)
+            {
+                ModelState.AddModelError("NationalId", "هذا الرقم القومي مسجل بالفعل");
+                return View(model);
+            }
+
             var student = new Student
             {
                 FullName = model.FullName,
                 NationalId = model.NationalId,
-                AcademicYear = model.AcademicYear
+                AcademicYear = model.AcademicYear,
+                SeatNumber = 0,
+                ExamScheduleId = null
             };
 
-            var (success, message) = await AssignToCommittee(student);
+            _context.Students.Add(student);
 
-            if (!success)
+            try
             {
-                ModelState.AddModelError("", message);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError("NationalId", "هذا الرقم القومي مسجل بالفعل");
                 return View(model);
             }
-
-            _context.Students.Add(student);
-            await _context.SaveChangesAsync();
-
-            await RecalculateSeatNumbers(student.CommitteeId!.Value);
 
             return RedirectToAction(nameof(Index));
         }
 
         // =====================================
-        // GET: EDIT
+        // EDIT
         // =====================================
         public async Task<IActionResult> Edit(int id)
         {
@@ -103,49 +115,44 @@ namespace projectweb.Controllers
             };
 
             ViewBag.StudentId = student.StudentId;
-
             return View(model);
         }
 
-        // =====================================
-        // POST: EDIT
-        // =====================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, StudentCreateViewModel model)
         {
-            var student = await _context.Students.FindAsync(id);
+            if (!ModelState.IsValid)
+                return View(model);
 
+            var student = await _context.Students.FindAsync(id);
             if (student == null)
                 return NotFound();
 
-            var oldCommitteeId = student.CommitteeId;
-            bool yearChanged = student.AcademicYear != model.AcademicYear;
+            model.NationalId = model.NationalId?.Replace(" ", "").Trim();
+
+            bool exists = await _context.Students
+                .AnyAsync(s => s.NationalId == model.NationalId && s.StudentId != id);
+
+            if (exists)
+            {
+                ModelState.AddModelError("NationalId", "هذا الرقم القومي مستخدم لطالب آخر");
+                return View(model);
+            }
 
             student.FullName = model.FullName;
             student.NationalId = model.NationalId;
             student.AcademicYear = model.AcademicYear;
 
-            if (yearChanged)
+            try
             {
-                student.CommitteeId = null;
-
-                var (success, message) = await AssignToCommittee(student);
-
-                if (!success)
-                {
-                    ModelState.AddModelError("", message);
-                    return View(model);
-                }
+                await _context.SaveChangesAsync();
             }
-
-            await _context.SaveChangesAsync();
-
-            if (oldCommitteeId.HasValue)
-                await RecalculateSeatNumbers(oldCommitteeId.Value);
-
-            if (student.CommitteeId.HasValue && student.CommitteeId != oldCommitteeId)
-                await RecalculateSeatNumbers(student.CommitteeId.Value);
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError("NationalId", "هذا الرقم القومي مستخدم بالفعل");
+                return View(model);
+            }
 
             return RedirectToAction(nameof(Index));
         }
@@ -160,32 +167,88 @@ namespace projectweb.Controllers
             if (student == null)
                 return NotFound();
 
-            var committeeId = student.CommitteeId;
+            var examScheduleId = student.ExamScheduleId;
 
             _context.Students.Remove(student);
             await _context.SaveChangesAsync();
 
-            if (committeeId.HasValue)
-                await RecalculateSeatNumbers(committeeId.Value);
+            if (examScheduleId.HasValue)
+                await RecalculateSeatNumbers(examScheduleId.Value);
 
             return RedirectToAction(nameof(Index));
         }
 
         // =====================================
-        // STUDENT COMMITTEE PAGE
+        // DISTRIBUTE STUDENTS
+        // =====================================
+        public async Task<IActionResult> DistributeStudents()
+        {
+            var students = await _context.Students
+                .Where(s => s.ExamScheduleId == null)
+                .OrderBy(s => s.AcademicYear)
+                .ThenBy(s => s.FullName)
+                .ToListAsync();
+
+            var schedules = await _context.ExamSchedules
+                .Include(e => e.Committee)
+                .OrderBy(e => e.Committee.CommitteeNumber)
+                .ThenBy(e => e.StartTime)
+                .ToListAsync();
+
+            var grouped = students.GroupBy(s => s.AcademicYear).ToList();
+
+            int scheduleIndex = 0;
+
+            foreach (var group in grouped)
+            {
+                foreach (var student in group)
+                {
+                    while (scheduleIndex < schedules.Count)
+                    {
+                        var scheduleId = schedules[scheduleIndex].ExamScheduleId;
+
+                        var count = await _context.Students
+                            .CountAsync(s => s.ExamScheduleId == scheduleId);
+
+                        if (count < schedules[scheduleIndex].Committee.NumberOfStudent)
+                            break;
+
+                        scheduleIndex++;
+                    }
+
+                    if (scheduleIndex >= schedules.Count)
+                        break;
+
+                    student.ExamScheduleId = schedules[scheduleIndex].ExamScheduleId;
+                }
+
+                scheduleIndex++;
+            }
+
+            await _context.SaveChangesAsync();
+
+            foreach (var schedule in schedules)
+                await RecalculateSeatNumbers(schedule.ExamScheduleId);
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // =====================================
+        // STUDENT COMMITTEE
         // =====================================
         public async Task<IActionResult> Committee(int id)
         {
             var student = await _context.Students
-                .Include(s => s.Committee)
+                .Include(s => s.ExamSchedule)
+                .ThenInclude(e => e.Committee)
                 .FirstOrDefaultAsync(s => s.StudentId == id);
 
             if (student == null)
                 return NotFound();
 
-            if (student.Committee == null || student.CommitteeId == null)
+            if (student.ExamSchedule == null)
             {
-                ViewBag.Message = "هذا الطالب لم يُعيَّن في أي لجنة بعد";
+                ViewBag.Message = "هذا الطالب لم يُعيَّن بعد";
                 return View("NoCommittee");
             }
 
@@ -195,48 +258,22 @@ namespace projectweb.Controllers
                 FullName = student.FullName,
                 AcademicYear = student.AcademicYear,
                 SeatNumber = student.SeatNumber,
-                CommitteeId = student.Committee.CommitteeID,
-                CommitteeNumber = student.Committee.CommitteeNumber,
-                NumberOfStudent = student.Committee.NumberOfStudent
+                CommitteeId = student.ExamSchedule.Committee.CommitteeID,
+                CommitteeNumber = student.ExamSchedule.Committee.CommitteeNumber,
+                NumberOfStudent = student.ExamSchedule.Committee.NumberOfStudent
             };
 
             return View(model);
         }
 
         // =====================================
-        // HELPERS
+        // RECALCULATE SEATS
         // =====================================
-
-        private async Task<(bool Success, string Message)> AssignToCommittee(Student student)
-        {
-            var committee = await _context.Committees
-                .Where(c =>
-                    !c.Students.Any() ||
-                    c.Students.All(s => s.AcademicYear == student.AcademicYear)
-                )
-                .Select(c => new
-                {
-                    c.CommitteeID,
-                    c.NumberOfStudent,
-                    CurrentCount = c.Students.Count()
-                })
-                .Where(c => c.CurrentCount < c.NumberOfStudent)
-                .OrderBy(c => c.CurrentCount)
-                .FirstOrDefaultAsync();
-
-            if (committee == null)
-                return (false, "No available committee for this student");
-
-            student.CommitteeId = committee.CommitteeID;
-            return (true, "");
-        }
-
-        private async Task RecalculateSeatNumbers(int committeeId)
+        private async Task RecalculateSeatNumbers(int examScheduleId)
         {
             var students = await _context.Students
-                .Where(s => s.CommitteeId == committeeId)
-                .OrderBy(s => s.AcademicYear)
-                .ThenBy(s => s.FullName)
+                .Where(s => s.ExamScheduleId == examScheduleId)
+                .OrderBy(s => s.FullName)
                 .ToListAsync();
 
             for (int i = 0; i < students.Count; i++)
@@ -245,9 +282,4 @@ namespace projectweb.Controllers
             await _context.SaveChangesAsync();
         }
     }
-
-
-
-
-
 }

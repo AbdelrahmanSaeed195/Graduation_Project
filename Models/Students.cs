@@ -19,31 +19,32 @@ namespace projectweb.Models
         public string FullName { get; set; }
 
         [Required(ErrorMessage = "الرقم القومي مطلوب")]
-        [StringLength(20, MinimumLength = 14, ErrorMessage = "الرقم القومي يجب أن يكون 14 رقماً")]
+        [StringLength(14, MinimumLength = 14, ErrorMessage = "الرقم القومي يجب أن يكون 14 رقم")]
         [Display(Name = "الرقم القومي")]
-        [RegularExpression(@"^[0-9]{14}$", ErrorMessage = "الرقم القومي يجب أن يتكون من 14 رقماً فقط")]
+        [RegularExpression(@"^\d{14}$", ErrorMessage = "الرقم القومي يجب أن يتكون من 14 رقم فقط")]
         public string NationalId { get; set; }
 
         [Required(ErrorMessage = "السنة الدراسية مطلوبة")]
         [Display(Name = "السنة الدراسية")]
         public int AcademicYear { get; set; }
 
-        [Required(ErrorMessage = "رقم الجلوس مطلوب")]
         [Display(Name = "رقم الجلوس")]
-        public int SeatNumber { get; set; }
+        public int SeatNumber { get; set; } = 0;
 
-        [Display(Name = "اللجنة التابع لها")]
-        public int? CommitteeId { get; set; }
+        // 🔥 ربط بالـ ExamSchedule بدل اللجنة مباشرة
+        [Display(Name = "الجلسة الامتحانية")]
+        public int? ExamScheduleId { get; set; }
+
         [ValidateNever]
-        [ForeignKey("CommitteeId")]
-        [Display(Name = "بيانات اللجنة")]
-        public virtual Committee Committee { get; set; }
+        [ForeignKey("ExamScheduleId")]
+        public virtual ExamSchedule ExamSchedule { get; set; }
+
+        // 🔥 اللجنة بتيجي من خلال ExamSchedule
+        [NotMapped]
+        public Committee Committee => ExamSchedule?.Committee;
+
         [ValidateNever]
         [Display(Name = "صلات القرابة")]
         public virtual ICollection<Relative> Relatives { get; set; }
-
-       
-
-      
     }
 }

@@ -186,7 +186,7 @@ namespace projectweb.Controllers
                 return NotFound();
 
             bool hasDependencies =
-                await db.Students.AnyAsync(s => s.CommitteeId == id) ||
+                await db.Students.AnyAsync(s => s.ExamSchedule.Committee.CommitteeID == id) ||
                 await db.CommitteesAssignments.AnyAsync(a => a.CommitteeID == id) ||
                 await db.ExamSchedules.AnyAsync(e => e.CommitteeId == id);
 

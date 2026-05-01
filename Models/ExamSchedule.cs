@@ -14,38 +14,41 @@ namespace projectweb.Models
 
         [Required(ErrorMessage = "تاريخ الجلسة مطلوب")]
         [DataType(DataType.Date)]
-        [Display(Name = "التاريخ المحدد")]
+        [Display(Name = "التاريخ")]
         public DateTime ScheduledDate { get; set; }
 
         [Required(ErrorMessage = "وقت البداية مطلوب")]
         [DataType(DataType.Time)]
-        [Display(Name = "وقت البدء")]
+        [Display(Name = "من")]
         public TimeSpan StartTime { get; set; }
 
         [Required(ErrorMessage = "وقت النهاية مطلوب")]
         [DataType(DataType.Time)]
-        [Display(Name = "وقت الانتهاء")]
+        [Display(Name = "إلى")]
         public TimeSpan EndTime { get; set; }
 
         [Required(ErrorMessage = "يجب اختيار الامتحان")]
-        [Display(Name = "الامتحان / المادة")]
+        [Display(Name = "المادة")]
         public int ExamId { get; set; }
+
         [ValidateNever]
         [ForeignKey("ExamId")]
-        [Display(Name = "بيانات الامتحان")]
         public virtual Exam Exam { get; set; }
 
         [Required(ErrorMessage = "يجب اختيار اللجنة")]
         [Display(Name = "اللجنة")]
         public int CommitteeId { get; set; }
+
         [ValidateNever]
         [ForeignKey("CommitteeId")]
-        [Display(Name = "بيانات اللجنة")]
         public virtual Committee Committee { get; set; }
+
+        // 🔥 الطلاب المرتبطين بالجلسة
+        [ValidateNever]
+        public virtual ICollection<Student> Students { get; set; }
+
         [ValidateNever]
         [Display(Name = "المحاضر والتقارير")]
         public virtual ICollection<Report> Reports { get; set; }
-
-       
     }
 }
