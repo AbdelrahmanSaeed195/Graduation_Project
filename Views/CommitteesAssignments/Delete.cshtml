@@ -7,8 +7,8 @@
             <h4 class="fw-bold">هل أنت متأكد من حذف هذا التكليف؟</h4>
 
             <div class="alert alert-warning border-0 small">
-                سيتم إلغاء تكليف الموظف <strong>@Model.Person.FullName</strong>
-                من مادة (<strong>@Model.ExamSchedule.Exam.Subject.SubjectName</strong>)
+                سيتم إلغاء تكليف الموظف <strong>@Model.Person?.FullName</strong>
+                من مادة (<strong>@Model.ExamSchedule?.Exam?.Subject?.SubjectName</strong>)
             </div>
 
             <form asp-action="Delete">

@@ -39,15 +39,23 @@
 
                 <div class="col-md-4 pt-3 text-center border-end">
                     <label class="text-muted small d-block">المادة الدراسية:</label>
-                    <p class="fw-bold mb-0">@Model.ExamSchedule.Exam.Subject.SubjectName</p>
+                    <p class="fw-bold mb-0">@Model.ExamSchedule?.Exam?.Subject?.SubjectName</p>
                 </div>
                 <div class="col-md-4 pt-3 text-center border-end">
                     <label class="text-muted small d-block">تاريخ الامتحان:</label>
-                    <p class="fw-bold mb-0">@Model.ExamSchedule.ScheduledDate.ToShortDateString()</p>
+                    <p class="fw-bold mb-0">@Model.ExamSchedule?.ScheduledDate.ToShortDateString()</p>
                 </div>
                 <div class="col-md-4 pt-3 text-center">
                     <label class="text-muted small d-block">وقت الجلسة:</label>
-                    <p class="fw-bold mb-0 text-danger">@Model.ExamSchedule.StartTime.ToString(@"hh\:mm") - @Model.ExamSchedule.EndTime.ToString(@"hh\:mm")</p>
+                    <p class="fw-bold mb-0 text-danger">
+                        @if (Model.ExamSchedule?.Exam != null)
+                        {
+                            @* تحويل TimeSpan إلى وقت بصيغة 12 ساعة (ص/م) لعرض احترافي *@
+                            @(DateTime.Today.Add(Model.ExamSchedule.Exam.StartTime).ToString("hh:mm tt"))
+                            @:-
+                            @(DateTime.Today.Add(Model.ExamSchedule.Exam.EndTime).ToString("hh:mm tt"))
+                        }
+                    </p>
                 </div>
             </div>
         </div>

@@ -19,20 +19,22 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // INDEX
+        // INDEX - عرض توزيع اللجان
         // =====================================
         public async Task<IActionResult> Index()
         {
+            // تم تعديل الترتيب ليعتمد على بيانات موديل الامتحان المرتبط
             var examSchedules = _context.ExamSchedules
                 .Include(e => e.Committee)
                 .Include(e => e.Exam)
-                    .ThenInclude(ex => ex.Subject) 
-                .OrderBy(e => e.ScheduledDate)
-                .ThenBy(e => e.StartTime);
+                    .ThenInclude(ex => ex.Subject)
+                .OrderBy(e => e.Exam.ExamDate)
+                .ThenBy(e => e.Exam.StartTime);
 
             return View(await examSchedules.ToListAsync());
         }
-        //  =====================================
+
+        // =====================================
         // DETAILS
         // =====================================
         public async Task<IActionResult> Details(int? id)
@@ -49,6 +51,7 @@ namespace projectweb.Controllers
 
             return View(examSchedule);
         }
+
         // =====================================
         // CREATE
         // =====================================
@@ -60,24 +63,23 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ExamScheduleId,ScheduledDate,StartTime,EndTime,ExamId,CommitteeId")] ExamSchedule examSchedule)
+        public async Task<IActionResult> Create([Bind("ExamScheduleId,ExamId,CommitteeId")] ExamSchedule examSchedule)
         {
-            if (examSchedule.EndTime <= examSchedule.StartTime)
-            {
-                ModelState.AddModelError("EndTime", "يجب أن يكون وقت الانتهاء بعد وقت البدء.");
-            }
+            // تم حذف التحقق من الوقت هنا لأنه يتبع الموعد الرئيسي للامتحان
             if (ModelState.IsValid)
             {
                 _context.Add(examSchedule);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "تم إضافة موعد الامتحان بنجاح."; 
+                TempData["SuccessMessage"] = "تم تخصيص اللجنة للامتحان بنجاح.";
                 return RedirectToAction(nameof(Index));
             }
+
             TempData["ErrorMessage"] = "حدث خطأ أثناء الإضافة، يرجى التحقق من البيانات.";
             PopulateDropdowns(examSchedule.ExamId, examSchedule.CommitteeId);
             return View(examSchedule);
         }
-        // =====================================    
+
+        // =====================================  
         // EDIT
         // =====================================
         public async Task<IActionResult> Edit(int? id)
@@ -93,7 +95,7 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ExamScheduleId,ScheduledDate,StartTime,EndTime,ExamId,CommitteeId")] ExamSchedule examSchedule)
+        public async Task<IActionResult> Edit(int id, [Bind("ExamScheduleId,ExamId,CommitteeId")] ExamSchedule examSchedule)
         {
             if (id != examSchedule.ExamScheduleId) return NotFound();
 
@@ -103,16 +105,12 @@ namespace projectweb.Controllers
                 {
                     _context.Update(examSchedule);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "تم تحديث موعد الامتحان بنجاح."; 
+                    TempData["SuccessMessage"] = "تم تحديث التوزيع بنجاح.";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!ExamScheduleExists(examSchedule.ExamScheduleId)) return NotFound();
                     else throw;
-                }
-                catch (Exception)
-                {
-                    TempData["ErrorMessage"] = "حدث خطأ غير متوقع أثناء التعديل.";
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -120,6 +118,7 @@ namespace projectweb.Controllers
             PopulateDropdowns(examSchedule.ExamId, examSchedule.CommitteeId);
             return View(examSchedule);
         }
+
         // =====================================
         // DELETE
         // =====================================
@@ -145,16 +144,9 @@ namespace projectweb.Controllers
             var examSchedule = await _context.ExamSchedules.FindAsync(id);
             if (examSchedule != null)
             {
-                try
-                {
-                    _context.ExamSchedules.Remove(examSchedule);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "تم حذف موعد الامتحان بنجاح.";
-                }
-                catch (Exception)
-                {
-                    TempData["ErrorMessage"] = "لا يمكن حذف الموعد لوجود بيانات مرتبطة به (مثل التكليفات).";
-                }
+                _context.ExamSchedules.Remove(examSchedule);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "تم حذف التوزيع بنجاح.";
             }
             return RedirectToAction(nameof(Index));
         }
@@ -166,14 +158,14 @@ namespace projectweb.Controllers
                 .Select(e => new
                 {
                     Id = e.ExamId,
-                    Name = $"{e.Subject.SubjectName} ({e.TargetAcademicYear})"
+                    Name = $"{e.Subject.SubjectName} - {e.ExamDate.ToShortDateString()} ({e.TargetAcademicYear})"
                 }).ToList();
 
             var committeesQuery = _context.Committees
                 .Select(c => new
                 {
                     Id = c.CommitteeID,
-                    Number = "Committee " + c.CommitteeNumber
+                    Number = "لجنة " + c.CommitteeNumber
                 }).ToList();
 
             ViewData["ExamId"] = new SelectList(examsQuery, "Id", "Name", selectedExam);

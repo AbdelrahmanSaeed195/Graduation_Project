@@ -17,15 +17,6 @@ namespace projectweb.Models
         [Display(Name = "التاريخ")]
         public DateTime ScheduledDate { get; set; }
 
-        [Required(ErrorMessage = "وقت البداية مطلوب")]
-        [DataType(DataType.Time)]
-        [Display(Name = "من")]
-        public TimeSpan StartTime { get; set; }
-
-        [Required(ErrorMessage = "وقت النهاية مطلوب")]
-        [DataType(DataType.Time)]
-        [Display(Name = "إلى")]
-        public TimeSpan EndTime { get; set; }
 
         [Required(ErrorMessage = "يجب اختيار الامتحان")]
         [Display(Name = "المادة")]
@@ -43,7 +34,6 @@ namespace projectweb.Models
         [ForeignKey("CommitteeId")]
         public virtual Committee Committee { get; set; }
 
-        // 🔥 الطلاب المرتبطين بالجلسة
         [ValidateNever]
         public virtual ICollection<Student> Students { get; set; }
 

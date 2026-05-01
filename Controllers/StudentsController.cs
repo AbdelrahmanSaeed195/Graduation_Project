@@ -23,6 +23,8 @@ namespace projectweb.Controllers
             var students = await _context.Students
                 .Include(s => s.ExamSchedule)
                 .ThenInclude(e => e.Committee)
+                .Include(s => s.ExamSchedule)
+                .ThenInclude(e => e.Exam)
                 .OrderBy(s => s.AcademicYear)
                 .ThenBy(s => s.FullName)
                 .ToListAsync();
@@ -191,8 +193,10 @@ namespace projectweb.Controllers
 
             var schedules = await _context.ExamSchedules
                 .Include(e => e.Committee)
-                .OrderBy(e => e.Committee.CommitteeNumber)
-                .ThenBy(e => e.StartTime)
+                .Include(e => e.Exam) 
+                .OrderBy(e => e.Exam.ExamDate) 
+                .ThenBy(e => e.Exam.StartTime) 
+                .ThenBy(e => e.Committee.CommitteeNumber)
                 .ToListAsync();
 
             var grouped = students.GroupBy(s => s.AcademicYear).ToList();

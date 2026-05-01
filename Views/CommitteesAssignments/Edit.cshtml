@@ -7,22 +7,23 @@
         </div>
         <div class="card-body p-4 text-end">
             <form asp-action="Edit">
-
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm border-0 mb-4 py-2"></div>
 
+                @* الحقول المخفية للحفاظ على سلامة البيانات *@
                 <input type="hidden" asp-for="AssignmentID" />
                 <input type="hidden" asp-for="AssignmentType" />
                 <input type="hidden" asp-for="ExamScheduleId" />
-                <input type="hidden" asp-for="RoleID" /> @* لو مش محتاج تغير الدور يفضل تخليه Hidden *@
+                <input type="hidden" asp-for="RoleID" />
+                <input type="hidden" asp-for="RoleType" />
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold">الموظف</label>
+                    <label class="form-label fw-bold">الموظف المراد تكليفه</label>
                     <select asp-for="PersonID" class="form-select shadow-sm" asp-items="ViewBag.PersonID"></select>
                     <span asp-validation-for="PersonID" class="text-danger small"></span>
                 </div>
 
                 <div class="row bg-light p-3 rounded border mb-3 mx-0">
-                    <h6 class="fw-bold border-bottom pb-2 mb-3">تعديل نطاق المسئولية (اختر النطاق الصحيح)</h6>
+                    <h6 class="fw-bold border-bottom pb-2 mb-3 text-secondary">تعديل نطاق المسئولية</h6>
 
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold small text-muted">تغيير الصالة</label>
@@ -47,8 +48,8 @@
                 </div>
 
                 <div class="d-grid gap-2 mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg shadow">تحديث البيانات</button>
-                    <a asp-action="Index" asp-route-scheduleId="@Model.ExamScheduleId" class="btn btn-light btn-lg border">إلغاء</a>
+                    <button type="submit" class="btn btn-primary btn-lg shadow">تحديث بيانات التكليف</button>
+                    <a asp-action="Index" asp-route-scheduleId="@Model.ExamScheduleId" class="btn btn-light btn-lg border">إلغاء والعودة</a>
                 </div>
             </form>
         </div>

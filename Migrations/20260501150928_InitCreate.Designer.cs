@@ -12,8 +12,8 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260501132333_mm")]
-    partial class mm
+    [Migration("20260501150928_InitCreate")]
+    partial class InitCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -343,14 +343,14 @@ namespace projectweb.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExamId"));
 
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime2");
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
 
                     b.Property<DateTime>("ExamDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime2");
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
 
                     b.Property<int>("SubjectID")
                         .HasColumnType("int");
@@ -377,17 +377,11 @@ namespace projectweb.Migrations
                     b.Property<int>("CommitteeId")
                         .HasColumnType("int");
 
-                    b.Property<TimeSpan>("EndTime")
-                        .HasColumnType("time");
-
                     b.Property<int>("ExamId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ScheduledDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<TimeSpan>("StartTime")
-                        .HasColumnType("time");
 
                     b.HasKey("ExamScheduleId");
 
@@ -395,7 +389,7 @@ namespace projectweb.Migrations
 
                     b.HasIndex("ExamId");
 
-                    b.HasIndex("ScheduledDate", "CommitteeId", "StartTime")
+                    b.HasIndex("ScheduledDate", "CommitteeId")
                         .IsUnique();
 
                     b.ToTable("ExamSchedules");

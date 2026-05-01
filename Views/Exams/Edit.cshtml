@@ -7,60 +7,64 @@
 
 <div class="row justify-content-center" dir="rtl">
     <div class="col-xl-8">
-        <div class="card academic-card">
-            <div class="card-header academic-card-header text-white p-4">
-                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-pencil-square me-2"></i> تعديل بيانات الامتحان رقم (#@Model.ExamId)</h4>
+        <div class="card academic-card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+            <div class="card-header academic-card-header text-white p-4" style="background-color: #1a2c4e;">
+                <h4 class="mb-0 fw-bold text-white">
+                    <i class="bi bi-pencil-square me-2"></i> تعديل بيانات الامتحان رقم (#@Model.ExamId)
+                </h4>
             </div>
             <div class="card-body p-4 bg-white">
-                <form asp-action="Edit" method="post">
+                <form asp-action="Edit" method="post" id="editExamForm">
                     <input type="hidden" asp-for="ExamId" />
+
+                    @* عرض الأخطاء المنطقية من السيرفر *@
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
 
                     <div class="row g-4 mb-4">
                         <div class="col-md-6">
-                            <label asp-for="SubjectID" class="form-label academic-label required">المادة الدراسية</label>
-                            <select asp-for="SubjectID" asp-items="@(ViewData["SubjectID"] as SelectList)" class="form-select academic-input">
+                            <label asp-for="SubjectID" class="form-label fw-bold" style="color: #4a5568;">المادة الدراسية <span class="text-danger">*</span></label>
+                            <select asp-for="SubjectID" asp-items="@(ViewBag.SubjectID)" class="form-select border-light-subtle shadow-sm" style="border-radius: 8px;">
                                 <option value="">-- اختر المادة --</option>
                             </select>
                             <span asp-validation-for="SubjectID" class="text-danger small mt-1 d-block"></span>
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="ExamDate" class="form-label academic-label required">تاريخ الامتحان</label>
-                            <input asp-for="ExamDate" class="form-control academic-input" type="date" />
+                            <label asp-for="ExamDate" class="form-label fw-bold" style="color: #4a5568;">تاريخ الامتحان <span class="text-danger">*</span></label>
+                            <input asp-for="ExamDate" class="form-control border-light-subtle shadow-sm" type="date" style="border-radius: 8px;" />
                             <span asp-validation-for="ExamDate" class="text-danger small mt-1 d-block"></span>
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="StartTime" class="form-label academic-label required">وقت البدء</label>
-                            <input asp-for="StartTime" class="form-control academic-input" type="time" />
+                            <label asp-for="StartTime" class="form-label fw-bold" style="color: #4a5568;">وقت البدء <span class="text-danger">*</span></label>
+                            <input asp-for="StartTime" id="StartTime" class="form-control border-light-subtle shadow-sm text-center fw-bold" type="time" style="border-radius: 8px;" />
                             <span asp-validation-for="StartTime" class="text-danger small mt-1 d-block"></span>
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="EndTime" class="form-label academic-label required">وقت الانتهاء</label>
-                            <input asp-for="EndTime" class="form-control academic-input" type="time" />
+                            <label asp-for="EndTime" class="form-label fw-bold" style="color: #4a5568;">وقت الانتهاء <span class="text-danger">*</span></label>
+                            <input asp-for="EndTime" id="EndTime" class="form-control border-light-subtle shadow-sm text-center fw-bold" type="time" style="border-radius: 8px;" />
                             <span asp-validation-for="EndTime" class="text-danger small mt-1 d-block"></span>
                         </div>
 
                         <div class="col-md-12">
-                            <label asp-for="TargetAcademicYear" class="form-label academic-label required">السنة الدراسية المستهدفة</label>
-                            <select asp-for="TargetAcademicYear" class="form-select academic-input">
+                            <label asp-for="TargetAcademicYear" class="form-label fw-bold" style="color: #4a5568;">السنة الدراسية المستهدفة <span class="text-danger">*</span></label>
+                            <select asp-for="TargetAcademicYear" class="form-select border-light-subtle shadow-sm" style="border-radius: 8px;">
                                 <option value="">-- اختر السنة الدراسية --</option>
-                                <option value="1">المستوى الأول</option>
-                                <option value="2">المستوى الثاني</option>
-                                <option value="3">المستوى الثالث</option>
-                                <option value="4">المستوى الرابع</option>
+                                <option value="المستوى الأول">المستوى الأول</option>
+                                <option value="المستوى الثاني">المستوى الثاني</option>
+                                <option value="المستوى الثالث">المستوى الثالث</option>
+                                <option value="المستوى الرابع">المستوى الرابع</option>
                             </select>
                             <span asp-validation-for="TargetAcademicYear" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
-                    <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
-                        <button type="submit" class="btn btn-academic-primary px-4 fw-bold">
+                    <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
+                        <button type="submit" class="btn btn-academic-primary px-5 fw-bold shadow-sm" style="background-color: #1a2c4e; color: white; border-radius: 8px;">
                             <i class="bi bi-check-circle me-1"></i> حفظ التعديلات
                         </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4 shadow-sm" style="border-radius: 8px;">إلغاء وتراجع</a>
                     </div>
                 </form>
             </div>
@@ -70,4 +74,25 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function () {
+            // منع إرسال الفورم إذا كان وقت النهاية قبل البداية
+            $('#editExamForm').submit(function (e) {
+                var start = $('#StartTime').val();
+                var end = $('#EndTime').val();
+
+                if (start && end && end <= start) {
+                    e.preventDefault();
+                    alert("خطأ منطقي: يجب أن يكون وقت انتهاء الامتحان لاحقاً لوقت البدء.");
+                    $('#EndTime').addClass('is-invalid');
+                }
+            });
+
+            // إزالة علامة الخطأ عند التغيير
+            $('#EndTime, #StartTime').change(function() {
+                $('#EndTime').removeClass('is-invalid');
+            });
+        });
+    </script>
 }

@@ -68,8 +68,13 @@
                                                 لجنة @s.ExamSchedule.Committee.CommitteeNumber
                                             </span>
                                             <br />
-                                            <small style="color: var(--text-muted);">
-                                                جلسة: @s.ExamSchedule.ExamScheduleId
+
+                                            <small class="text-muted d-block">
+                                                @s.ExamSchedule.ScheduledDate.ToString("yyyy-MM-dd")
+                                            </small>
+
+                                            <small class="text-muted d-block">
+                                                @s.ExamSchedule.Exam.StartTime - @s.ExamSchedule.Exam.EndTime
                                             </small>
                                         </div>
                                     }

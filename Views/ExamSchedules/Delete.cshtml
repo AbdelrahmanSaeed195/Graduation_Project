@@ -1,7 +1,7 @@
 ﻿@model projectweb.Models.ExamSchedule
 
 @{
-    ViewData["Title"] = "حذف موعد امتحان";
+    ViewData["Title"] = "حذف توزيع اللجنة";
 }
 
 <div class="container mt-5" dir="rtl">
@@ -10,16 +10,16 @@
             <div class="card shadow-lg border-0 rounded-3 border-danger" style="border-top-width: 5px !important;">
                 <div class="card-header bg-danger text-white py-3 border-0 rounded-top-3">
                     <h3 class="card-title mb-0 fw-bold text-center">
-                        <i class="bi bi-exclamation-triangle me-2"></i> تأكيد حذف موعد امتحان
+                        <i class="bi bi-exclamation-triangle me-2"></i> تأكيد حذف توزيع اللجنة
                     </h3>
                 </div>
 
                 <div class="card-body p-4 p-md-5 text-center">
                     <div class="alert alert-warning border-0 rounded-3 p-4 mb-5 shadow-sm">
                         <i class="bi bi-patch-exclamation-fill text-warning fs-1 mb-3"></i>
-                        <h4 class="fw-bold text-dark">هل أنت متأكد نهائياً من رغبتك في حذف هذا الموعد؟</h4>
+                        <h4 class="fw-bold text-dark">هل أنت متأكد نهائياً من رغبتك في حذف هذا التوزيع؟</h4>
                         <p class="text-danger mb-0 fw-bold">
-                            تحذير: هذا الإجراء لا يمكن التراجع عنه وقد يؤدي لمشاكل في التقارير المرتبطة.
+                            تحذير: سيتم إزالة ربط اللجنة بهذا الامتحان، وهذا الإجراء لا يمكن التراجع عنه.
                         </p>
                     </div>
 
@@ -27,11 +27,13 @@
                         <div class="card-body py-3 px-4">
                             <h5 class="fw-bold text-primary border-bottom pb-2 mb-3">
                                 @(Model.Exam?.Subject?.SubjectName ?? "مادة غير محددة")
+                                <small class="text-muted fw-normal fs-6">(@Model.Exam?.TargetAcademicYear)</small>
                             </h5>
                             <p class="mb-2"><strong>اللجنة:</strong> لجنة @Model.Committee?.CommitteeNumber</p>
-                            <p class="mb-2"><strong>التاريخ:</strong> @Model.ScheduledDate.ToString("dd / MM / yyyy")</p>
+                            @* تم التعديل لجلب التاريخ والوقت من موديل الامتحان المرتبط *@
+                            <p class="mb-2"><strong>التاريخ المقرر:</strong> @Model.Exam?.ExamDate.ToString("dd / MM / yyyy")</p>
                             <p class="mb-0">
-                                <strong>الوقت:</strong> @Model.StartTime.ToString(@"hh\:mm") - @Model.EndTime.ToString(@"hh\:mm")
+                                <strong>توقيت الامتحان:</strong> @Model.Exam?.StartTime.ToString(@"hh\:mm") - @Model.Exam?.EndTime.ToString(@"hh\:mm")
                             </p>
                         </div>
                     </div>

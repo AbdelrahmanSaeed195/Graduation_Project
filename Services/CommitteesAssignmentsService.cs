@@ -27,8 +27,8 @@ namespace projectweb.Services
 
             if (currentSchedule == null) return false;
 
-            var startTime = currentSchedule.StartTime;
-            var endTime = currentSchedule.EndTime;
+            var startTime = currentSchedule.Exam.StartTime;
+            var endTime = currentSchedule.Exam.EndTime;
             var currentDate = currentSchedule.ScheduledDate.Date;
             var yesterday = currentDate.AddDays(-1);
             var hallId = currentSchedule.Committee.Block.HallId;
@@ -37,8 +37,8 @@ namespace projectweb.Services
             var busyPersonIds = await _context.CommitteesAssignments
                 .Include(a => a.ExamSchedule)
                 .Where(a => a.ExamSchedule.ScheduledDate.Date == currentDate &&
-                            a.ExamSchedule.StartTime < endTime &&
-                            a.ExamSchedule.EndTime > startTime)
+                            a.ExamSchedule.Exam.StartTime < endTime &&
+                            a.ExamSchedule.Exam.EndTime > startTime)
                 .Select(a => a.PersonID)
                 .Distinct()
                 .ToListAsync();
