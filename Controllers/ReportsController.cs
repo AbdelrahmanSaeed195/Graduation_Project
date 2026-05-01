@@ -67,6 +67,112 @@ namespace projectweb.Controllers
 
             return View(report);
         }
+        // =====================================
+        // CREATE
+        // =====================================
+        public IActionResult Create()
+        {
+            PopulateSchedulesDropDownList();
+            return View();
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("ReportID,Status,Notes,ScheduleID")] Report report)
+        {
+            if (ModelState.IsValid)
+            {
+                report.CreatedDate = DateTime.Now;
+                _context.Add(report);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "تم إنشاء المحضر بنجاح";
+                return RedirectToAction(nameof(Index));
+            }
+
+            PopulateSchedulesDropDownList(report.ScheduleID);
+            return View(report);
+        }
+
+        // =====================================
+        // EDIT
+        // =====================================
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var report = await _context.Reports.FindAsync(id);
+            if (report == null) return NotFound();
+
+            PopulateSchedulesDropDownList(report.ScheduleID);
+            return View(report);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("ReportID,CreatedDate,Status,Notes,ScheduleID")] Report report)
+        {
+            if (id != report.ReportID) return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(report);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "تم تحديث المحضر بنجاح";
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ReportExists(report.ReportID)) return NotFound();
+                    else throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
+
+            PopulateSchedulesDropDownList(report.ScheduleID);
+            return View(report);
+        }
+
+        // =====================================
+        // DELETE
+        // =====================================
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var report = await _context.Reports
+                .Include(r => r.ExamSchedule)
+                    .ThenInclude(s => s.Exam)
+                .FirstOrDefaultAsync(m => m.ReportID == id);
+
+            if (report == null) return NotFound();
+
+            return View(report);
+        }
+
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var report = await _context.Reports.FindAsync(id);
+            if (report != null)
+            {
+                try
+                {
+                    _context.Reports.Remove(report);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "تم حذف المحضر بنجاح";
+                }
+                catch (Exception)
+                {
+                    TempData["ErrorMessage"] = "لا يمكن حذف المحضر لوجود أشخاص مرتبطين به في جدول التوقيعات.";
+                }
+            }
+            return RedirectToAction(nameof(Index));
+        }
 
         // =====================================
         // PRINT ASSIGNMENTS (توزيع المراقبين)
