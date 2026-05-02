@@ -6,18 +6,18 @@
 
 <div class="row justify-content-center">
     <div class="col-lg-6">
-        <div class="app-card bg-white p-4">
+        <div class="academic-card p-4">
             <h4 class="section-title mb-4"><i class="bi bi-file-earmark-person"></i> تفاصيل العلاقة</h4>
             <div class="row g-3">
-                <div class="col-12"><div class="bg-light rounded p-3"><div class="small text-muted">الموظف</div><div class="fw-bold">@Model.Person?.FullName</div></div></div>
-                <div class="col-12"><div class="bg-light rounded p-3"><div class="small text-muted">الطالب</div><div class="fw-bold">@Model.Student?.FullName</div></div></div>
-                <div class="col-md-6"><div class="bg-light rounded p-3"><div class="small text-muted">نوع العلاقة</div><span class="badge bg-primary">@Model.RelationType</span></div></div>
-                <div class="col-md-6"><div class="bg-light rounded p-3"><div class="small text-muted">السنة الأكاديمية</div><div class="fw-bold">@Model.AcademicYear</div></div></div>
+                <div class="col-12"><div class="data-panel"><div class="panel-label">الموظف</div><div class="panel-value">@Model.Person?.FullName</div></div></div>
+                <div class="col-12"><div class="data-panel"><div class="panel-label">الطالب</div><div class="panel-value">@Model.Student?.FullName</div></div></div>
+                <div class="col-md-6"><div class="data-panel"><div class="panel-label">نوع العلاقة</div><span class="badge bg-primary">@Model.RelationType</span></div></div>
+                <div class="col-md-6"><div class="data-panel"><div class="panel-label">السنة الأكاديمية</div><div class="panel-value">@Model.AcademicYear</div></div></div>
             </div>
             <div class="d-flex gap-2 flex-wrap mt-4">
-                <a asp-action="Edit" asp-route-id="@Model.RelativeId" class="btn btn-primary"><i class="bi bi-pencil-square"></i> تعديل</a>
+                <a asp-action="Edit" asp-route-id="@Model.RelativeId" class="btn btn-academic-primary"><i class="bi bi-pencil-square"></i> تعديل</a>
                 <a asp-action="Delete" asp-route-id="@Model.RelativeId" class="btn btn-outline-danger"><i class="bi bi-trash"></i> حذف</a>
-                <a asp-action="Index" class="btn btn-light border">عودة</a>
+                <a asp-action="Index" class="btn btn-outline-academic">عودة</a>
             </div>
         </div>
     </div>

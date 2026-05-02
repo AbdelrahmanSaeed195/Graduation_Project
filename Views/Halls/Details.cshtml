@@ -24,10 +24,8 @@
                             <td style="width: 25%;">الدور @Model.Floor</td>
                         </tr>
                         <tr>
-                            <th class="bg-light">مشرف الصالة</th>
-                            <td>@(Model.HallSupervisor?.FullName ?? "لم يتم التعيين")</td>
                             <th class="bg-light">السعة المتاحة</th>
-                            <td>@Model.MaxBlocks بلوكات</td>
+                            <td colspan="3">@Model.MaxBlocks بلوكات</td>
                         </tr>
                     </tbody>
                 </table>

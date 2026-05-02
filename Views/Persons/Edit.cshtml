@@ -1,77 +1,54 @@
-@model projectweb.Models.Person
 
+@model projectweb.Models.Person
 @{
     ViewData["Title"] = "تعديل بيانات الشخص";
 }
 
-<div class="main-content" dir="rtl">
-    <div class="top-nav shadow-sm px-4 d-flex align-items-center bg-white" style="height: 60px;">
-        <a asp-action="Index" class="text-decoration-none text-secondary ms-3">
-            <i class="bi bi-arrow-right"></i>
-        </a>
-        <h5 class="fw-bold mb-0"> تعديل البيانات الشخصية</h5>
-    </div>
-
-    <div class="content-body px-4 pt-4" style="max-width: 800px; margin: auto;">
-        
-        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
-
-        <form asp-action="Edit" method="post">
-            <input type="hidden" asp-for="PersonId" />
-            @* الحفاظ على الـ RoleID مخفي عشان الـ Database Relation *@
-            <input type="hidden" asp-for="RoleID" />
-
-            <div class="card border-0 shadow-sm p-4" style="border-radius: 12px;">
-                <h6 class="text-primary fw-bold mb-4 border-bottom pb-2">
-                    <i class="bi bi-person-vcard ms-2"></i>تعديل البيانات الأساسية
-                </h6>
-                
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label asp-for="FullName" class="form-label small fw-bold text-secondary">الاسم الكامل</label>
-                        <input asp-for="FullName" class="form-control border-secondary-subtle" />
-                        <span asp-validation-for="FullName" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="NationalId" class="form-label small fw-bold text-secondary">الرقم القومي</label>
-                        <input asp-for="NationalId" class="form-control border-secondary-subtle" maxlength="14" />
-                        <span asp-validation-for="NationalId" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="Phone" class="form-label small fw-bold text-secondary">رقم المحمول</label>
-                        <input asp-for="Phone" class="form-control border-secondary-subtle" maxlength="11" />
-                        <span asp-validation-for="Phone" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="Email" class="form-label small fw-bold text-secondary">عنوان البريد الالكتروني</label>
-                        <input asp-for="Email" class="form-control border-secondary-subtle" type="email" />
-                        <span asp-validation-for="Email" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="JobRole" class="form-label small fw-bold text-secondary">الوظيفة</label>
-                        @* تم تعديل الاختيار ليكون من الـ Enum *@
-                        <select asp-for="JobRole" asp-items="Html.GetEnumSelectList<projectweb.Models.JobTitle>()" class="form-select border-secondary-subtle">
-                            <option value="">-- اختر الوظيفة --</option>
-                        </select>
-                        <span asp-validation-for="JobRole" class="text-danger small"></span>
-                    </div>
-                </div>
-
-                <div class="d-flex gap-2 mt-4 pt-3 border-top">
-                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
-                        <i class="bi bi-check-circle ms-2"></i> حفظ التغييرات
-                    </button>
-                    <a asp-action="Index" class="btn btn-light border w-50 py-2">إلغاء</a>
-                </div>
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-xl-8">
+        <div class="card academic-card">
+            <div class="card-header academic-card-header text-white p-4">
+                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-pencil-square me-2"></i> تعديل البيانات الشخصية</h4>
             </div>
-        </form>
+            <div class="card-body p-4 bg-white">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="PersonId" />
+                    <input type="hidden" asp-for="RoleID" />
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-12">
+                            <label asp-for="FullName" class="form-label academic-label">الاسم الكامل</label>
+                            <input asp-for="FullName" class="form-control academic-input" />
+                            <span asp-validation-for="FullName" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="NationalId" class="form-label academic-label">الرقم القومي</label>
+                            <input asp-for="NationalId" class="form-control academic-input" maxlength="14" />
+                            <span asp-validation-for="NationalId" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Phone" class="form-label academic-label">رقم المحمول</label>
+                            <input asp-for="Phone" class="form-control academic-input" maxlength="11" />
+                            <span asp-validation-for="Phone" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label academic-label">البريد الإلكتروني</label>
+                            <input asp-for="Email" class="form-control academic-input" />
+                            <span asp-validation-for="Email" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="JobRole" class="form-label academic-label">الوظيفة</label>
+                            <select asp-for="JobRole" asp-items="Html.GetEnumSelectList<projectweb.Models.JobTitle>()" class="form-select academic-input"></select>
+                            <span asp-validation-for="JobRole" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+                        <button type="submit" class="btn btn-academic-primary px-4 fw-bold">
+                            <i class="bi bi-check2-circle me-1"></i> حفظ التغييرات
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

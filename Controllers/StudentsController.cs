@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using projectweb.Models;
@@ -30,6 +30,35 @@ namespace projectweb.Controllers
                 .ToListAsync();
 
             return View(students);
+        }
+
+        // =====================================
+        // SEARCH
+        // =====================================
+        [HttpGet]
+        public async Task<IActionResult> Search(string searchTerm)
+        {
+            var query = _context.Students
+                .Include(s => s.ExamSchedule)
+                .ThenInclude(e => e.Committee)
+                .Include(s => s.ExamSchedule)
+                .ThenInclude(e => e.Exam)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower();
+                query = query.Where(s => s.FullName.ToLower().Contains(searchTerm)
+                                      || s.NationalId.Contains(searchTerm));
+            }
+
+            var students = await query
+                .OrderBy(s => s.AcademicYear)
+                .ThenBy(s => s.FullName)
+                .ToListAsync();
+
+            ViewBag.Search = searchTerm;
+            return View("Index", students);
         }
 
         // =====================================

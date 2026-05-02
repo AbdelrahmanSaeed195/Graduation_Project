@@ -1,81 +1,44 @@
-@model projectweb.Models.Person
 
+@model projectweb.Models.Person
 @{
     ViewData["Title"] = "تفاصيل الموظف";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="main-content" dir="rtl">
-    <div class="container-fluid py-4">
-        
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="fw-bold mb-0">بيانات الملف الشخصي</h4>
-            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
-                ارجع الى القائمة <i class="bi bi-arrow-left ms-1"></i>
-            </a>
-        </div>
-
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                
-                <div class="card border-0 shadow-sm" style="border-radius: 12px;">
-                    <div class="card-body p-4">
-                        
-                        <h5 class="text-primary fw-bold mb-4 border-bottom pb-2">
-                            <i class="bi bi-person-badge ms-2"></i> تفاصيل المعلومات الشخصية
-                        </h5>
-
-                        <div class="mb-3">
-                            <label class="small text-muted d-block">الاسم الكامل</label>
-                            <div class="p-2 bg-light rounded fw-medium">@Model.FullName</div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <label class="small text-muted d-block">الرقم القومي</label>
-                                <div class="p-2 bg-light rounded">@Model.NationalId</div>
-                            </div>
-                            <div class="col-6">
-                                <label class="small text-muted d-block">رقم المحمول</label>
-                                <div class="p-2 bg-light rounded">@Model.Phone</div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="small text-muted d-block">البريد الالكتروني</label>
-                            <div class="p-2 bg-light rounded">@(Model.Email ?? "غير متوفر")</div>
-                        </div>
-
-                        <<div class="mb-4">
-                            <label class="small text-muted fw-bold d-block mb-1">المسمى الوظيفي / الدور</label>
-                            @{
-                                var roleColor = "info";
-                                switch (Model.JobRole)
-                                {
-                                    case projectweb.Models.JobTitle.Dean: roleColor = "danger"; break;
-                                    case projectweb.Models.JobTitle.Professor: roleColor = "primary"; break;
-                                    case projectweb.Models.JobTitle.ProfessorEmeritus: roleColor = "success"; break;
-                                    case projectweb.Models.JobTitle.AssistantProfessor: roleColor = "warning"; break;
-                                }
-                            }
-                            <div class="p-3 border border-@roleColor-subtle bg-@roleColor-subtle rounded-3">
-                                <span class="fw-bold text-@roleColor-emphasis fs-6 d-flex align-items-center">
-                                    @* ms-2 بتعمل مسافة على اليسار للأيقونة فتبعد عن النص *@
-                                    <i class="bi bi-briefcase ms-2"></i>
-                                    @Html.DisplayFor(m => m.JobRole)
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="d-flex gap-2 pt-3 border-top mt-4">
-                            <a asp-action="Edit" asp-route-id="@Model.PersonId" class="btn btn-primary w-100 py-2 fw-bold">
-                                <i class="bi bi-pencil-square ms-2"></i> تعديل البيانات
-                            </a>
-                            <a asp-action="Delete" asp-route-id="@Model.PersonId" class="btn btn-outline-danger w-50 py-2">
-                                <i class="bi bi-trash ms-2"></i> حذف
-                            </a>
-                        </div>
-                    </div>
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-xl-9">
+        <div class="card academic-card shadow-sm">
+            <div class="card-header academic-card-header text-white p-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-white"><i class="bi bi-person-vcard-fill me-2"></i> بيانات الملف الشخصي</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-bordered mb-0">
+                    <tbody>
+                        <tr>
+                            <th class="bg-light" style="width: 25%;">الاسم الكامل</th>
+                            <td colspan="3" class="fw-bold" style="color: var(--text-main);">@Model.FullName</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light" style="width: 25%;">الرقم القومي</th>
+                            <td style="width: 25%;">@Model.NationalId</td>
+                            <th class="bg-light" style="width: 25%;">رقم المحمول</th>
+                            <td style="width: 25%;"><span style="color: var(--accent-blue);" class="fw-medium">@Model.Phone</span></td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light" style="width: 25%;">البريد الإلكتروني</th>
+                            <td style="width: 25%;">@(Model.Email ?? "غير متوفر")</td>
+                            <th class="bg-light" style="width: 25%;">المسمى الوظيفي / الدور</th>
+                            <td style="width: 25%;"><span class="badge" style="background-color: var(--bg-light); color: var(--primary-navy); border: 1px solid var(--border-color);">@Html.DisplayFor(m => m.JobRole)</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="card-footer bg-light p-3 d-flex justify-content-end gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.PersonId" class="btn btn-academic-primary px-4 fw-bold">
+                        <i class="bi bi-pencil-square me-1"></i> تعديل البيانات
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.PersonId" class="btn btn-outline-danger px-4">
+                        <i class="bi bi-trash ms-2"></i> حذف
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">الرجوع للقائمة</a>
                 </div>
             </div>
         </div>

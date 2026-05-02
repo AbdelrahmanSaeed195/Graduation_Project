@@ -37,7 +37,6 @@
                         <th class="ps-4">رقم اللجنة</th>
                         <th>المكان (القاعة / البلوك)</th>
                         <th class="text-center">السعة الطلابية</th>
-                        <th class="text-center">الطاقم المطلوب (رؤساء/مراقبين/معاونين)</th>
                         <th class="text-center">الحالة</th>
                         <th class="text-center pe-4">الإجراءات</th>
                     </tr>
@@ -59,11 +58,7 @@
                                         <i class="bi bi-people-fill me-1"></i> @item.NumberOfStudent
                                     </span>
                                 </td>
-                                <td class="text-center text-muted small">
-                                    <span class="badge bg-secondary" title="رؤساء">@item.RequiredHeads</span> /
-                                    <span class="badge bg-info text-dark" title="مراقبين">@item.RequiredObservers</span> /
-                                    <span class="badge px-2 py-1" style="background-color: var(--bg-light); color: var(--text-main); border: 1px solid var(--border-color);" title="معاونين">@item.RequiredMentors</span>
-                                </td>
+
                                 <td class="text-center">
                                     @if (item.StatusOfCommittee == "نشطة")
                                     {
@@ -97,7 +92,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">لا توجد لجان مسجلة</td>
+                            <td colspan="5" class="text-center py-5 text-muted">لا توجد لجان مسجلة</td>
                         </tr>
                     }
                 </tbody>

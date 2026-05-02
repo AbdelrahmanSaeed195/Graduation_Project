@@ -1,80 +1,42 @@
 @model IEnumerable<projectweb.Models.Person>
-
 @{
-    ViewData["Title"] = "ادارة الموظفين";
+    ViewData["Title"] = "إدارة الموظفين";
     Layout = "~/Views/Shared/_Layout.cshtml";
-}
-
-@section Styles {
-    <style>
-        .btn-action {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            text-decoration: none;
-        }
-        .btn-details { color: #0dcaf0; border: 1px solid #0dcaf0; }
-        .btn-details:hover { background-color: #0dcaf0; color: white; }
-        
-        .btn-edit { color: #0d6efd; border: 1px solid #0d6efd; }
-        .btn-edit:hover { background-color: #0d6efd; color: white; }
-        
-        .btn-delete { color: #dc3545; border: 1px solid #dc3545; }
-        .btn-delete:hover { background-color: #dc3545; color: white; }
-
-        .badge-role { font-weight: 500; padding: 0.5em 0.8em; border-radius: 6px; }
-        .search-container { background-color: #f8f9fa; border-radius: 12px; padding: 1.5rem; border: 1px solid #e9ecef; }
-
-        .status-indicator {
-            height: 8px;
-            width: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-left: 5px;
-        }
-        .status-active { background-color: #198754; }
-        .status-inactive { background-color: #dc3545; }
-    </style>
 }
 
 <div class="content-body" dir="rtl">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 fw-bold">ادارة الاشخاص والموظفين</h1>
-        <a asp-action="Create" class="btn btn-primary px-4 shadow-sm">
-            <i class="bi bi-person-plus-fill me-1"></i> اضافة شخص
+        <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-people-fill me-2"></i> إدارة الأشخاص والموظفين</h1>
+        <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
+            <i class="bi bi-person-plus-fill me-1"></i> إضافة شخص
         </a>
     </div>
 
-    <div class="search-container mb-4 shadow-sm bg-white">
-        <form method="get" class="row g-3">
-            <div class="col-md-9">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="ابحث بالاسم او الرقم القومي .." value="@ViewBag.Search">
+    <div class="card academic-card mb-4 shadow-sm">
+        <div class="card-body p-3 bg-white rounded">
+            <form method="get" class="row g-3">
+                <div class="col-md-9">
+                    <input type="text" name="search" class="form-control academic-input" placeholder="ابحث بالاسم أو الرقم القومي .." value="@ViewBag.Search">
                 </div>
-            </div>
-            <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-dark w-100"> ابحث</button>
-                <a asp-action="Index" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center text-decoration-none">اعادة تعيين</a>
-            </div>
-        </form>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-academic-primary w-100 fw-bold"><i class="bi bi-search me-1"></i> ابحث</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary w-100"><i class="bi bi-arrow-counterclockwise me-1"></i> إعادة تعيين</a>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+    <div class="card academic-card overflow-hidden shadow-sm">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 text-center">
-                <thead class="bg-light">
+            <table class="table academic-table table-hover align-middle mb-0">
+                <thead>
                     <tr>
-                        <th class="ps-4 text-end">الاسم الكامل</th>
+                        <th class="ps-4">الاسم الكامل</th>
                         <th>الرقم القومي</th>
                         <th>رقم المحمول</th>
                         <th>الدور/الوظيفة</th>
-                        <th>الحالة</th>
-                        <th class="pe-4">العمليات</th>
+                        <th class="text-center">الحالة</th>
+                        <th class="text-center pe-4">العمليات</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -83,49 +45,29 @@
                         foreach (var p in Model)
                         {
                             <tr>
-                                <td class="ps-4 fw-medium text-dark text-end">@p.FullName</td>
-                                <td class="text-muted small">@p.NationalId</td>
-                                <td class="small">@p.Phone</td>
+                                <td class="ps-4 fw-bold" style="color: var(--text-main);">@p.FullName</td>
+                                <td>@p.NationalId</td>
+                                <td><span style="color: var(--accent-blue);" class="fw-medium">@p.Phone</span></td>
                                 <td>
-                                    @{
-                                        var badgeClass = "bg-light text-dark border-dark-subtle";
-                                        switch (p.JobRole)
-                                        {
-                                            case projectweb.Models.JobTitle.ProfessorEmeritus: badgeClass = "bg-success-subtle text-success border-success-subtle"; break;
-                                            case projectweb.Models.JobTitle.Dean: badgeClass = "bg-danger-subtle text-danger border-danger-subtle"; break;
-                                            case projectweb.Models.JobTitle.Professor: badgeClass = "bg-primary-subtle text-primary border-primary-subtle"; break;
-                                            case projectweb.Models.JobTitle.AssistantProfessor: badgeClass = "bg-warning-subtle text-warning-emphasis border-warning-subtle"; break;
-                                            default: badgeClass = "bg-info-subtle text-info border-info-subtle"; break;
-                                        }
-                                    }
-                                    <span class="badge badge-role @badgeClass">
+                                    <span class="badge px-3 py-2" style="background-color: var(--bg-light); color: var(--primary-navy); border: 1px solid var(--border-color);">
                                         @Html.DisplayFor(modelItem => p.JobRole)
                                     </span>
                                 </td>
-                                <td>
-                                    @if (p.IsActiveForAssignment)
-                                    {
-                                        <span class="text-success small fw-bold">
-                                            <span class="status-indicator status-active"></span> نشط
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-danger small fw-bold">
-                                            <span class="status-indicator status-inactive"></span> متوقف
-                                        </span>
-                                    }
+                                <td class="text-center">
+                                    <span class="badge @(p.IsActiveForAssignment ? "bg-success" : "bg-danger") px-3 py-2">
+                                        @(p.IsActiveForAssignment ? "نشط" : "متوقف")
+                                    </span>
                                 </td>
-                                <td class="pe-4">
+                                <td class="text-center pe-4">
                                     <div class="d-flex justify-content-center gap-2">
-                                        <a asp-action="Details" asp-route-id="@p.PersonId" class="btn-action btn-details">
-                                            <i class="bi bi-eye"></i> تفاصيل
+                                        <a asp-action="Details" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-info" title="عرض التفاصيل">
+                                            <i class="bi bi-eye"></i>
                                         </a>
-                                        <a asp-action="Edit" asp-route-id="@p.PersonId" class="btn-action btn-edit">
-                                            <i class="bi bi-pencil"></i> تعديل
+                                        <a asp-action="Edit" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-academic" title="تعديل">
+                                            <i class="bi bi-pencil-square"></i>
                                         </a>
-                                        <a asp-action="Delete" asp-route-id="@p.PersonId" class="btn-action btn-delete">
-                                            <i class="bi bi-trash3"></i> حذف
+                                        <a asp-action="Delete" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-danger" title="حذف">
+                                            <i class="bi bi-trash"></i>
                                         </a>
                                     </div>
                                 </td>
@@ -135,7 +77,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">لا توجد نتائج بحث مطابقة</td>
+                            <td colspan="6" class="text-center py-5 text-muted">لا يوجد أشخاص مسجلين.</td>
                         </tr>
                     }
                 </tbody>

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<projectweb.Models.Relative>
+@model IEnumerable<projectweb.Models.Relative>
 @using Microsoft.AspNetCore.Mvc.Rendering
 @{
     ViewData["Title"] = "إدارة علاقات القرابة";
@@ -14,12 +14,12 @@
         <h4 class="fw-bold m-0 section-title">إدارة علاقات القرابة</h4>
     </div>
 
-    <div class="app-card bg-white mb-3 p-3">
+    <div class="academic-card mb-3 p-3">
         <div class="card-body py-2">
             <form method="get" asp-action="Index" class="row g-2 align-items-end">
                 <div class="col-md-9">
-                    <label class="small fw-bold text-muted">تصفية حسب الشخص</label>
-                    <select name="personId" class="form-select">
+                    <label class="academic-label mb-1">تصفية حسب الشخص</label>
+                    <select name="personId" class="form-select academic-input">
                         <option value="">عرض جميع الأشخاص</option>
                         @foreach (var p in personsList)
                         {
@@ -35,7 +35,7 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-dark btn-sm w-100">تطبيق</button>
+                    <button type="submit" class="btn btn-academic-primary w-100">تطبيق</button>
                 </div>
             </form>
         </div>
@@ -43,14 +43,14 @@
 
     @if (!string.IsNullOrEmpty(selectedPersonId))
     {
-        <div class="app-card bg-white mb-3 p-3 border-start border-primary border-4">
+        <div class="academic-card mb-3 p-3 border-start border-primary border-4">
             <div class="card-body py-3">
-                <h6 class="fw-bold mb-3 small text-primary">إضافة علاقة قريبة</h6>
+                <h6 class="academic-heading mb-3 small text-primary">إضافة علاقة قريبة</h6>
                 <form asp-action="Create" method="post" class="row g-2">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="PersonId" value="@selectedPersonId" />
                     <div class="col-md-4">
-                        <select name="StudentId" class="form-select" required>
+                        <select name="StudentId" class="form-select academic-input" required>
                             <option value="">اختر الطالب</option>
                             @foreach (var s in studentsList) {
                                 <option value="@s.Value">@s.Text</option>
@@ -58,22 +58,22 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <input name="RelationType" class="form-control" placeholder="نوع العلاقة" required />
+                        <input name="RelationType" class="form-control academic-input" placeholder="نوع العلاقة" required />
                     </div>
                     <div class="col-md-3">
-                        <input name="AcademicYear" type="number" class="form-control" value="2026" required />
+                        <input name="AcademicYear" type="number" class="form-control academic-input" value="2026" required />
                     </div>
                     <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">حفظ</button>
+                        <button type="submit" class="btn btn-academic-primary w-100">حفظ</button>
                     </div>
                 </form>
             </div>
         </div>
     }
 
-    <div class="app-card bg-white">
+    <div class="academic-card">
         <div class="table-responsive">
-            <table class="table table-clean table-hover align-middle mb-0">
+            <table class="table academic-table table-hover align-middle mb-0">
                 <thead>
                     <tr>
                         <th class="ps-3 small">الموظف</th>
@@ -97,8 +97,8 @@
                             <td class="text-center">@r.AcademicYear</td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2">
-                                    <a asp-action="Details" asp-route-id="@r.RelativeId" class="btn btn-sm btn-outline-info" title="عرض"><i class="bi bi-eye"></i></a>
-                                    <a asp-action="Edit" asp-route-id="@r.RelativeId" class="btn btn-sm btn-outline-primary" title="تعديل"><i class="bi bi-pencil-square"></i></a>
+                                    <a asp-action="Details" asp-route-id="@r.RelativeId" class="btn btn-sm btn-outline-academic" title="عرض"><i class="bi bi-eye"></i></a>
+                                    <a asp-action="Edit" asp-route-id="@r.RelativeId" class="btn btn-sm btn-outline-academic" title="تعديل"><i class="bi bi-pencil-square"></i></a>
                                     <a asp-action="Delete" asp-route-id="@r.RelativeId" class="btn btn-sm btn-outline-danger" title="حذف"><i class="bi bi-trash"></i></a>
                                 </div>
                             </td>

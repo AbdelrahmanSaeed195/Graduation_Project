@@ -37,7 +37,6 @@
                         <th class="ps-4">كود الصالة</th>
                         <th>اسم الصالة / القاعة</th>
                         <th class="text-center">الدور</th>
-                        <th>المشرف المسؤول</th>
                         <th class="text-center">السعة (أقصى بلوكات)</th>
                         <th class="text-center">البلوكات الحالية</th>
                         <th class="text-center pe-4">الإجراءات</th>
@@ -55,16 +54,6 @@
                                     <span class="badge px-3 py-2" style="background-color: var(--bg-light); color: var(--primary-navy); border: 1px solid var(--border-color);">
                                         الدور @item.Floor
                                     </span>
-                                </td>
-                                <td>
-                                    @if (item.HallSupervisor != null)
-                                    {
-                                        <span style="color: var(--accent-blue);" class="fw-medium"><i class="bi bi-person-badge me-1"></i> @item.HallSupervisor.FullName</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted small">لم يتم التحديد</span>
-                                    }
                                 </td>
                                 <td class="text-center fw-bold">
                                     @item.MaxBlocks
@@ -93,7 +82,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">لا توجد صالات مسجلة في النظام.</td>
+                            <td colspan="6" class="text-center py-5 text-muted">لا توجد صالات مسجلة في النظام.</td>
                         </tr>
                     }
                 </tbody>
