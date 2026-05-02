@@ -1,13 +1,12 @@
 @model IEnumerable<projectweb.Models.Person>
 
 @{
-    ViewData["Title"] = "Persons Management";
+    ViewData["Title"] = "ادارة الموظفين";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 @section Styles {
     <style>
-        /* ستايلاتك الأصلية */
         .btn-action {
             padding: 0.4rem 0.8rem;
             font-size: 0.85rem;
@@ -30,7 +29,6 @@
         .badge-role { font-weight: 500; padding: 0.5em 0.8em; border-radius: 6px; }
         .search-container { background-color: #f8f9fa; border-radius: 12px; padding: 1.5rem; border: 1px solid #e9ecef; }
 
-        /* ستايل الحالة اللي أضفناه */
         .status-indicator {
             height: 8px;
             width: 8px;
@@ -43,7 +41,7 @@
     </style>
 }
 
-<div class="content-body">
+<div class="content-body" dir="rtl">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 fw-bold">ادارة الاشخاص والموظفين</h1>
         <a asp-action="Create" class="btn btn-primary px-4 shadow-sm">
@@ -68,15 +66,15 @@
 
     <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0 text-center">
                 <thead class="bg-light">
                     <tr>
-                        <th class="ps-4">الاسم الكامل</th>
+                        <th class="ps-4 text-end">الاسم الكامل</th>
                         <th>الرقم القومي</th>
                         <th>رقم المحمول</th>
                         <th>الدور/الوظيفة</th>
-                        <th class="text-center">الحالة</th> @* عمود الحالة الجديد *@
-                        <th class="text-center pe-4">العمليات</th>
+                        <th>الحالة</th>
+                        <th class="pe-4">العمليات</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -85,28 +83,26 @@
                         foreach (var p in Model)
                         {
                             <tr>
-                                <td class="ps-4 fw-medium text-dark">@p.FullName</td>
+                                <td class="ps-4 fw-medium text-dark text-end">@p.FullName</td>
                                 <td class="text-muted small">@p.NationalId</td>
                                 <td class="small">@p.Phone</td>
                                 <td>
                                     @{
-                                        var roleEnum = p.Role?.RoleName;
                                         var badgeClass = "bg-light text-dark border-dark-subtle";
-                                        
-                                        switch (roleEnum)
+                                        switch (p.JobRole)
                                         {
-                                            case projectweb.Models.StaffPosition.HallManager: badgeClass = "bg-danger-subtle text-danger border-danger-subtle"; break;
-                                            case projectweb.Models.StaffPosition.BlockGroupLeader: badgeClass = "bg-warning-subtle text-warning-emphasis border-warning-subtle"; break;
-                                            case projectweb.Models.StaffPosition.CommitteeObserver: badgeClass = "bg-primary-subtle text-primary border-primary-subtle"; break;
-                                            case projectweb.Models.StaffPosition.Doctor: badgeClass = "bg-success-subtle text-success border-success-subtle"; break;
-                                            case projectweb.Models.StaffPosition.Nurse: badgeClass = "bg-info-subtle text-info-emphasis border-info-subtle"; break;
+                                            case projectweb.Models.JobTitle.ProfessorEmeritus: badgeClass = "bg-success-subtle text-success border-success-subtle"; break;
+                                            case projectweb.Models.JobTitle.Dean: badgeClass = "bg-danger-subtle text-danger border-danger-subtle"; break;
+                                            case projectweb.Models.JobTitle.Professor: badgeClass = "bg-primary-subtle text-primary border-primary-subtle"; break;
+                                            case projectweb.Models.JobTitle.AssistantProfessor: badgeClass = "bg-warning-subtle text-warning-emphasis border-warning-subtle"; break;
+                                            default: badgeClass = "bg-info-subtle text-info border-info-subtle"; break;
                                         }
                                     }
                                     <span class="badge badge-role @badgeClass">
-                                        @Html.DisplayFor(model => p.Role.RoleName)
+                                        @Html.DisplayFor(modelItem => p.JobRole)
                                     </span>
                                 </td>
-                                <td class="text-center">
+                                <td>
                                     @if (p.IsActiveForAssignment)
                                     {
                                         <span class="text-success small fw-bold">
@@ -120,7 +116,7 @@
                                         </span>
                                     }
                                 </td>
-                                <td class="text-center pe-4">
+                                <td class="pe-4">
                                     <div class="d-flex justify-content-center gap-2">
                                         <a asp-action="Details" asp-route-id="@p.PersonId" class="btn-action btn-details">
                                             <i class="bi bi-eye"></i> تفاصيل
@@ -139,7 +135,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">لا توجد نتائج </td>
+                            <td colspan="6" class="text-center py-5 text-muted">لا توجد نتائج بحث مطابقة</td>
                         </tr>
                     }
                 </tbody>

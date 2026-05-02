@@ -12,8 +12,8 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260501150928_InitCreate")]
-    partial class InitCreate
+    [Migration("20260502143923_UpdatePersonWithPosition")]
+    partial class UpdatePersonWithPosition
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -443,6 +443,9 @@ namespace projectweb.Migrations
 
                     b.Property<bool>("IsActiveForAssignment")
                         .HasColumnType("bit");
+
+                    b.Property<int>("JobRole")
+                        .HasColumnType("int");
 
                     b.Property<string>("NationalId")
                         .IsRequired()

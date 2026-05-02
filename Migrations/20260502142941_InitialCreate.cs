@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace projectweb.Migrations
 {
     /// <inheritdoc />
-    public partial class InitCreate : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -197,6 +197,7 @@ namespace projectweb.Migrations
                     Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NationalId = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    JobRole = table.Column<int>(type: "int", nullable: false),
                     RoleID = table.Column<int>(type: "int", nullable: false),
                     IsActiveForAssignment = table.Column<bool>(type: "bit", nullable: false)
                 },

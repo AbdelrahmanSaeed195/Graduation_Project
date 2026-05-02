@@ -11,7 +11,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
-builder.Services.AddSession(c=> c.IdleTimeout = TimeSpan.FromMinutes(10));
+builder.Services.AddSession(c => c.IdleTimeout = TimeSpan.FromMinutes(10));
 builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddScoped<ICommitteesAssignmentsService, _CommitteesAssignmentsService>();
 
@@ -43,7 +43,7 @@ using (var scope = app.Services.CreateScope())
         var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-        string[] roleNames = { "Admin"};
+        string[] roleNames = { "Admin" };
         foreach (var roleName in roleNames)
         {
             if (!await roleManager.RoleExistsAsync(roleName))
@@ -53,7 +53,7 @@ using (var scope = app.Services.CreateScope())
         }
 
         string adminEmail = "admin@example.com";
-        string adminPassword = "Admin@123";  
+        string adminPassword = "Admin@123";
 
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
         if (adminUser == null)
@@ -75,7 +75,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex,"Error");
+        logger.LogError(ex, "Error");
     }
 }
 app.Run();
