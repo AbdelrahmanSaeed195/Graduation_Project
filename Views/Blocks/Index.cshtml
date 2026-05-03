@@ -1,12 +1,12 @@
 @model IEnumerable<projectweb.Models.Block>
 
 @{
-    ViewData["Title"] = "إدارة البلوكات والأجزاء";
+    ViewData["Title"] = "إدارة البلوكات";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="content-body" dir="rtl">
-
+    
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
@@ -23,20 +23,20 @@
     }
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-collection-fill me-2"></i> إدارة البلوكات (الأجزاء)</h1>
+        <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-collection-fill me-2"></i> إدارة البلوكات</h1>
         <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
             <i class="bi bi-plus-circle me-1"></i> تكوين بلوك جديد
         </a>
     </div>
 
-    <div class="card academic-card overflow-hidden">
+    <div class="card academic-card overflow-hidden border-0 shadow-sm" style="border-radius: 12px;">
         <div class="table-responsive">
             <table class="table academic-table table-hover align-middle mb-0">
-                <thead>
+                <thead class="bg-light">
                     <tr>
                         <th class="ps-4">كود البلوك</th>
-                        <th>اسم البلوك (الجزء)</th>
-                        <th>رقم الصالة/القاعة</th>
+                        <th>اسم البلوك</th>
+                        <th>اسم الصالة / القاعة</th> 
                         <th class="text-center">السعة (أقصى عدد)</th>
                         <th class="text-center">عدد اللجان المرتبطة</th>
                         <th class="text-center pe-4">الإجراءات</th>
@@ -49,32 +49,31 @@
                         {
                             <tr>
                                 <td class="ps-4 fw-bold text-muted">#@item.BlockID</td>
-                                <td class="fw-bold" style="color: var(--text-main);">@item.BlockName</td>
+                                <td class="fw-bold" style="color: #1a3a5a;">@item.BlockName</td>
                                 <td>
-                                    <span class="badge bg-light border px-3 py-2" style="color: var(--primary-navy); border-color: var(--border-color) !important;">
-                                        <i class="bi bi-building me-1"></i> صالة رقم @item.HallId
+                                    
+                                    <span class="badge bg-light border px-3 py-2 text-dark" style="border-color: #dee2e6 !important; border-radius: 8px;">
+                                        <i class="bi bi-building me-1 text-primary"></i>
+                                        @item.Hall?.HallName
                                     </span>
                                 </td>
                                 <td class="text-center fw-bold">
                                     @item.MaxCommittees
                                 </td>
                                 <td class="text-center">
-                                    <span class="badge @(item.Committees != null && item.Committees.Any() ? "bg-success" : "bg-secondary") px-3 py-2">
+                                    <span class="badge @(item.Committees != null && item.Committees.Any() ? "bg-success" : "bg-secondary") px-3 py-2" style="border-radius: 6px;">
                                         @(item.Committees?.Count ?? 0) لجان
                                     </span>
                                 </td>
                                 <td class="text-center pe-4">
                                     <div class="d-flex justify-content-center gap-2">
-                                        <a asp-action="AssignCommittees" asp-route-blockId="@item.BlockID" class="btn btn-sm btn-outline-success" title="توزيع اللجان والملاحظين">
-                                            <i class="bi bi-diagram-3"></i>
-                                        </a>
-                                        <a asp-action="Details" asp-route-id="@item.BlockID" class="btn btn-sm btn-outline-info" title="عرض التفاصيل">
+                                        <a asp-action="Details" asp-route-id="@item.BlockID" class="btn btn-sm btn-outline-info shadow-sm" title="عرض التفاصيل">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a asp-action="Edit" asp-route-id="@item.BlockID" class="btn btn-sm btn-outline-academic" title="تعديل">
+                                        <a asp-action="Edit" asp-route-id="@item.BlockID" class="btn btn-sm btn-outline-secondary shadow-sm" title="تعديل">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
-                                        <a asp-action="Delete" asp-route-id="@item.BlockID" class="btn btn-sm btn-outline-danger" title="حذف">
+                                        <a asp-action="Delete" asp-route-id="@item.BlockID" class="btn btn-sm btn-outline-danger shadow-sm" title="حذف">
                                             <i class="bi bi-trash"></i>
                                         </a>
                                     </div>
@@ -85,7 +84,10 @@
                     else
                     {
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">لا توجد بلوكات مسجلة في النظام.</td>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                لا توجد بلوكات مسجلة في النظام.
+                            </td>
                         </tr>
                     }
                 </tbody>

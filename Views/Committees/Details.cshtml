@@ -7,67 +7,85 @@
 
 <div class="row justify-content-center" dir="rtl">
     <div class="col-lg-10">
-        <div class="card academic-card mb-4">
-            <div class="card-header academic-card-header text-white p-4 d-flex justify-content-between align-items-center">
-                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-info-circle-fill me-2"></i> تفاصيل اللجنة رقم (@Model.CommitteeNumber)</h4>
-                @if (Model.StatusOfCommittee == "نشطة")
-                {
-                    <span class="badge bg-success fs-6">نشطة</span>
-                }
-                else if (Model.StatusOfCommittee == "مغلقة")
-                {
-                    <span class="badge bg-danger fs-6">مغلقة</span>
-                }
-                else
-                {
-                    <span class="badge bg-warning text-dark fs-6">@Model.StatusOfCommittee</span>
-                }
+        <div class="card academic-card mb-4 shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+           
+            <div class="card-header text-white p-4 d-flex justify-content-between align-items-center" style="background-color: #1a2c4e;">
+                <h4 class="mb-0 fw-bold text-white">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    تفاصيل لجنة رقم (@Model.CommitteeNumber)
+                </h4>
+                <div>
+                    @if (Model.StatusOfCommittee == "نشطة")
+                    {
+                        <span class="badge bg-success fs-6 shadow-sm px-3">نشطة</span>
+                    }
+                    else if (Model.StatusOfCommittee == "مغلقة")
+                    {
+                        <span class="badge bg-danger fs-6 shadow-sm px-3">مغلقة</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark fs-6 shadow-sm px-3">@Model.StatusOfCommittee</span>
+                    }
+                </div>
             </div>
 
             <div class="card-body p-4 bg-white">
-                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3" style="border-color: var(--border-color) !important;">المعلومات الأساسية</h5>
+                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3" style="color: #1a2c4e; border-color: #eee !important;">
+                    <i class="bi bi-card-list me-2"></i> المعلومات الأساسية للمكان واللجنة
+                </h5>
+
                 <div class="row g-4 mb-4">
+                    @* الموقع: القاعة والبلوك *@
                     <div class="col-md-4">
-                        <div class="data-panel h-100">
-                            <div class="panel-label">الموقع (القاعة / البلوك)</div>
-                            <div class="panel-value mt-1">
-                                @(Model.Block != null ? $"قاعة {Model.Block.HallId} / بلوك {Model.Block.BlockID}" : "غير محدد")
+                        <div class="data-panel h-100 p-3 rounded border shadow-sm" style="background-color: #f8f9fa;">
+                            <div class="panel-label text-muted small fw-bold mb-1">الموقع (القاعة / البلوك)</div>
+                            <div class="panel-value mt-1 fw-bold fs-5 text-dark">
+                                <i class="bi bi-geo-alt-fill text-primary me-1"></i>
+                                @(Model.Block != null ? $"قاعة {Model.Block.Hall?.HallName ?? Model.Block.HallId.ToString()} / بلوك {Model.Block.BlockName}" : "غير محدد")
                             </div>
                         </div>
                     </div>
+
+                    @* السعة الطلابية *@
                     <div class="col-md-4">
-                        <div class="data-panel h-100">
-                            <div class="panel-label">السعة الطلابية</div>
-                            <div class="panel-value mt-1" style="color: var(--accent-blue);">@Model.NumberOfStudent طالب</div>
+                        <div class="data-panel h-100 p-3 rounded border shadow-sm" style="background-color: #f8f9fa;">
+                            <div class="panel-label text-muted small fw-bold mb-1">السعة الطلابية القصوى</div>
+                            <div class="panel-value mt-1 fw-bold fs-5" style="color: #0d6efd;">
+                                <i class="bi bi-people-fill me-1"></i> @Model.NumberOfStudent طالب
+                            </div>
                         </div>
                     </div>
+
+                    @* عدد الطلاب الفعلي *@
                     <div class="col-md-4">
-                        <div class="data-panel h-100">
-                            <div class="panel-label">عدد الطلاب الموزعين فعلياً</div>
-                            <div class="panel-value mt-1 text-success">@(Model.Students?.Count ?? 0) طالب</div>
+                        <div class="data-panel h-100 p-3 rounded border shadow-sm" style="background-color: #f8f9fa;">
+                            <div class="panel-label text-muted small fw-bold mb-1">الطلاب الموزعين حالياً</div>
+                            <div class="panel-value mt-1 fw-bold fs-5 text-success">
+                                <i class="bi bi-person-check-fill me-1"></i> @(Model.Students?.Count ?? 0) طالب
+                            </div>
                         </div>
                     </div>
                 </div>
 
-
-
+            
                 <div class="row g-4 mt-2">
                     <div class="col-md-6">
-                        <div class="alert border shadow-sm h-100 mb-0" style="background-color: var(--surface-white); border-color: var(--border-color) !important;">
-                            <h6 class="fw-bold academic-heading mb-3"><i class="bi bi-calendar-check me-2"></i> جداول الامتحانات المرتبطة</h6>
+                        <div class="alert border shadow-sm h-100 mb-0 bg-white" style="border-radius: 10px;">
+                            <h6 class="fw-bold mb-3" style="color: #1a2c4e;"><i class="bi bi-calendar-check me-2 text-primary"></i> جداول الامتحانات المرتبطة</h6>
                             @if (Model.ExamSchedules != null && Model.ExamSchedules.Any())
                             {
-                                <span class="badge bg-primary px-3 py-2">يوجد @Model.ExamSchedules.Count امتحان مجدول</span>
+                                <div class="badge bg-primary px-3 py-2 fs-6">يوجد @Model.ExamSchedules.Count امتحان مجدول</div>
                             }
                             else
                             {
-                                <span class="text-muted small">لا يوجد امتحانات مجدولة بعد.</span>
+                                <div class="text-muted small p-2 bg-light rounded"><i class="bi bi-info-circle me-1"></i> لا يوجد امتحانات مجدولة بعد.</div>
                             }
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="alert border shadow-sm h-100 mb-0" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
-                            <h6 class="fw-bold academic-heading mb-3"><i class="bi bi-person-lines-fill me-2"></i> الطاقم الرقابي المعين</h6>
+                        <div class="alert border shadow-sm h-100 mb-0 bg-light" style="border-radius: 10px;">
+                            <h6 class="fw-bold mb-3" style="color: #1a2c4e;"><i class="bi bi-person-lines-fill me-2 text-primary"></i> الطاقم الرقابي (الملاحظين)</h6>
                             @if (Model.CommitteesAssignments != null && Model.CommitteesAssignments.Any())
                             {
                                 <ul class="list-unstyled mb-0">
@@ -75,26 +93,41 @@
                                     {
                                         if (assignment.Person != null)
                                         {
-                                            <li class="mb-1" style="color: var(--text-main);"><i class="bi bi-person-badge text-muted me-1"></i> @assignment.Person.FullName</li>
+                                            <li class="mb-2 p-2 bg-white rounded shadow-sm border-start border-primary border-4">
+                                                <i class="bi bi-person-badge text-muted me-2"></i> @assignment.Person.FullName
+                                            </li>
                                         }
                                     }
                                 </ul>
                             }
                             else
                             {
-                                <span class="text-muted small">لم يتم تعيين طاقم رقابي حتى الآن.</span>
+                                <div class="text-muted small p-2 bg-white rounded"><i class="bi bi-exclamation-triangle me-1"></i> لم يتم تعيين طاقم رقابي حتى الآن.</div>
                             }
                         </div>
                     </div>
                 </div>
 
-                <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
-                    <a asp-action="Edit" asp-route-id="@Model.CommitteeID" class="btn btn-academic-primary px-4 fw-bold">
+                @* أزرار التحكم *@
+                <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
+                    <a asp-action="Edit" asp-route-id="@Model.CommitteeID" class="btn px-4 fw-bold text-white shadow-sm" style="background-color: #1a2c4e; border-radius: 8px;">
                         <i class="bi bi-pencil-square me-1"></i> تعديل البيانات
                     </a>
-                    <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-bold shadow-sm" style="border-radius: 8px;">
+                        العودة للقائمة
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .data-panel {
+        transition: transform 0.2s;
+    }
+
+        .data-panel:hover {
+            transform: translateY(-3px);
+        }
+</style>

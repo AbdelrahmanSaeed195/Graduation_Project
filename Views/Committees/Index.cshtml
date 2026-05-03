@@ -29,9 +29,9 @@
         </a>
     </div>
 
-    <div class="card academic-card overflow-hidden">
+    <div class="card academic-card overflow-hidden shadow-sm border-0" style="border-radius: 12px;">
         <div class="table-responsive">
-            <table class="table academic-table table-hover align-middle mb-0">
+            <table class="table academic-table table-hover align-middle mb-0 text-center">
                 <thead>
                     <tr>
                         <th class="ps-4">رقم اللجنة</th>
@@ -49,39 +49,48 @@
                             <tr>
                                 <td class="ps-4 fw-bold fs-5" style="color: var(--text-main);">@item.CommitteeNumber</td>
                                 <td>
-                                    <span class="fw-medium" style="color: var(--primary-navy);">
-                                        @(item.Block != null ? $"قاعة {item.Block.HallId} / بلوك {item.Block.BlockID}" : "غير محدد")
-                                    </span>
+                                    @* تعديل عرض المكان ليظهر الأسماء بدلاً من الأرقام فقط *@
+                                    <div class="badge bg-light border text-dark px-3 py-2 shadow-sm" style="border-radius: 8px; border-color: var(--border-color) !important;">
+                                        <i class="bi bi-geo-alt-fill text-primary me-1"></i>
+                                        @if (item.Block != null)
+                                        {
+                                            <span>قاعة @(item.Block.Hall?.HallName ?? item.Block.HallId.ToString()) / بلوك @item.Block.BlockName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">غير محدد</span>
+                                        }
+                                    </div>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge px-3 py-2" style="background-color: var(--bg-light); color: var(--text-main); border: 1px solid var(--border-color);">
-                                        <i class="bi bi-people-fill me-1"></i> @item.NumberOfStudent
+                                        <i class="bi bi-people-fill me-1"></i> @item.NumberOfStudent طالب
                                     </span>
                                 </td>
 
                                 <td class="text-center">
                                     @if (item.StatusOfCommittee == "نشطة")
                                     {
-                                        <span class="badge bg-success px-3 py-2">@item.StatusOfCommittee</span>
+                                        <span class="badge bg-success px-3 py-2" style="border-radius: 6px;">@item.StatusOfCommittee</span>
                                     }
                                     else if (item.StatusOfCommittee == "مغلقة")
                                     {
-                                        <span class="badge bg-danger px-3 py-2">@item.StatusOfCommittee</span>
+                                        <span class="badge bg-danger px-3 py-2" style="border-radius: 6px;">@item.StatusOfCommittee</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-warning text-dark px-3 py-2">@item.StatusOfCommittee</span>
+                                        <span class="badge bg-warning text-dark px-3 py-2" style="border-radius: 6px;">@item.StatusOfCommittee</span>
                                     }
                                 </td>
                                 <td class="text-center pe-4">
-                                    <div class="d-flex justify-content-center gap-1">
-                                        <a asp-action="Details" asp-route-id="@item.CommitteeID" class="btn btn-sm btn-outline-info" title="التفاصيل">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a asp-action="Details" asp-route-id="@item.CommitteeID" class="btn btn-sm btn-outline-info shadow-sm" title="التفاصيل">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a asp-action="Edit" asp-route-id="@item.CommitteeID" class="btn btn-sm btn-outline-academic" title="تعديل">
+                                        <a asp-action="Edit" asp-route-id="@item.CommitteeID" class="btn btn-sm btn-outline-secondary shadow-sm" title="تعديل">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
-                                        <a asp-action="Delete" asp-route-id="@item.CommitteeID" class="btn btn-sm btn-outline-danger" title="حذف">
+                                        <a asp-action="Delete" asp-route-id="@item.CommitteeID" class="btn btn-sm btn-outline-danger shadow-sm" title="حذف">
                                             <i class="bi bi-trash"></i>
                                         </a>
                                     </div>
@@ -92,7 +101,10 @@
                     else
                     {
                         <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">لا توجد لجان مسجلة</td>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-folder-x fs-1 d-block mb-2"></i>
+                                لا توجد لجان مسجلة حالياً
+                            </td>
                         </tr>
                     }
                 </tbody>

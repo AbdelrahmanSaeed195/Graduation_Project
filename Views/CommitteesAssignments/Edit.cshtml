@@ -2,54 +2,71 @@
 
 <div class="container mt-5 text-end" dir="rtl">
     <div class="card mx-auto shadow border-0" style="max-width: 700px; border-radius: 15px;">
-        <div class="card-header bg-secondary text-white text-center py-3" style="border-radius: 15px 15px 0 0;">
-            <h4 class="mb-0">تعديل بيانات التكليف</h4>
+        <div class="card-header text-white text-center py-3" style="border-radius: 15px 15px 0 0; background-color: #1a3a5a;">
+            <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i> تعديل بيانات التكليف</h4>
         </div>
         <div class="card-body p-4 text-end">
             <form asp-action="Edit">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm border-0 mb-4 py-2"></div>
 
-                @* الحقول المخفية للحفاظ على سلامة البيانات *@
+                @* الحقول المخفية للحفاظ على سلامة البيانات الأساسية *@
                 <input type="hidden" asp-for="AssignmentID" />
                 <input type="hidden" asp-for="AssignmentType" />
                 <input type="hidden" asp-for="ExamScheduleId" />
                 <input type="hidden" asp-for="RoleID" />
                 <input type="hidden" asp-for="RoleType" />
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">الموظف المراد تكليفه</label>
-                    <select asp-for="PersonID" class="form-select shadow-sm" asp-items="ViewBag.PersonID"></select>
+                @* عرض تفاصيل الجلسة الحالية للقراءة فقط *@
+                <div class="alert alert-info border-0 shadow-sm mb-4">
+                    <small class="d-block text-muted">تعديل تكليف خاص بجلسة:</small>
+                    <strong class="text-dark">@ViewBag.ExamScheduleName</strong>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold"><i class="bi bi-person-badge me-1"></i> الموظف المكلف</label>
+                    <select asp-for="PersonID" class="form-select shadow-sm border-primary" asp-items="ViewBag.PersonID">
+                        <option value="">-- اختر الموظف --</option>
+                    </select>
                     <span asp-validation-for="PersonID" class="text-danger small"></span>
                 </div>
 
                 <div class="row bg-light p-3 rounded border mb-3 mx-0">
-                    <h6 class="fw-bold border-bottom pb-2 mb-3 text-secondary">تعديل نطاق المسئولية</h6>
+                    <h6 class="fw-bold border-bottom pb-2 mb-3 text-secondary">
+                        <i class="bi bi-geo-alt me-1"></i> تعديل نطاق المسئولية (المكان)
+                    </h6>
 
                     <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold small text-muted">تغيير الصالة</label>
+                        <label class="form-label fw-bold small text-muted">الصالة</label>
                         <select asp-for="HallId" class="form-select shadow-sm" asp-items="ViewBag.HallId">
                             <option value="">-- بلا --</option>
                         </select>
+                        <small class="text-muted" style="font-size: 0.7rem;">خاص برؤساء الصالة والطاقم الطبي</small>
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold small text-muted">تغيير البلوك</label>
+                        <label class="form-label fw-bold small text-muted">البلوك</label>
                         <select asp-for="BlockId" class="form-select shadow-sm" asp-items="ViewBag.BlockId">
                             <option value="">-- بلا --</option>
                         </select>
+                        <small class="text-muted" style="font-size: 0.7rem;">خاص بمراقبي البلوكات</small>
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold small text-muted">تغيير اللجنة</label>
+                        <label class="form-label fw-bold small text-muted">اللجنة</label>
                         <select asp-for="CommitteeID" class="form-select shadow-sm" asp-items="ViewBag.CommitteeID">
                             <option value="">-- بلا --</option>
                         </select>
+                        <small class="text-muted" style="font-size: 0.7rem;">خاص بملاحظي اللجان</small>
                     </div>
                 </div>
 
                 <div class="d-grid gap-2 mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg shadow">تحديث بيانات التكليف</button>
-                    <a asp-action="Index" asp-route-scheduleId="@Model.ExamScheduleId" class="btn btn-light btn-lg border">إلغاء والعودة</a>
+                    <button type="submit" class="btn btn-primary btn-lg shadow">
+                        <i class="bi bi-save me-1"></i> حفظ التغييرات
+                    </button>
+                    <a asp-action="Index" asp-route-scheduleId="@Model.ExamScheduleId" class="btn btn-outline-secondary btn-lg">
+                        إلغاء والعودة للقائمة
+                    </a>
                 </div>
             </form>
         </div>

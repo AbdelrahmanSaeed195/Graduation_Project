@@ -23,7 +23,7 @@
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4 rounded-3 @(ViewData.ModelState.IsValid ? "d-none" : "")"></div>
 
                         <div class="row g-4">
-                            @* اختيار الامتحان المادة *@
+                            
                             <div class="col-md-7 mb-3">
                                 <label asp-for="ExamId" class="form-label fw-bold small text-muted mb-1">اسم المادة / الامتحان المقرر <span class="text-danger">*</span></label>
                                 <select asp-for="ExamId" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.ExamId" style="border-radius: 8px; font-size: 0.95rem;">
@@ -31,7 +31,7 @@
                                 <span asp-validation-for="ExamId" class="text-danger small mt-1 d-block"></span>
                             </div>
 
-                            @* عرض السنة الدراسية كبيان للقراءة فقط *@
+                           
                             <div class="col-md-5 mb-3">
                                 <label class="form-label fw-bold small text-muted mb-1 text-center d-block">السنة الدراسية</label>
                                 <div class="p-2 border rounded-3 bg-light text-center fw-bold shadow-sm" style="font-size: 1.1rem; height: calc(3.5rem + 2px); display: flex; align-items: center; justify-content: center;">

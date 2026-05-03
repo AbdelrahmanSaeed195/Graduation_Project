@@ -1,73 +1,122 @@
 ﻿@model projectweb.Models.CommitteesAssignment
 
+@{
+    ViewData["Title"] = "تفاصيل التكليف";
+}
+
 <div class="container mt-5 text-end" dir="rtl">
-    <div class="card mx-auto shadow-sm border-0" style="max-width: 750px; border-radius: 15px;">
-        <div class="card-header bg-white py-3 text-center border-0">
-            <h4 class="fw-bold" style="color: #1a3a5a;"><i class="bi bi-info-square me-2"></i> تفاصيل التكليف الإداري</h4>
+    <div class="card mx-auto shadow border-0" style="max-width: 800px; border-radius: 15px;">
+        @* رأس الكارت بتصميم احترافي *@
+        <div class="card-header bg-white py-4 text-center border-0 position-relative">
+            <div class="position-absolute top-0 start-50 translate-middle-x mt-n3">
+                <span class="badge rounded-pill bg-primary px-4 py-2 shadow">بطاقة تكليف إداري</span>
+            </div>
+            <h3 class="fw-bold mt-3" style="color: #1a3a5a;">
+                <i class="bi bi-person-check-fill me-2"></i> تفاصيل التكليف النهائي
+            </h3>
         </div>
-        <div class="card-body p-4">
-            <div class="row g-4 text-end">
+
+        <div class="card-body p-5 pt-0">
+            <div class="row g-4">
+                @* بيانات الموظف والدور المكلف به *@
+                <div class="col-md-6 border-start border-light">
+                    <label class="text-muted small d-block mb-1">اسم الموظف المكلف:</label>
+                    <h5 class="fw-bold text-dark mb-0">@Model.Person.FullName</h5>
+                </div>
+
                 <div class="col-md-6">
-                    <label class="text-muted small d-block">اسم الموظف:</label>
-                    <h5 class="fw-bold text-dark">@Model.Person.FullName</h5>
-                </div>
-                <div class="col-md-6">
-                    <label class="text-muted small d-block">المسمى الوظيفي في اللجنة:</label>
-                    <h5 class="text-primary fw-bold">@Model.RoleType</h5>
+                    <label class="text-muted small d-block mb-1">المسمى الوظيفي في اللجنة:</label>
+                    <h5 class="text-primary fw-bold mb-0">@Model.RoleType</h5>
+                    <small class="text-muted">(@(Model.AssignmentType == "Auto" ? "تم التوزيع بواسطة النظام" : "تم التكليف يدوياً"))</small>
                 </div>
 
-                <div class="col-md-12"><hr class="my-1 opacity-25" /></div>
+                <div class="col-12"><hr class="opacity-25" /></div>
 
-                <div class="col-md-12 bg-light p-4 rounded shadow-sm text-center border-start border-4 border-primary">
-                    <label class="text-muted d-block mb-2 fw-bold">نطاق التكليف والمسئولية:</label>
-                    <h4 class="mb-0 text-dark fw-bold">
-                        @if (Model.Committee != null)
-                        {
-                            <span class="badge bg-primary fs-5">لجنة رقم (@Model.Committee.CommitteeNumber)</span>
-                        }
-                        else if (Model.Block != null)
-                        {
-                            <span class="badge bg-info text-dark fs-5">بلوك (@Model.Block.BlockName) بالكامل</span>
-                        }
-                        else if (Model.Hall != null)
-                        {
-                            <span class="badge bg-warning text-dark fs-5">صالة (@Model.Hall.HallName) بالكامل</span>
-                        }
-                    </h4>
-                    <p class="text-muted small mt-2 mb-0">تم التكليف بنظام: @(Model.AssignmentType == "Auto" ? "توزيع تلقائي" : "توزيع يدوي")</p>
+                @* نطاق المسئولية بتصميم بارز *@
+                <div class="col-12">
+                    <div class="p-4 rounded-4 shadow-sm text-center border-start border-4 border-primary" style="background-color: #f8faff;">
+                        <label class="text-muted d-block mb-3 fw-bold text-uppercase small">نطاق التكليف والمسئولية الجغرافية</label>
+
+                        <div class="d-flex justify-content-center align-items-center gap-2">
+                            @if (Model.Committee != null)
+                            {
+                                <div class="text-muted">صالة: @Model.Committee.Block?.Hall?.HallName</div>
+                                <i class="bi bi-chevron-left text-primary"></i>
+                                <div class="text-muted">بلوك: @Model.Committee.Block?.BlockName</div>
+                                <i class="bi bi-chevron-left text-primary"></i>
+                                <h4 class="mb-0 text-dark fw-bold">لجنة رقم (@Model.Committee.CommitteeNumber)</h4>
+                            }
+                            else if (Model.Block != null)
+                            {
+                                <div class="text-muted">صالة: @Model.Block.Hall?.HallName</div>
+                                <i class="bi bi-chevron-left text-primary"></i>
+                                <h4 class="mb-0 text-dark fw-bold">كامل بلوك: (@Model.Block.BlockName)</h4>
+                            }
+                            else if (Model.Hall != null)
+                            {
+                                <h4 class="mb-0 text-dark fw-bold">كامل صالة: (@Model.Hall.HallName)</h4>
+                            }
+                        </div>
+                    </div>
                 </div>
 
-                <div class="col-md-4 pt-3 text-center border-end">
-                    <label class="text-muted small d-block">المادة الدراسية:</label>
-                    <p class="fw-bold mb-0">@Model.ExamSchedule?.Exam?.Subject?.SubjectName</p>
+                @* تفاصيل المادة والوقت *@
+                <div class="col-md-4 text-center">
+                    <div class="p-3 border rounded-3 bg-white h-100 shadow-sm">
+                        <i class="bi bi-book text-primary fs-4 d-block mb-2"></i>
+                        <label class="text-muted small d-block">المادة الدراسية</label>
+                        <p class="fw-bold mb-0">@Model.ExamSchedule?.Exam?.Subject?.SubjectName</p>
+                    </div>
                 </div>
-                <div class="col-md-4 pt-3 text-center border-end">
-                    <label class="text-muted small d-block">تاريخ الامتحان:</label>
-                    <p class="fw-bold mb-0">@Model.ExamSchedule?.ScheduledDate.ToShortDateString()</p>
+
+                <div class="col-md-4 text-center">
+                    <div class="p-3 border rounded-3 bg-white h-100 shadow-sm">
+                        <i class="bi bi-calendar-event text-success fs-4 d-block mb-2"></i>
+                        <label class="text-muted small d-block">تاريخ الامتحان</label>
+                        <p class="fw-bold mb-0">
+                            @* تم الضبط لعرض تاريخ الامتحان الفعلي المسجل للمادة *@
+                            @(Model.ExamSchedule?.Exam?.ExamDate.ToString("yyyy/MM/dd") ?? "غير محدد")
+                        </p>
+                    </div>
                 </div>
-                <div class="col-md-4 pt-3 text-center">
-                    <label class="text-muted small d-block">وقت الجلسة:</label>
-                    <p class="fw-bold mb-0 text-danger">
-                        @if (Model.ExamSchedule?.Exam != null)
-                        {
-                            @* تحويل TimeSpan إلى وقت بصيغة 12 ساعة (ص/م) لعرض احترافي *@
-                            @(DateTime.Today.Add(Model.ExamSchedule.Exam.StartTime).ToString("hh:mm tt"))
-                            @:-
-                            @(DateTime.Today.Add(Model.ExamSchedule.Exam.EndTime).ToString("hh:mm tt"))
-                        }
-                    </p>
+
+                <div class="col-md-4 text-center">
+                    <div class="p-3 border rounded-3 bg-white h-100 shadow-sm border-danger-subtle">
+                        <i class="bi bi-clock-history text-danger fs-4 d-block mb-2"></i>
+                        <label class="text-muted small d-block">توقيت الجلسة</label>
+                        <p class="fw-bold mb-0 text-danger">
+                            @if (Model.ExamSchedule?.Exam != null)
+                            {
+                                @(DateTime.Today.Add(Model.ExamSchedule.Exam.StartTime).ToString("hh:mm tt"))
+                                <span> - </span>
+                                @(DateTime.Today.Add(Model.ExamSchedule.Exam.EndTime).ToString("hh:mm tt"))
+                            }
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card-footer bg-white border-0 d-flex justify-content-center gap-3 py-4">
-            <a asp-action="Edit" asp-route-id="@Model.AssignmentID" class="btn btn-secondary px-5 shadow-sm">
-                <i class="bi bi-pencil-square me-1"></i> تعديل
+        @* أزرار التحكم *@
+        <div class="card-footer bg-light border-0 d-flex justify-content-center gap-3 py-4" style="border-radius: 0 0 15px 15px;">
+            <a asp-action="Edit" asp-route-id="@Model.AssignmentID" class="btn btn-primary px-5 shadow-sm">
+                <i class="bi bi-pencil-square me-1"></i> تعديل التكليف
             </a>
 
-            <a asp-action="Index" asp-route-scheduleId="@Model.ExamScheduleId" class="btn btn-outline-dark px-5 shadow-sm">
-                <i class="bi bi-arrow-right-circle me-1"></i> العودة للقائمة
+            @* العودة بناءً على الفلترة السابقة *@
+            <a asp-action="Index" asp-route-examId="@Model.ExamSchedule?.ExamId" class="btn btn-outline-dark px-5 shadow-sm bg-white">
+                <i class="bi bi-arrow-right-circle me-1"></i> العودة للجدول
             </a>
         </div>
     </div>
 </div>
+
+<style>
+    .rounded-4 {
+        border-radius: 1.2rem !important;
+    }
+
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+</style>

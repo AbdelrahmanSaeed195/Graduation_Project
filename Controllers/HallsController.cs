@@ -53,7 +53,6 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Create()
         {
             await LoadSupervisors();
-
             return View();
         }
 
@@ -64,6 +63,13 @@ namespace projectweb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Hall hall)
         {
+            // التحقق من تكرار اسم القاعة
+            bool isNameExist = await db.Halls.AnyAsync(h => h.HallName == hall.HallName);
+            if (isNameExist)
+            {
+                ModelState.AddModelError("HallName", "عفواً، اسم هذه القاعة موجود بالفعل.");
+            }
+
             if (!ModelState.IsValid)
             {
                 await LoadSupervisors(hall.HallSupervisorID);
@@ -74,17 +80,12 @@ namespace projectweb.Controllers
             {
                 db.Halls.Add(hall);
                 await db.SaveChangesAsync();
-
-                TempData["SuccessMessage"] =
-                    "تم إضافة الصالة بنجاح.";
-
+                TempData["SuccessMessage"] = "تم إضافة الصالة بنجاح.";
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
-                TempData["ErrorMessage"] =
-                    "حدث خطأ أثناء إضافة الصالة.";
-
+                TempData["ErrorMessage"] = "حدث خطأ أثناء إضافة الصالة.";
                 await LoadSupervisors(hall.HallSupervisorID);
                 return View(hall);
             }
@@ -104,7 +105,6 @@ namespace projectweb.Controllers
                 return NotFound();
 
             await LoadSupervisors(hall.HallSupervisorID);
-
             return View(hall);
         }
 
@@ -115,6 +115,13 @@ namespace projectweb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Hall hall)
         {
+            // التحقق من تكرار اسم القاعة مع استثناء القاعة التي يتم تعديلها حالياً
+            bool isNameExist = await db.Halls.AnyAsync(h => h.HallName == hall.HallName && h.HallId != hall.HallId);
+            if (isNameExist)
+            {
+                ModelState.AddModelError("HallName", "اسم هذه القاعة مستخدم في قاعة أخرى.");
+            }
+
             if (!ModelState.IsValid)
             {
                 await LoadSupervisors(hall.HallSupervisorID);
@@ -125,17 +132,12 @@ namespace projectweb.Controllers
             {
                 db.Update(hall);
                 await db.SaveChangesAsync();
-
-                TempData["SuccessMessage"] =
-                    "تم تعديل الصالة بنجاح.";
-
+                TempData["SuccessMessage"] = "تم تعديل الصالة بنجاح.";
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
-                TempData["ErrorMessage"] =
-                    "حدث خطأ أثناء تعديل الصالة.";
-
+                TempData["ErrorMessage"] = "حدث خطأ أثناء تعديل الصالة.";
                 await LoadSupervisors(hall.HallSupervisorID);
                 return View(hall);
             }
@@ -165,8 +167,7 @@ namespace projectweb.Controllers
         // =========================
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult>
-            DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var hall = await db.Halls
                 .Include(h => h.Blocks)
@@ -175,45 +176,29 @@ namespace projectweb.Controllers
             if (hall == null)
                 return NotFound();
 
-            bool hasBlocks =
-                await db.Blocks
-                .AnyAsync(b => b.HallId == id);
+            bool hasBlocks = await db.Blocks.AnyAsync(b => b.HallId == id);
 
             if (hasBlocks)
             {
-                TempData["ErrorMessage"] =
-                    "لا يمكن حذف الصالة لأنها تحتوي على بلوكات.";
-
+                TempData["ErrorMessage"] = "لا يمكن حذف الصالة لأنها تحتوي على بلوكات.";
                 return RedirectToAction(nameof(Index));
             }
 
             db.Halls.Remove(hall);
             await db.SaveChangesAsync();
 
-            TempData["SuccessMessage"] =
-                "تم حذف الصالة بنجاح.";
-
+            TempData["SuccessMessage"] = "تم حذف الصالة بنجاح.";
             return RedirectToAction(nameof(Index));
         }
 
-        // =========================
-        // تحميل المشرفين
-        // =========================
         private async Task LoadSupervisors(int? selectedId = null)
         {
             var supervisors = await db.Persons
                 .Include(p => p.Role)
-                .Where(p =>
-                    p.Role.RoleName ==
-                    StaffPosition.HallManager)
+                .Where(p => p.Role.RoleName == StaffPosition.HallManager)
                 .ToListAsync();
 
-            ViewBag.HallSupervisorID =
-                new SelectList(
-                    supervisors,
-                    "PersonId",
-                    "FullName",
-                    selectedId);
+            ViewBag.HallSupervisorID = new SelectList(supervisors, "PersonId", "FullName", selectedId);
         }
     }
 }

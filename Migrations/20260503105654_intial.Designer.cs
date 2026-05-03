@@ -12,8 +12,8 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260502143923_UpdatePersonWithPosition")]
-    partial class UpdatePersonWithPosition
+    [Migration("20260503105654_intial")]
+    partial class intial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -419,6 +419,9 @@ namespace projectweb.Migrations
 
                     b.HasKey("HallId");
 
+                    b.HasIndex("HallName")
+                        .IsUnique();
+
                     b.HasIndex("HallSupervisorID");
 
                     b.ToTable("Halls");
@@ -761,8 +764,7 @@ namespace projectweb.Migrations
                     b.HasOne("projectweb.Models.Committee", "Committee")
                         .WithMany("CommitteesAssignments")
                         .HasForeignKey("CommitteeID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("projectweb.Models.ExamSchedule", "ExamSchedule")
                         .WithMany()

@@ -31,7 +31,6 @@ namespace projectweb.Models
         [Display(Name = "رقم الجلوس")]
         public int SeatNumber { get; set; } = 0;
 
-        // 🔥 ربط بالـ ExamSchedule بدل اللجنة مباشرة
         [Display(Name = "الجلسة الامتحانية")]
         public int? ExamScheduleId { get; set; }
 
@@ -39,7 +38,6 @@ namespace projectweb.Models
         [ForeignKey("ExamScheduleId")]
         public virtual ExamSchedule ExamSchedule { get; set; }
 
-        // 🔥 اللجنة بتيجي من خلال ExamSchedule
         [NotMapped]
         public Committee Committee => ExamSchedule?.Committee;
 

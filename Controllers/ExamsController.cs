@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace projectweb.Controllers
 {
@@ -25,7 +25,9 @@ namespace projectweb.Controllers
         {
             var exams = _context.Exams
                 .Include(e => e.Subject)
+                .Include(e => e.ExamSchedules)
                 .OrderByDescending(e => e.ExamDate);
+
             return View(await exams.ToListAsync());
         }
 
@@ -58,10 +60,22 @@ namespace projectweb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ExamId,ExamDate,StartTime,EndTime,TargetAcademicYear,SubjectID")] Exam exam)
         {
-            // التحقق من منطق الوقت
+            // 1. التحقق من منطق الوقت (البداية قبل النهاية)
             if (exam.EndTime <= exam.StartTime)
             {
                 ModelState.AddModelError("EndTime", "يجب أن يكون وقت انتهاء الامتحان بعد وقت البدء.");
+            }
+
+            // 2. التحقق من عدم وجود تداخل في المواعيد (Overlap Check)
+            bool isOverlapping = await _context.Exams.AnyAsync(e =>
+                e.ExamDate.Date == exam.ExamDate.Date &&
+                ((exam.StartTime >= e.StartTime && exam.StartTime < e.EndTime) ||
+                 (exam.EndTime > e.StartTime && exam.EndTime <= e.EndTime) ||
+                 (exam.StartTime <= e.StartTime && exam.EndTime >= e.EndTime)));
+
+            if (isOverlapping)
+            {
+                ModelState.AddModelError("", "يوجد امتحان آخر مسجل في نفس هذا التاريخ والوقت. يرجى اختيار موعد مختلف.");
             }
 
             if (ModelState.IsValid)
@@ -97,10 +111,22 @@ namespace projectweb.Controllers
         {
             if (id != exam.ExamId) return NotFound();
 
-            // التحقق من منطق الوقت
             if (exam.EndTime <= exam.StartTime)
             {
                 ModelState.AddModelError("EndTime", "يجب أن يكون وقت انتهاء الامتحان بعد وقت البدء.");
+            }
+
+            // التحقق من التداخل مع استبعاد الامتحان الحالي من الفحص
+            bool isOverlapping = await _context.Exams.AnyAsync(e =>
+                e.ExamId != exam.ExamId &&
+                e.ExamDate.Date == exam.ExamDate.Date &&
+                ((exam.StartTime >= e.StartTime && exam.StartTime < e.EndTime) ||
+                 (exam.EndTime > e.StartTime && exam.EndTime <= e.EndTime) ||
+                 (exam.StartTime <= e.StartTime && exam.EndTime >= e.EndTime)));
+
+            if (isOverlapping)
+            {
+                ModelState.AddModelError("", "هذا التعديل يتداخل مع موعد امتحان آخر في نفس اليوم.");
             }
 
             if (ModelState.IsValid)
@@ -164,7 +190,32 @@ namespace projectweb.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // دالة مساعدة لتعبئة قائمة المواد لتجنب تكرار الكود
+        // --- أكشن لجلب تفاصيل المادة (السنة الدراسية) ---
+        [HttpGet]
+        public async Task<JsonResult> GetSubjectDetails(int id)
+        {
+            var subject = await _context.Subjects.FindAsync(id);
+            if (subject != null)
+            {
+                return Json(new { academicYear = subject.AcademicYear });
+            }
+            return Json(null);
+        }
+
+        // --- أكشن لفحص تداخل المواعيد عبر Ajax ---
+        [HttpGet]
+        public async Task<JsonResult> CheckTimeOverlap(DateTime date, TimeSpan start, TimeSpan end, int? excludeId)
+        {
+            bool isOverlapping = await _context.Exams.AnyAsync(e =>
+                (excludeId == null || e.ExamId != excludeId) &&
+                e.ExamDate.Date == date.Date &&
+                ((start >= e.StartTime && start < e.EndTime) ||
+                 (end > e.StartTime && end <= e.EndTime) ||
+                 (start <= e.StartTime && end >= e.EndTime)));
+
+            return Json(new { overlap = isOverlapping });
+        }
+
         private void PopulateSubjects(object selectedSubject = null)
         {
             var subjectsQuery = _context.Subjects.OrderBy(s => s.SubjectName);

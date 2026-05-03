@@ -47,7 +47,7 @@
                         <th>كود</th>
                         <th>الاسم</th>
                         <th>الرقم القومي</th>
-                        <th>السنة</th>
+                        <th>السنة الدراسية</th>
                         <th>رقم الجلوس</th>
                         <th>اللجنة / الجلسة</th>
                         <th>إجراءات</th>
@@ -63,8 +63,18 @@
                                 <td class="fw-bold">@s.FullName</td>
                                 <td><span style="color: var(--text-muted);">@s.NationalId</span></td>
                                 <td>
-                                    <span class="badge" style="background-color: var(--bg-light); color: var(--primary-navy); border: 1px solid var(--border-color);">
-                                        سنة @s.AcademicYear
+                                    @{
+                                        string academicLevel = s.AcademicYear switch
+                                        {
+                                            1 => "المستوى الأول",
+                                            2 => "المستوى الثاني",
+                                            3 => "المستوى الثالث",
+                                            4 => "المستوى الرابع",
+                                            _ => "سنة " + s.AcademicYear
+                                        };
+                                    }
+                                    <span class="badge" style="background-color: var(--bg-light); color: var(--primary-navy); border: 1px solid var(--border-color); padding: 8px 12px;">
+                                        @academicLevel
                                     </span>
                                 </td>
                                 <td>
@@ -80,11 +90,9 @@
                                                 لجنة @s.ExamSchedule.Committee.CommitteeNumber
                                             </span>
                                             <br />
-
                                             <small class="text-muted d-block">
                                                 @s.ExamSchedule.ScheduledDate.ToString("yyyy-MM-dd")
                                             </small>
-
                                             <small class="text-muted d-block">
                                                 @s.ExamSchedule.Exam.StartTime - @s.ExamSchedule.Exam.EndTime
                                             </small>
@@ -107,7 +115,7 @@
                                     <a asp-action="Edit" asp-route-id="@s.StudentId" class="btn btn-sm btn-warning" title="تعديل">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <a asp-action="Delete" asp-route-id="@s.StudentId" class="btn btn-sm btn-danger" title="حذف" onclick="return confirm('تأكيد الحذف؟ سيتم إعادة ترتيب أرقام الجلوس إذا كان الطالب موزعاً.');">
+                                    <a asp-action="Delete" asp-route-id="@s.StudentId" class="btn btn-sm btn-danger" title="حذف" onclick="return confirm('تأكيد الحذف؟');">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 </td>

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using projectweb.Models;
 
@@ -11,9 +12,11 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260502193826_InitCreate")]
+    partial class InitCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -296,7 +299,7 @@ namespace projectweb.Migrations
                     b.Property<int?>("BlockId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CommitteeID")
+                    b.Property<int>("CommitteeID")
                         .HasColumnType("int");
 
                     b.Property<int>("ExamScheduleId")
@@ -415,9 +418,6 @@ namespace projectweb.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("HallId");
-
-                    b.HasIndex("HallName")
-                        .IsUnique();
 
                     b.HasIndex("HallSupervisorID");
 
@@ -761,7 +761,8 @@ namespace projectweb.Migrations
                     b.HasOne("projectweb.Models.Committee", "Committee")
                         .WithMany("CommitteesAssignments")
                         .HasForeignKey("CommitteeID")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("projectweb.Models.ExamSchedule", "ExamSchedule")
                         .WithMany()

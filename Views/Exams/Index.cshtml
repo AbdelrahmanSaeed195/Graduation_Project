@@ -7,6 +7,7 @@
 
 <div class="content-body" dir="rtl">
 
+    @* رسائل التنبيه *@
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
@@ -14,33 +15,28 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-journal-bookmark-fill me-2"></i> إدارة الامتحانات</h1>
-        <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm" style="background-color: var(--primary-navy, #1a2c4e); color: white;">
+        <h1 class="h3 mb-0 fw-bold academic-heading">
+            <i class="bi bi-journal-bookmark-fill me-2"></i> إدارة الامتحانات
+        </h1>
+        <a asp-action="Create" class="btn px-4 shadow-sm text-white" style="background-color: #1a2c4e; border-radius: 8px;">
             <i class="bi bi-plus-circle me-1"></i> إضافة امتحان جديد
         </a>
     </div>
 
     <div class="card academic-card shadow-sm overflow-hidden border-0" style="border-radius: 15px;">
         <div class="table-responsive">
-            <table class="table academic-table table-hover align-middle mb-0">
+            <table class="table academic-table table-hover align-middle mb-0 text-center">
                 <thead style="background-color: #212529; color: white;">
                     <tr>
-                        <th class="ps-4 py-3">كود الامتحان</th>
+                        <th class="py-3">كود الامتحان</th>
                         <th>المادة الدراسية</th>
                         <th>تاريخ الامتحان</th>
-                        <th class="text-center">وقت الامتحان</th>
-                        <th class="text-center">السنة الدراسية</th>
-                        <th class="text-center">جداول التوزيع</th>
-                        <th class="text-center pe-4">الإجراءات</th>
+                        <th>وقت الامتحان</th>
+                        <th>السنة الدراسية</th>
+                        <th>جداول التوزيع</th>
+                        <th class="pe-4">الإجراءات</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -49,7 +45,8 @@
                         foreach (var item in Model)
                         {
                             <tr>
-                                <td class="ps-4 fw-bold text-muted">#@item.ExamId</td>
+                                <td class="fw-bold text-muted">#@item.ExamId</td>
+
                                 <td class="fw-bold" style="color: #1a2c4e;">
                                     @if (item.Subject != null)
                                     {
@@ -61,39 +58,56 @@
                                         <span class="text-muted">غير محدد</span>
                                     }
                                 </td>
+
                                 <td>
                                     <span class="badge bg-light border px-3 py-2 text-dark" style="border-radius: 8px;">
-                                        <i class="bi bi-calendar-event me-1 text-primary"></i> @item.ExamDate.ToString("yyyy/MM/dd")
+                                        <i class="bi bi-calendar-event me-1 text-primary"></i>
+                                        @(item.ExamDate != DateTime.MinValue ? item.ExamDate.ToString("yyyy/MM/dd") : "لم يحدد")
                                     </span>
                                 </td>
-                                <td class="text-center">
-                                    <span class="badge px-3 py-2" style="background-color: #f8f9fa; color: #333; border: 1px solid #dee2e6; border-radius: 8px;">
+
+                                <td>
+                                    <span class="badge px-3 py-2 bg-light border text-dark" style="border-radius: 8px;">
                                         <i class="bi bi-clock me-1 text-info"></i>
-                                      
                                         @{
-                                            var startDateTime = DateTime.Today.Add(item.StartTime);
-                                            var endDateTime = DateTime.Today.Add(item.EndTime);
+                                            var startDisplay = DateTime.Today.Add(item.StartTime).ToString("hh:mm tt");
+                                            var endDisplay = DateTime.Today.Add(item.EndTime).ToString("hh:mm tt");
                                         }
-                                        @startDateTime.ToString("hh:mm tt") - @endDateTime.ToString("hh:mm tt")
+                                        @startDisplay - @endDisplay
                                     </span>
                                 </td>
-                                <td class="text-center">
-                                    <span class="badge bg-info text-dark px-3 py-2" style="border-radius: 6px;">
+
+                               
+                                <td>
+                                    <span class="badge px-4 py-2 fw-bold"
+                                          style="background-color: #00d2ff; color: #1a2c4e; border-radius: 10px; min-width: 100px;">
                                         @item.TargetAcademicYear
                                     </span>
                                 </td>
-                                <td class="text-center">
-                                    <span class="badge @(item.ExamSchedules != null && item.ExamSchedules.Any() ? "bg-success" : "bg-secondary") px-3 py-2" style="border-radius: 6px;">
-                                        <i class="bi bi-diagram-3 me-1"></i> @(item.ExamSchedules?.Count ?? 0) لجنة
-                                    </span>
-                                </td>
-                                <td class="text-center pe-4">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <a asp-action="Details" asp-route-id="@item.ExamId" class="btn btn-sm btn-outline-info" style="border-radius: 6px;" title="عرض التفاصيل">
-                                            <i class="bi bi-eye"></i>
+
+                                <td>
+                                    @if (item.ExamSchedules != null && item.ExamSchedules.Any())
+                                    {
+                                        <a asp-controller="ExamSchedules" asp-action="Index" asp-route-examId="@item.ExamId"
+                                           class="btn btn-sm btn-success px-3 shadow-sm" style="border-radius: 6px;">
+                                            <i class="bi bi-diagram-3 me-1"></i> @item.ExamSchedules.Count لجنة
                                         </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary px-3 py-2" style="border-radius: 6px;">
+                                            <i class="bi bi-slash-circle me-1"></i> 0 لجنة
+                                        </span>
+                                    }
+                                </td>
+
+                                <td class="pe-4">
+                                    <div class="d-flex justify-content-center gap-2">
                                         <a asp-action="Edit" asp-route-id="@item.ExamId" class="btn btn-sm btn-outline-dark" style="border-radius: 6px;" title="تعديل">
                                             <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@item.ExamId" class="btn btn-sm btn-outline-info" style="border-radius: 6px;" title="تفاصيل">
+                                            <i class="bi bi-eye"></i>
                                         </a>
                                         <a asp-action="Delete" asp-route-id="@item.ExamId" class="btn btn-sm btn-outline-danger" style="border-radius: 6px;" title="حذف">
                                             <i class="bi bi-trash"></i>
@@ -102,15 +116,6 @@
                                 </td>
                             </tr>
                         }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                                لا توجد امتحانات مسجلة في النظام حالياً.
-                            </td>
-                        </tr>
                     }
                 </tbody>
             </table>

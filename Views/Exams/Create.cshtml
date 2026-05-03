@@ -13,65 +13,55 @@
             </div>
             <div class="card-body p-4" style="background-color: #ffffff;">
 
-                <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4">
-                    <i class="bi bi-info-circle-fill fs-3 me-3 text-primary"></i>
-                    <div>
-                        <strong class="d-block mb-1">توضيح:</strong>
-                        <ul class="mb-0 ps-3 small opacity-90">
-                            <li>بعد إنشاء الامتحان، يمكنك تخصيص اللجان والمواعيد التفصيلية من جدول توزيع اللجان.</li>
-                            <li>تأكد من إدخال وقت البداية والنهاية بدقة لتجنب تضارب المواعيد.</li>
-                        </ul>
-                    </div>
+                <!-- رسالة تنبيه لخطأ الوقت أو التداخل تظهر وتختفي ديناميكياً -->
+                <div id="timeError" class="alert alert-danger border-0 shadow-sm mb-4" style="display:none;">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span id="timeErrorMessage"></span>
                 </div>
 
                 <form asp-action="Create" method="post" id="examForm">
-                    @* عرض أخطاء الـ Validation العامة بما فيها خطأ منطق الوقت *@
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
 
                     <div class="row g-4 mb-4">
                         <div class="col-md-6">
                             <label asp-for="SubjectID" class="form-label fw-bold" style="color: #4a5568;">المادة الدراسية <span class="text-danger">*</span></label>
-                            @* تم تعديل الـ ViewBag ليطابق المسمى في الـ Controller وهو SubjectID *@
-                            <select asp-for="SubjectID" asp-items="@(ViewBag.SubjectID)" class="form-select border-light-subtle shadow-sm" style="border-radius: 8px;">
+                            <select asp-for="SubjectID" id="SubjectSelect" asp-items="@(ViewBag.SubjectID)" class="form-select border-light-subtle shadow-sm" style="border-radius: 8px;">
                                 <option value="">-- اختر المادة --</option>
                             </select>
                             <span asp-validation-for="SubjectID" class="text-danger small mt-1 d-block"></span>
                         </div>
 
                         <div class="col-md-6">
+                            <label asp-for="TargetAcademicYear" class="form-label fw-bold" style="color: #4a5568;">السنة الدراسية <span class="text-muted small">(تُجلب تلقائياً)</span></label>
+                            <input asp-for="TargetAcademicYear" id="AcademicYearField" class="form-control bg-light shadow-sm" readonly style="border-radius: 8px;" placeholder="سيتم تحديد السنة بناءً على المادة" />
+                            <span asp-validation-for="TargetAcademicYear" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="col-md-12">
+                            <hr />
+                        </div>
+
+                        <div class="col-md-4">
                             <label asp-for="ExamDate" class="form-label fw-bold" style="color: #4a5568;">تاريخ الامتحان <span class="text-danger">*</span></label>
-                            <input asp-for="ExamDate" class="form-control border-light-subtle shadow-sm" type="date" style="border-radius: 8px;" />
+                            <input asp-for="ExamDate" id="ExamDate" class="form-control border-light-subtle shadow-sm" type="date" style="border-radius: 8px;" />
                             <span asp-validation-for="ExamDate" class="text-danger small mt-1 d-block"></span>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label asp-for="StartTime" class="form-label fw-bold" style="color: #4a5568;">وقت البدء <span class="text-danger">*</span></label>
                             <input asp-for="StartTime" id="StartTime" class="form-control border-light-subtle shadow-sm text-center" type="time" style="border-radius: 8px;" />
                             <span asp-validation-for="StartTime" class="text-danger small mt-1 d-block"></span>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label asp-for="EndTime" class="form-label fw-bold" style="color: #4a5568;">وقت الانتهاء <span class="text-danger">*</span></label>
                             <input asp-for="EndTime" id="EndTime" class="form-control border-light-subtle shadow-sm text-center" type="time" style="border-radius: 8px;" />
-                            @* هذا المكان الذي سيظهر فيه خطأ الـ "نهاية أكبر من البداية" *@
                             <span asp-validation-for="EndTime" class="text-danger small mt-1 d-block"></span>
-                        </div>
-
-                        <div class="col-md-12">
-                            <label asp-for="TargetAcademicYear" class="form-label fw-bold" style="color: #4a5568;">السنة الدراسية المستهدفة <span class="text-danger">*</span></label>
-                            <select asp-for="TargetAcademicYear" class="form-select border-light-subtle shadow-sm" style="border-radius: 8px;">
-                                <option value="">-- اختر السنة الدراسية --</option>
-                                <option value="المستوى الأول">المستوى الأول</option>
-                                <option value="المستوى الثاني">المستوى الثاني</option>
-                                <option value="المستوى الثالث">المستوى الثالث</option>
-                                <option value="المستوى الرابع">المستوى الرابع</option>
-                            </select>
-                            <span asp-validation-for="TargetAcademicYear" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
                     <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
-                        <button type="submit" class="btn btn-academic-primary px-5 fw-bold shadow-sm" style="background-color: #1a2c4e; color: white; border-radius: 8px;">
+                        <button type="submit" id="submitBtn" class="btn btn-academic-primary px-5 fw-bold shadow-sm" style="background-color: #1a2c4e; color: white; border-radius: 8px;">
                             <i class="bi bi-check-circle me-1"></i> حفظ الامتحان
                         </button>
                         <a asp-action="Index" class="btn btn-outline-secondary px-4 shadow-sm" style="border-radius: 8px;">إلغاء</a>
@@ -87,17 +77,71 @@
 
     <script>
         $(document).ready(function () {
-            // تحقق فوري عند إرسال النموذج (Client-side Validation)
+            // 1. جلب السنة الدراسية تلقائياً
+            $('#SubjectSelect').change(function () {
+                var subjectId = $(this).val();
+                if (subjectId) {
+                    $.ajax({
+                        url: '/Exams/GetSubjectDetails',
+                        type: 'GET',
+                        data: { id: subjectId },
+                        success: function (data) {
+                            if (data) {
+                                $('#AcademicYearField').val(data.academicYear);
+                            }
+                        }
+                    });
+                } else {
+                    $('#AcademicYearField').val('');
+                }
+            });
+
+            // 2. دالة للتحقق من تداخل المواعيد عبر Ajax
+            function checkOverlap() {
+                var date = $('#ExamDate').val();
+                var start = $('#StartTime').val();
+                var end = $('#EndTime').val();
+                var errorDiv = $('#timeError');
+                var errorMessage = $('#timeErrorMessage');
+                var submitBtn = $('#submitBtn');
+
+                if (date && start && end) {
+                    // التحقق أولاً من أن وقت النهاية بعد وقت البدء
+                    if (end <= start) {
+                        errorMessage.text("خطأ: يجب أن يكون وقت انتهاء الامتحان بعد وقت البدء.");
+                        errorDiv.fadeIn();
+                        submitBtn.attr('disabled', 'disabled');
+                        return;
+                    }
+
+                    // التحقق من التداخل في قاعدة البيانات
+                    $.get('/Exams/CheckTimeOverlap', { date: date, start: start, end: end }, function (data) {
+                        if (data.overlap) {
+                            errorMessage.text("تنبيه: يوجد امتحان آخر مسجل في نفس هذا الموعد والتاريخ.");
+                            errorDiv.fadeIn();
+                            submitBtn.attr('disabled', 'disabled');
+                        } else {
+                            errorDiv.fadeOut();
+                            submitBtn.removeAttr('disabled');
+                        }
+                    });
+                }
+            }
+
+            // تشغيل الفحص عند تغيير التاريخ أو الأوقات
+            $('#ExamDate, #StartTime, #EndTime').change(function () {
+                checkOverlap();
+            });
+
+            // 3. التحقق النهائي عند الإرسال (Back-up validation)
             $('#examForm').submit(function (e) {
                 var start = $('#StartTime').val();
                 var end = $('#EndTime').val();
-
                 if (start && end && end <= start) {
-                    e.preventDefault(); // منع الإرسال
-
-                    // إظهار تنبيه أو رسالة خطأ تحت حقل وقت النهاية
-                    $('[data-valmsg-for="EndTime"]').text("يجب أن يكون وقت انتهاء الامتحان بعد وقت البدء.");
-                    alert("عذراً: وقت الانتهاء يجب أن يكون لاحقاً لوقت البدء.");
+                    e.preventDefault();
+                    $('#timeErrorMessage').text("خطأ في المواعيد: يجب أن يكون وقت انتهاء الامتحان لاحقاً لوقت البدء.");
+                    $('#timeError').fadeIn();
+                    $('html, body').animate({ scrollTop: 0 }, 'slow');
                 }
             });
         });

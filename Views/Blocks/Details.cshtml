@@ -7,75 +7,85 @@
 
 <div class="row justify-content-center" dir="rtl">
     <div class="col-xl-10">
-        <div class="card academic-card mb-4">
-            <div class="card-header academic-card-header text-white p-4 d-flex justify-content-between align-items-center">
+        <div class="card academic-card mb-4 shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+        
+            <div class="card-header text-white p-4 d-flex justify-content-between align-items-center" style="background-color: #1a2c4e;">
                 <h4 class="mb-0 fw-bold text-white"><i class="bi bi-info-circle-fill me-2"></i> بيانات البلوك: @Model.BlockName</h4>
-                <span class="badge bg-light fs-6" style="color: var(--primary-navy);">كود البلوك #@Model.BlockID</span>
+                <span class="badge bg-white fs-6 shadow-sm" style="color: #1a2c4e; border-radius: 8px;">كود البلوك #@Model.BlockID</span>
             </div>
-            <div class="card-body p-4 bg-white">
 
+            <div class="card-body p-4 bg-white">
+              
                 <div class="row g-4 mb-4">
                     <div class="col-md-4">
-                        <div class="bg-light rounded p-3 border" style="border-color: var(--border-color) !important;">
-                            <div class="small academic-label mb-1">اسم البلوك (الجزء)</div>
-                            <div class="fw-bold fs-5" style="color: var(--text-main);">@Model.BlockName</div>
+                        <div class="bg-light rounded p-3 border shadow-sm h-100">
+                            <div class="small text-muted fw-bold mb-1"><i class="bi bi-tag me-1"></i> اسم البلوك (الجزء)</div>
+                            <div class="fw-bold fs-5 text-dark">@Model.BlockName</div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="bg-light rounded p-3 border" style="border-color: var(--border-color) !important;">
-                            <div class="small academic-label mb-1">عدد اللجان المتاحة</div>
-                            <div class="fw-bold fs-5" style="color: var(--text-main);">@Model.MaxCommittees لجان</div>
+                        <div class="bg-light rounded p-3 border shadow-sm h-100">
+                            <div class="small text-muted fw-bold mb-1"><i class="bi bi-ui-checks me-1"></i> سعة اللجان المتاحة</div>
+                            <div class="fw-bold fs-5 text-dark">@Model.MaxCommittees لجان</div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="bg-light rounded p-3 border" style="border-color: var(--border-color) !important;">
-                            <div class="small academic-label mb-1">الصالة / القاعة</div>
-                            <div class="fw-bold fs-5 academic-heading">
-                                @(Model.Hall != null ? $"صالة رقم {Model.Hall.HallId}" : $"صالة رقم {Model.HallId}")
+                        <div class="bg-light rounded p-3 border shadow-sm h-100 border-primary border-opacity-25">
+                            <div class="small text-muted fw-bold mb-1"><i class="bi bi-building me-1"></i> الصالة / القاعة التابع لها</div>
+                            <div class="fw-bold fs-5 text-primary">
+                              
+                                @(Model.Hall != null ? Model.Hall.HallName : "غير محدد")
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 mt-4" style="border-color: var(--border-color) !important;">
-                    <i class="bi bi-ui-checks-grid me-2"></i> اللجان المرتبطة بهذا البلوك
+                
+                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 mt-4 text-dark">
+                    <i class="bi bi-grid-3x3-gap-fill me-2 text-secondary"></i> اللجان المرتبطة بهذا البلوك
                 </h5>
 
                 @if (Model.Committees != null && Model.Committees.Any())
                 {
-                    <div class="table-responsive">
-                        <table class="table academic-table align-middle">
-                            <thead>
+                    <div class="table-responsive rounded border shadow-sm">
+                        <table class="table table-hover align-middle mb-0 text-center">
+                            <thead class="table-light text-secondary small text-uppercase">
                                 <tr>
-                                    <th>رقم اللجنة</th>
+                                    <th class="py-3">رقم اللجنة</th>
                                     <th>سعة الطلاب</th>
                                     <th>حالة اللجنة</th>
-                                    <th>الملاحظ المعين (تلقائياً)</th>
+                                    <th>الملاحظ المعين</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var c in Model.Committees)
                                 {
                                     <tr>
-                                        <td class="fw-bold academic-heading">لجنة @c.CommitteeNumber</td>
-                                        <td style="color: var(--text-main);">@c.NumberOfStudent طالب</td>
-                                        <td><span class="badge bg-success">@c.StatusOfCommittee</span></td>
+                                        <td class="fw-bold text-dark fs-6">لجنة @c.CommitteeNumber</td>
+                                        <td class="text-muted">@c.NumberOfStudent طالب</td>
+                                        <td>
+                                            <span class="badge @(c.StatusOfCommittee == "مكتمل" ? "bg-success" : "bg-info text-dark") px-3 py-2">
+                                                @c.StatusOfCommittee
+                                            </span>
+                                        </td>
                                         <td>
                                             @if (c.CommitteesAssignments != null && c.CommitteesAssignments.Any())
                                             {
-                                                <ul class="list-unstyled mb-0">
+                                                <div class="d-flex flex-column align-items-center">
                                                     @foreach (var assignment in c.CommitteesAssignments)
                                                     {
                                                         if (assignment.Person != null)
                                                         {
-                                                            <li style="color: var(--text-main);"><i class="bi bi-person-badge text-muted me-1"></i> @assignment.Person.FullName</li>
+                                                            <div class="badge bg-light text-dark border p-2 mb-1 w-100 shadow-sm" style="max-width: 200px;">
+                                                                <i class="bi bi-person-badge text-primary me-1"></i> @assignment.Person.FullName
+                                                            </div>
                                                         }
                                                     }
-                                                </ul>
+                                                </div>
                                             }
                                             else
                                             {
-                                                <span class="text-muted small">لم يتم تعيين ملاحظ</span>
+                                                <span class="text-muted small italic">-- لم يتم التوزيع بعد --</span>
                                             }
                                         </td>
                                     </tr>
@@ -86,21 +96,37 @@
                 }
                 else
                 {
-                    <div class="alert alert-secondary border-0 text-center" style="background-color: var(--bg-light); color: var(--text-main);">
-                        لا توجد لجان مرتبطة بهذا البلوك حالياً.
+                    <div class="alert alert-light border-0 text-center py-5 shadow-sm" style="border-radius: 12px;">
+                        <i class="bi bi-folder2-open fs-1 text-muted d-block mb-2"></i>
+                        <span class="text-muted">لا توجد لجان مرتبطة بهذا البلوك حالياً.</span>
                     </div>
                 }
 
-                <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
-                    <a asp-action="Edit" asp-route-id="@Model.BlockID" class="btn btn-academic-primary px-4 fw-bold">
-                        <i class="bi bi-pencil-square me-1"></i> تعديل
+                @* أزرار التحكم *@
+                <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
+                    <a asp-action="Edit" asp-route-id="@Model.BlockID" class="btn px-4 fw-bold text-white shadow-sm" style="background-color: #1a2c4e; border-radius: 8px;">
+                        <i class="bi bi-pencil-square me-1"></i> تعديل البيانات
                     </a>
-                    <a asp-action="AssignCommittees" asp-route-blockId="@Model.BlockID" class="btn btn-outline-success px-4">
-                        <i class="bi bi-diagram-3 me-1"></i> توزيع اللجان
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-bold shadow-sm" style="border-radius: 8px;">
+                        العودة للقائمة
                     </a>
-                    <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .academic-heading {
+        color: #1a2c4e;
+    }
+
+    .table thead th {
+        font-weight: 600;
+        border-top: none;
+    }
+
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+</style>

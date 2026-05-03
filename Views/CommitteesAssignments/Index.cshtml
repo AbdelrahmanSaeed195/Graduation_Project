@@ -5,49 +5,67 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="fw-bold mb-0" style="color: #1a3a5a;">إدارة توزيعات المراقبين</h3>
-            <span class="badge bg-secondary">إجمالي التكليفات: @Model.Count()</span>
+            <span class="badge bg-secondary">إجمالي التكليفات المعروضة: @Model.Count()</span>
         </div>
 
-        <div class="d-flex gap-2">
-            <form asp-action="Index" method="get" class="d-flex gap-2 align-items-center">
-                <select name="scheduleId" class="form-select form-select-sm shadow-sm"
-                        asp-items="ViewBag.ExamScheduleId" onchange="this.form.submit()">
-                    <option value="">-- اختر الجلسة لعرض التوزيع --</option>
-                </select>
+        <div class="d-flex gap-2 align-items-end">
+            @* نظام الفلترة: امتحان + مستوى *@
+            <form asp-action="Index" method="get" class="d-flex gap-2 align-items-end border p-2 rounded bg-light shadow-sm">
+                <div>
+                    <label class="small fw-bold d-block mb-1 text-muted">البحث بالامتحان:</label>
+                    <select name="examId" class="form-select form-select-sm shadow-sm" style="min-width: 250px;"
+                            asp-items="ViewBag.Exams" onchange="this.form.submit()">
+                        <option value="">-- اختر الامتحان --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="small fw-bold d-block mb-1 text-muted">المستوى:</label>
+                    <select name="academicYear" class="form-select form-select-sm shadow-sm" 
+                            asp-items="ViewBag.AcademicYears" onchange="this.form.submit()">
+                        <option value="">-- كل المستويات --</option>
+                    </select>
+                </div>
             </form>
 
-            @if (ViewBag.CurrentScheduleId != null)
-            {
+            
                 <form asp-action="AutoAssign" method="post">
-                    <input type="hidden" name="scheduleId" value="@ViewBag.CurrentScheduleId" />
-                    <button type="submit" class="btn btn-success shadow-sm">
-                        <i class="bi bi-magic"></i> تشغيل التوزيع التلقائي
+                    <input type="hidden" name="examId" value="@ViewBag.SelectedExamId" />
+                    <button type="submit" class="btn btn-success shadow-sm fw-bold">
+                        <i class="bi bi-robot me-1"></i> تشغيل التوزيع التلقائي
                     </button>
                 </form>
-            }
+            
 
-            <a asp-action="Create" class="btn text-white shadow-sm" style="background-color: #1a3a5a;">
-                <i class="bi bi-plus-circle"></i> إضافة تكليف يدوي
+            <a asp-action="Create" class="btn text-white shadow-sm fw-bold" style="background-color: #1a3a5a;">
+                <i class="bi bi-plus-circle me-1"></i> إضافة تكليف يدوي
             </a>
         </div>
     </div>
 
+    @* رسائل النجاح أو الخطأ *@
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success shadow-sm border-0 alert-dismissible fade show">
+        <div class="alert alert-success shadow-sm border-0 alert-dismissible fade show text-end">
             <i class="bi bi-check-circle me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger shadow-sm border-0 alert-dismissible fade show text-end">
+            <i class="bi bi-exclamation-triangle me-2"></i> @TempData["Error"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
     <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
         <table class="table table-hover text-center align-middle mb-0">
-            <thead class="table-light">
+            <thead class="table-light border-bottom">
                 <tr class="text-secondary small text-uppercase">
-                    <th>المراقب</th>
+                    <th>المراقب / الموظف</th>
                     <th>نطاق المسئولية (المكان)</th>
-                    <th>الدور الوظيفي</th>
-                    <th>المادة / التفاصيل الزمنية</th> @* تم تعديل العنوان *@
+                    <th>الدور الوظيفي في اللجنة</th>
+                    <th>المادة / التفاصيل الزمنية</th>
                     <th>المصدر</th>
                     <th>الإجراءات</th>
                 </tr>
@@ -56,63 +74,88 @@
                 @foreach (var item in Model)
                 {
                     <tr>
-                        <td class="fw-bold">@item.Person.FullName</td>
+                        <td class="fw-bold py-3">
+                            <div class="text-dark">@item.Person.FullName</div>
+                            <div class="small text-muted fw-normal">@item.Person.JobRole</div>
+                        </td>
+
                         <td>
-                            @if (item.Committee != null)
+                            @if (item.Hall != null && item.BlockId == null && item.CommitteeID == null)
                             {
-                                <div class="small text-muted mb-1">
-                                    @item.Committee.Block?.Hall?.HallName <i class="bi bi-chevron-left"></i> @item.Committee.Block?.BlockName
-                                </div>
-                                <span class="badge bg-primary px-3">لجنة: @item.Committee.CommitteeNumber</span>
+                                <span class="badge px-3 py-2" style="background-color: #ffc107; color: #000; border-radius: 8px;">
+                                    <i class="bi bi-building me-1"></i> نطاق الصالة: @item.Hall.HallName
+                                </span>
                             }
-                            else if (item.Block != null)
+                            else if (item.Block != null && item.CommitteeID == null)
                             {
                                 <div class="small text-muted mb-1">@item.Block.Hall?.HallName</div>
-                                <span class="badge bg-info text-dark px-3">بلوك: @item.Block.BlockName</span>
+                                <span class="badge px-3 py-2" style="background-color: #0dcaf0; color: #000; border-radius: 8px;">
+                                    <i class="bi bi-grid-3x3 me-1"></i> بلوك: @item.Block.BlockName
+                                </span>
                             }
-                            else if (item.Hall != null)
+                            else if (item.Committee != null)
                             {
-                                <span class="badge bg-warning text-dark px-3">صالة: @item.Hall.HallName</span>
+                                <div class="small text-muted mb-1">
+                                    @item.Committee.Block?.Hall?.HallName <i class="bi bi-chevron-left small"></i> @item.Committee.Block?.BlockName
+                                </div>
+                                <span class="badge px-3 py-2" style="background-color: #0d6efd; color: #fff; border-radius: 8px;">
+                                    <i class="bi bi-person-workspace me-1"></i> لجنة: @item.Committee.CommitteeNumber
+                                </span>
                             }
                         </td>
+
                         <td>
-                            <span class="badge rounded-pill bg-light text-dark border px-3">@item.RoleType</span>
+                            <span class="badge rounded-pill bg-light text-dark border px-3 py-2">@item.RoleType</span>
                         </td>
+
                         <td>
                             <div class="fw-bold text-dark">@item.ExamSchedule?.Exam?.Subject?.SubjectName</div>
                             <div class="small text-muted">
-                                <i class="bi bi-calendar3 me-1"></i> @item.ExamSchedule?.ScheduledDate.ToShortDateString()
+                                <i class="bi bi-calendar3 me-1"></i>
+                                @(item.ExamSchedule?.Exam?.ExamDate.ToString("yyyy/MM/dd") ?? "غير محدد")
                             </div>
-                            @* إضافة الوقت المسحوب من جدول Exam *@
                             <div class="small text-danger fw-bold mt-1">
-                                <i class="bi bi-clock me-1"></i> @item.ExamSchedule?.Exam?.StartTime.ToString(@"hh\:mm") - @item.ExamSchedule?.Exam?.EndTime.ToString(@"hh\:mm")
+                                <i class="bi bi-clock me-1"></i>
+                                @if (item.ExamSchedule?.Exam != null)
+                                {
+                                    var start = DateTime.Today.Add(item.ExamSchedule.Exam.StartTime).ToString("hh:mm tt");
+                                    var end = DateTime.Today.Add(item.ExamSchedule.Exam.EndTime).ToString("hh:mm tt");
+                                    @start @:- @end
+                                }
                             </div>
                         </td>
-                        <td>
+
+                          <td>
                             @if (item.AssignmentType == "Auto")
                             {
-                                <i class="bi bi-robot text-success fs-5" title="توزيع تلقائي"></i>
+                                <span class="text-success small fw-bold">
+                                    <i class="bi bi-robot me-1"></i> توزيع تلقائي
+                                </span>
                             }
                             else
                             {
-                                <i class="bi bi-person-fill text-secondary fs-5" title="إدخال يدوي"></i>
+                                <span class="text-secondary small fw-bold">
+                                    <i class="bi bi-person-fill me-1"></i> إدخال يدوي
+                                </span>
                             }
-                        </td>
+                         </td>
+
                         <td>
-                            <div class="btn-group shadow-sm">
-                                <a asp-action="Details" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-info" title="عرض"><i class="bi bi-eye"></i></a>
-                                <a asp-action="Edit" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-secondary mx-1" title="تعديل"><i class="bi bi-pencil"></i></a>
-                                <a asp-action="Delete" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-danger" title="حذف"><i class="bi bi-trash"></i></a>
+                            <div class="d-flex justify-content-center gap-1">
+                                <a asp-action="Edit" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-secondary border shadow-sm"><i class="bi bi-pencil"></i></a>
+                                <a asp-action="Details" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-info border shadow-sm"><i class="bi bi-eye"></i></a>
+                                <a asp-action="Delete" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-danger border shadow-sm"><i class="bi bi-trash"></i></a>
                             </div>
                         </td>
                     </tr>
                 }
+
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="6" class="py-5 text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                            لا توجد توزيعات مسجلة لهذه الجلسة.
+                        <td colspan="6" class="py-5 text-muted text-center bg-light">
+                            <i class="bi bi-search fs-1 d-block mb-3"></i>
+                            لم يتم العثور على توزيعات مطابقة للبحث. جرب اختيار امتحان آخر.
                         </td>
                     </tr>
                 }
@@ -120,3 +163,9 @@
         </table>
     </div>
 </div>
+
+<style>
+    .table th { font-weight: 600; font-size: 0.85rem; }
+    .badge { font-weight: 500; }
+    .btn-sm { padding: 0.25rem 0.5rem; }
+</style>

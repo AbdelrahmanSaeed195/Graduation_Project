@@ -1,63 +1,91 @@
 ﻿@model projectweb.Models.CommitteesAssignment
 
+@{
+    ViewData["Title"] = "تكليف يدوي جديد";
+}
+
 <div class="container mt-5 text-end" dir="rtl">
     <div class="card mx-auto shadow border-0" style="max-width: 750px; border-radius: 15px;">
-        <div class="card-header text-white text-center py-3" style="background-color: #1a3a5a;">
-            <h4 class="mb-0"><i class="bi bi-person-plus me-2"></i> إنشاء تكليف يدوي جديد</h4>
+
+        <div class="card-header text-white text-center py-3" style="background-color: #1a3a5a; border-radius: 15px 15px 0 0;">
+            <h4 class="mb-0"><i class="bi bi-person-plus-fill me-2"></i> إنشاء تكليف يدوي جديد</h4>
         </div>
+
         <div class="card-body p-4">
             <form asp-action="Create">
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm border-0 mb-4 py-2"></div>
+                @* عرض رسائل الخطأ العامة مثل (الموظف مشغول بالفعل) *@
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm border-0 mb-4 py-2 small"></div>
 
                 <div class="row">
+                    @* اختيار الموظف *@
                     <div class="col-md-12 mb-3">
-                        <label class="form-label fw-bold">الموظف</label>
-                        <select asp-for="PersonID" class="form-select shadow-sm" asp-items="ViewBag.PersonID">
-                            <option value="">-- اختر الموظف --</option>
+                        <label class="form-label fw-bold text-dark"><i class="bi bi-person-circle me-1"></i> اختيار الموظف</label>
+                        <select asp-for="PersonID" class="form-select shadow-sm border-light-subtle" asp-items="ViewBag.PersonID">
+                            <option value="">-- اختر الموظف من القائمة --</option>
                         </select>
                         <span asp-validation-for="PersonID" class="text-danger small"></span>
                     </div>
 
+                    @* جلسة الامتحان - تم ضبطها لعرض التاريخ والوقت AM/PM *@
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">الدور في اللجنة</label>
-                        <select asp-for="RoleID" class="form-select shadow-sm" asp-items="ViewBag.RoleID"></select>
-                        <span asp-validation-for="RoleID" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">جلسة الامتحان</label>
-                        <select asp-for="ExamScheduleId" class="form-select shadow-sm" asp-items="ViewBag.ExamScheduleId"></select>
+                        <label class="form-label fw-bold text-dark"><i class="bi bi-calendar-check me-1"></i> جلسة الامتحان</label>
+                        <select asp-for="ExamScheduleId" class="form-select shadow-sm border-light-subtle" asp-items="ViewBag.ExamScheduleId">
+                            <option value="">-- اختر الجلسة (المادة - التاريخ) --</option>
+                        </select>
                         <span asp-validation-for="ExamScheduleId" class="text-danger small"></span>
                     </div>
 
-                    <div class="col-md-12 my-3 p-3 bg-light rounded border">
-                        <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-geo-alt me-1"></i> نطاق المسئولية (اختر النطاق المناسب للدور)</h6>
+                    @* الدور الوظيفي *@
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-dark"><i class="bi bi-briefcase me-1"></i> الدور في اللجنة</label>
+                        <select asp-for="RoleID" class="form-select shadow-sm border-light-subtle" asp-items="ViewBag.RoleID">
+                            <option value="">-- اختر الدور المكلف به --</option>
+                        </select>
+                        <span asp-validation-for="RoleID" class="text-danger small"></span>
+                    </div>
+
+                    @* قسم نطاق المسئولية *@
+                    <div class="col-md-12 my-3 p-4 rounded-4 border-0 shadow-sm" style="background-color: #f8faff;">
+                        <h6 class="fw-bold border-bottom pb-2 mb-3 text-primary">
+                            <i class="bi bi-geo-alt-fill me-1"></i> تحديد نطاق المسئولية (اختر نطاقاً واحداً فقط)
+                        </h6>
                         <div class="row">
-                            <div class="col-md-4">
-                                <label class="small text-muted fw-bold">صالة (رئيس صالة/طبي)</label>
-                                <select asp-for="HallId" class="form-select mt-1 shadow-sm" asp-items="ViewBag.HallId">
-                                    <option value="">-- بلا --</option>
+                            <div class="col-md-4 mb-2">
+                                <label class="small text-muted fw-bold d-block mb-1">صالة كاملة</label>
+                                <select asp-for="HallId" class="form-select form-select-sm shadow-sm" asp-items="ViewBag.HallId">
+                                    <option value="">-- لا يوجد --</option>
                                 </select>
+                                <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">(لرئيس الصالة / الطبيب)</small>
                             </div>
-                            <div class="col-md-4">
-                                <label class="small text-muted fw-bold">بلوك (مراقب)</label>
-                                <select asp-for="BlockId" class="form-select mt-1 shadow-sm" asp-items="ViewBag.BlockId">
-                                    <option value="">-- بلا --</option>
+
+                            <div class="col-md-4 mb-2">
+                                <label class="small text-muted fw-bold d-block mb-1">بلوك محدد</label>
+                                <select asp-for="BlockId" class="form-select form-select-sm shadow-sm" asp-items="ViewBag.BlockId">
+                                    <option value="">-- لا يوجد --</option>
                                 </select>
+                                <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">(لمراقب البلوك)</small>
                             </div>
-                            <div class="col-md-4">
-                                <label class="small text-muted fw-bold">لجنة (ملاحظ)</label>
-                                <select asp-for="CommitteeID" class="form-select mt-1 shadow-sm" asp-items="ViewBag.CommitteeID">
-                                    <option value="">-- بلا --</option>
+
+                            <div class="col-md-4 mb-2">
+                                <label class="small text-muted fw-bold d-block mb-1">لجنة فرعية</label>
+                                <select asp-for="CommitteeID" class="form-select form-select-sm shadow-sm" asp-items="ViewBag.CommitteeID">
+                                    <option value="">-- لا يوجد --</option>
                                 </select>
+                                <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">(لملاحظ اللجنة)</small>
                             </div>
                         </div>
+                        
                     </div>
                 </div>
 
+                @* أزرار التحكم *@
                 <div class="d-grid gap-2 mt-4">
-                    <button type="submit" class="btn btn-dark btn-lg shadow"><i class="bi bi-save me-1"></i> حفظ التكليف</button>
-                    <a asp-action="Index" class="btn btn-light border">إلغاء</a>
+                    <button type="submit" class="btn btn-lg shadow text-white fw-bold" style="background-color: #1a3a5a; border-radius: 8px;">
+                        <i class="bi bi-check-all me-1"></i> إتمام وحفظ التكليف
+                    </button>
+                    <a asp-action="Index" class="btn btn-light border py-2 fw-bold" style="border-radius: 8px;">
+                        <i class="bi bi-x-circle me-1"></i> إلغاء العملية والرجوع
+                    </a>
                 </div>
             </form>
         </div>

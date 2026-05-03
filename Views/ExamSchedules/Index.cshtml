@@ -55,15 +55,24 @@
                                 <td class="text-center">
                                     <span class="badge bg-light border px-3 py-2 text-dark" style="border-radius: 8px;">
                                         <i class="bi bi-calendar-event me-1 text-primary"></i>
-                                        @* تم التعديل لجلب التاريخ من موديل الامتحان *@
+                                      
                                         @item.Exam?.ExamDate.ToString("yyyy/MM/dd")
                                     </span>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge px-3 py-2" style="background-color: #f8f9fa; color: #333; border: 1px solid #dee2e6; border-radius: 8px;">
                                         <i class="bi bi-clock me-1 text-info"></i>
-                                        @* تم التعديل لجلب الوقت من موديل الامتحان *@
-                                        @item.Exam?.StartTime.ToString(@"hh\:mm") - @item.Exam?.EndTime.ToString(@"hh\:mm")
+                                        @if (item.Exam != null)
+                                        {
+                                           
+                                            @(DateTime.Today.Add(item.Exam.StartTime).ToString("hh:mm tt"))
+                                            @: -
+                                            @(DateTime.Today.Add(item.Exam.EndTime).ToString("hh:mm tt"))
+                                        }
+                                        else
+                                        {
+                                            @:غير محدد
+                                        }
                                     </span>
                                 </td>
                                 <td class="text-center pe-4">

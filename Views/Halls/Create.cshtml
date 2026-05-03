@@ -7,41 +7,65 @@
 
 <div class="row justify-content-center" dir="rtl">
     <div class="col-xl-8">
-        <div class="card academic-card">
-            <div class="card-header academic-card-header text-white p-4">
-                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-plus-square-fill me-2"></i> إضافة صالة / قاعة امتحانات</h4>
-            </div>
-            <div class="card-body p-4 bg-white">
-                <form asp-action="Create" method="post">
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3 border-0 shadow-sm"></div>
+        <div class="card academic-card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
 
+            @* الرأس (Header) باللون الكحلي المميز *@
+            <div class="card-header text-white p-4" style="background-color: #1a2c4e;">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-plus-square-fill me-2"></i> إضافة صالة / قاعة امتحانات</h4>
+            </div>
+
+            <div class="card-body p-4 bg-white">
+
+                @* رسالة الخطأ العامة التي تظهر في حالة تكرار الاسم أو أي خطأ من الـ Controller *@
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger border-0 shadow-sm mb-4 d-flex align-items-center" style="border-radius: 10px;">
+                        <i class="bi bi-exclamation-octagon-fill fs-4 me-3"></i>
+                        <div>
+                            <ul class="mb-0 list-unstyled">
+                                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <li class="fw-bold">@error.ErrorMessage</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                }
+
+                <form asp-action="Create" method="post">
                     <div class="row g-4 mb-4">
+
+                        @* اسم الصالة *@
                         <div class="col-md-6">
-                            <label asp-for="HallName" class="form-label academic-label required">اسم الصالة</label>
-                            <input asp-for="HallName" class="form-control academic-input" placeholder="مثال: صالة الامتحانات الرئيسية" maxlength="100" />
-                            <span asp-validation-for="HallName" class="text-danger small mt-1 d-block"></span>
+                            <label asp-for="HallName" class="form-label fw-bold" style="color: #4a5568;">اسم الصالة / القاعة <span class="text-danger">*</span></label>
+                            <input asp-for="HallName" class="form-control border-light-subtle shadow-sm" placeholder="أدخل اسم القاعة (مثال: ل)" maxlength="100" style="border-radius: 8px;" />
+                            <span asp-validation-for="HallName" class="text-danger small mt-1 d-block fw-bold"></span>
                         </div>
 
+                        @* رقم الدور *@
                         <div class="col-md-3">
-                            <label asp-for="Floor" class="form-label academic-label required">رقم الدور</label>
-                            <input asp-for="Floor" class="form-control academic-input" type="number" placeholder="مثال: 1" />
+                            <label asp-for="Floor" class="form-label fw-bold" style="color: #4a5568;">رقم الدور <span class="text-danger">*</span></label>
+                            <input asp-for="Floor" class="form-control border-light-subtle shadow-sm text-center" type="number"  style="border-radius: 8px;" />
                             <span asp-validation-for="Floor" class="text-danger small mt-1 d-block"></span>
                         </div>
 
+                        @* السعة *@
                         <div class="col-md-3">
-                            <label asp-for="MaxBlocks" class="form-label academic-label required">السعة (عدد البلوكات)</label>
-                            <input asp-for="MaxBlocks" type="number" min="1" max="20" class="form-control academic-input" placeholder="الحد الأقصى" />
+                            <label asp-for="MaxBlocks" class="form-label fw-bold" style="color: #4a5568;">السعة (البلوكات) <span class="text-danger">*</span></label>
+                            <input asp-for="MaxBlocks" type="number" min="1" max="20" class="form-control border-light-subtle shadow-sm text-center" style="border-radius: 8px;" />
                             <span asp-validation-for="MaxBlocks" class="text-danger small mt-1 d-block"></span>
                         </div>
 
                     </div>
 
-                    <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
-                        <button type="submit" class="btn btn-academic-primary px-4 fw-bold">
+                    @* أزرار التحكم في أسفل النموذج *@
+                    <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
+                        <button type="submit" class="btn px-5 fw-bold shadow-sm text-white" style="background-color: #1a2c4e; border-radius: 8px;">
                             <i class="bi bi-check-circle me-1"></i> حفظ وإنشاء
                         </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4">إلغاء</a>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4 shadow-sm" style="border-radius: 8px;">إلغاء والرجوع</a>
                     </div>
+
                 </form>
             </div>
         </div>
