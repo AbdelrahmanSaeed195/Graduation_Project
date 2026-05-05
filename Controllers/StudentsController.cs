@@ -191,24 +191,50 @@ namespace projectweb.Controllers
         // =====================================
         // DELETE
         // =====================================
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int? id)
         {
-            var student = await _context.Students.FindAsync(id);
+            if (id == null)
+            {
+                return BadRequest();
+            }
+
+            
+            var student = await _context.Students
+                .Include(s => s.Relatives)
+                .Include(s => s.ExamSchedule)
+                    .ThenInclude(e => e.Committee)
+                .FirstOrDefaultAsync(m => m.StudentId == id);
 
             if (student == null)
+            {
                 return NotFound();
+            }
 
-            var examScheduleId = student.ExamScheduleId;
-
-            _context.Students.Remove(student);
-            await _context.SaveChangesAsync();
-
-            if (examScheduleId.HasValue)
-                await RecalculateSeatNumbers(examScheduleId.Value);
-
-            return RedirectToAction(nameof(Index));
+            return View(student);
         }
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            if (id == null)
+            {
+                return BadRequest();
+            }
 
+           
+            var student = await _context.Students
+                .Include(s => s.Relatives)
+                .Include(s => s.ExamSchedule)
+                    .ThenInclude(e => e.Committee)
+                .FirstOrDefaultAsync(m => m.StudentId == id);
+
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            return View(student);
+        }
         // =====================================
         // DISTRIBUTE STUDENTS
         // =====================================

@@ -1,53 +1,66 @@
 ﻿@model projectweb.Models.CommitteesAssignment
 
 @{
-    ViewData["Title"] = "حذف تكليف";
+    ViewData["Title"] = "تأكيد حذف التكليف";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container mt-5 text-center" dir="rtl">
-    <div class="card shadow border-0 mx-auto" style="max-width: 550px; border-radius: 20px; overflow: hidden;">
+    <div class="card shadow border-0 mx-auto" style="max-width: 600px; border-radius: 20px; overflow: hidden;">
+        
         <div class="py-2 bg-danger"></div>
+        
         <div class="card-body p-5">
-           
+            
             <div class="text-danger mb-4">
                 <div class="d-inline-block p-3 rounded-circle bg-danger bg-opacity-10">
-                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 3rem;"></i>
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 3.5rem;"></i>
                 </div>
             </div>
 
             <h3 class="fw-bold text-dark mb-3">تأكيد حذف التكليف</h3>
-            <p class="text-muted mb-4">أنت على وشك القيام بإجراء لا يمكن التراجع عنه. يرجى مراجعة البيانات التالية بعناية:</p>
+            <p class="text-muted mb-4">أنت على وشك حذف هذا التكليف نهائياً. يرجى مراجعة البيانات بعناية قبل التأكيد:</p>
 
-            <div class="alert alert-light border shadow-sm text-end mb-4 p-3">
-                <div class="mb-2 border-bottom pb-2">
-                    <span class="text-muted small">الموظف:</span>
-                    <strong class="text-dark d-block">@Model.Person?.FullName</strong>
-                    <span class="badge bg-light text-secondary border">@Model.Person?.JobRole</span>
+            <div class="alert alert-light border shadow-sm text-end mb-4 p-4" style="border-radius: 15px;">
+                
+                <div class="mb-3 border-bottom pb-2">
+                    <span class="text-muted small d-block mb-1">المراقب / الموظف:</span>
+                    <strong class="text-dark fs-5">@Model.Person?.FullName</strong>
+                </div>
+
+                <div class="mb-3 border-bottom pb-2">
+                    <span class="text-muted small d-block mb-1">نطاق المسئولية (المكان):</span>
+                    <strong class="text-dark">
+                        @if (Model.Hall != null)
+                        {
+                            <i class="bi bi-building me-1 text-primary"></i> @:صالة: @Model.Hall.HallName
+                        }
+                        else if (Model.Block != null)
+                        {
+                            <i class="bi bi-grid-3x3 me-1 text-info"></i> @:بلوك: @Model.Block.BlockName
+                        }
+                        else if (Model.Committee != null)
+                        {
+                            <i class="bi bi-person-workspace me-1 text-success"></i> @:لجنة: @Model.Committee.CommitteeNumber
+                        }
+                    </strong>
                 </div>
                 
-                <div class="mb-2">
-                    <span class="text-muted small">الدور المكلف به:</span>
-                    <span class="badge bg-secondary px-3">@Model.RoleType</span>
+                <div class="mb-3 border-bottom pb-2">
+                    <span class="text-muted small d-block mb-1">الدور المكلف به:</span>
+                    <span class="badge bg-secondary px-3 py-2">@Model.RoleType</span>
                 </div>
 
-                <div class="mb-2">
-                    <span class="text-muted small">المادة الدراسية:</span>
-                    <strong class="text-primary">@Model.ExamSchedule?.Exam?.Subject?.SubjectName</strong>
+                <div class="mb-3 border-bottom pb-2">
+                    <span class="text-muted small d-block mb-1">المادة الدراسية:</span>
+                    <strong class="text-primary fs-6">@Model.ExamSchedule?.Exam?.Subject?.SubjectName</strong>
                 </div>
 
-                @* عرض التاريخ والوقت المنسق *@
-                <div class="mb-2">
-                    <span class="text-muted small">التاريخ والوقت:</span>
+                <div class="mb-1">
+                    <span class="text-muted small d-block mb-1">التوقيت الفعلي:</span>
                     <div class="small fw-bold">
-                        <i class="bi bi-calendar3 me-1"></i>
-                        @if (Model.ExamSchedule?.Exam != null && Model.ExamSchedule.Exam.ExamDate != DateTime.MinValue)
-                        {
-                            @Model.ExamSchedule.Exam.ExamDate.ToString("yyyy/MM/dd")
-                        }
-                        else
-                        {
-                            @:غير محدد
-                        }
+                        <i class="bi bi-calendar3 me-1 text-primary"></i>
+                        @Model.ExamSchedule?.Exam?.ExamDate.ToString("yyyy/MM/dd")
                     </div>
                     <div class="small text-danger fw-bold mt-1">
                         <i class="bi bi-clock me-1"></i>
@@ -61,25 +74,44 @@
                 </div>
             </div>
 
-            <form asp-action="Delete">
+            <form asp-action="Delete" method="post">
+                @Html.AntiForgeryToken()
+                
                 <input type="hidden" asp-for="AssignmentID" />
-                @* الاحتفاظ بـ ExamId أو SubjectId للرجوع لصفحة الفلترة الصحيحة *@
-                <input type="hidden" name="returnExamId" value="@Model.ExamSchedule?.ExamId" />
 
                 <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-danger btn-lg shadow-sm fw-bold">
+                    <button type="submit" class="btn btn-danger btn-lg shadow-sm fw-bold py-3" style="border-radius: 12px;">
                         <i class="bi bi-trash3 me-1"></i> تأكيد الحذف النهائي
                     </button>
 
-                    <a asp-action="Index" asp-route-examId="@Model.ExamSchedule?.ExamId" class="btn btn-light btn-lg border fw-bold text-secondary">
-                        إلغاء والتراجع
+                    <a asp-action="Index" asp-route-examId="@Model.ExamSchedule?.ExamId" 
+                       class="btn btn-light btn-lg border fw-bold text-secondary py-3" style="border-radius: 12px;">
+                        إلغاء والعودة للقائمة
                     </a>
                 </div>
             </form>
         </div>
-
-        <div class="card-footer bg-light py-3 border-0">
-            <small class="text-muted"><i class="bi bi-info-circle me-1"></i> سيتم حذف هذا السجل من جدول توزيعات المراقبين فقط ولن يتأثر جدول الامتحانات.</small>
-        </div>
+      
     </div>
 </div>
+
+<style>
+    body {
+        background-color: #f4f7f9;
+    }
+    .card {
+        transition: transform 0.3s ease;
+    }
+    .btn-lg {
+        font-size: 1.1rem;
+        transition: 0.3s;
+    }
+    .btn-danger:hover {
+        background-color: #bb2d3b;
+        transform: translateY(-2px);
+    }
+    .btn-light:hover {
+        background-color: #e2e6ea;
+        transform: translateY(-2px);
+    }
+</style>

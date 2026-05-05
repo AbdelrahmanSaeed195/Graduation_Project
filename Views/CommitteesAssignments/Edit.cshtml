@@ -1,5 +1,9 @@
 ﻿@model projectweb.Models.CommitteesAssignment
 
+@{
+    ViewData["Title"] = "تعديل بيانات التكليف";
+}
+
 <div class="container mt-5 text-end" dir="rtl">
     <div class="card mx-auto shadow border-0" style="max-width: 700px; border-radius: 15px;">
         <div class="card-header text-white text-center py-3" style="border-radius: 15px 15px 0 0; background-color: #1a3a5a;">
@@ -7,65 +11,64 @@
         </div>
         <div class="card-body p-4 text-end">
             <form asp-action="Edit">
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm border-0 mb-4 py-2"></div>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm border-0 mb-4 py-2 small"></div>
 
-                @* الحقول المخفية للحفاظ على سلامة البيانات الأساسية *@
+                @* الحقول المخفية الأساسية *@
                 <input type="hidden" asp-for="AssignmentID" />
                 <input type="hidden" asp-for="AssignmentType" />
                 <input type="hidden" asp-for="ExamScheduleId" />
-                <input type="hidden" asp-for="RoleID" />
-                <input type="hidden" asp-for="RoleType" />
+                <input type="hidden" asp-for="RoleID" id="roleInput" /> 
+                <input type="hidden" asp-for="RoleType" id="roleTypeText" />
 
-                @* عرض تفاصيل الجلسة الحالية للقراءة فقط *@
-                <div class="alert alert-info border-0 shadow-sm mb-4">
-                    <small class="d-block text-muted">تعديل تكليف خاص بجلسة:</small>
-                    <strong class="text-dark">@ViewBag.ExamScheduleName</strong>
-                </div>
-
+                @* اختيار الموظف *@
                 <div class="mb-4">
                     <label class="form-label fw-bold"><i class="bi bi-person-badge me-1"></i> الموظف المكلف</label>
-                    <select asp-for="PersonID" class="form-select shadow-sm border-primary" asp-items="ViewBag.PersonID">
+                    <select asp-for="PersonID" id="personSelect" class="form-select shadow-sm border-primary" asp-items="ViewBag.PersonID">
                         <option value="">-- اختر الموظف --</option>
                     </select>
                     <span asp-validation-for="PersonID" class="text-danger small"></span>
                 </div>
 
-                <div class="row bg-light p-3 rounded border mb-3 mx-0">
+                @* نطاق المسئولية *@
+                <div class="row bg-light p-3 rounded border mb-3 mx-0 shadow-sm">
                     <h6 class="fw-bold border-bottom pb-2 mb-3 text-secondary">
                         <i class="bi bi-geo-alt me-1"></i> تعديل نطاق المسئولية (المكان)
                     </h6>
 
+                    @* الصالة *@
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold small text-muted">الصالة</label>
-                        <select asp-for="HallId" class="form-select shadow-sm" asp-items="ViewBag.HallId">
+                        <select asp-for="HallId" id="hallSelect" class="form-select shadow-sm" asp-items="ViewBag.HallId">
                             <option value="">-- بلا --</option>
                         </select>
-                        <small class="text-muted" style="font-size: 0.7rem;">خاص برؤساء الصالة والطاقم الطبي</small>
+                        <small class="text-muted" style="font-size: 0.65rem;">خاص برؤساء الصالة والطاقم الطبي</small>
                     </div>
 
+                    @* البلوك *@
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold small text-muted">البلوك</label>
-                        <select asp-for="BlockId" class="form-select shadow-sm" asp-items="ViewBag.BlockId">
+                        <select asp-for="BlockId" id="blockSelect" class="form-select shadow-sm" asp-items="ViewBag.BlockId">
                             <option value="">-- بلا --</option>
                         </select>
-                        <small class="text-muted" style="font-size: 0.7rem;">خاص بمراقبي البلوكات</small>
+                        <small class="text-muted" style="font-size: 0.65rem;">خاص بمراقبي البلوكات</small>
                     </div>
 
+                    @* اللجنة *@
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold small text-muted">اللجنة</label>
-                        <select asp-for="CommitteeID" class="form-select shadow-sm" asp-items="ViewBag.CommitteeID">
+                        <select asp-for="CommitteeID" id="committeeSelect" class="form-select shadow-sm" asp-items="ViewBag.CommitteeID">
                             <option value="">-- بلا --</option>
                         </select>
-                        <small class="text-muted" style="font-size: 0.7rem;">خاص بملاحظي اللجان</small>
+                        <small class="text-muted" style="font-size: 0.65rem;">خاص بملاحظي اللجان</small>
                     </div>
                 </div>
 
                 <div class="d-grid gap-2 mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg shadow">
+                    <button type="submit" class="btn btn-primary btn-lg shadow fw-bold">
                         <i class="bi bi-save me-1"></i> حفظ التغييرات
                     </button>
-                    <a asp-action="Index" asp-route-scheduleId="@Model.ExamScheduleId" class="btn btn-outline-secondary btn-lg">
-                        إلغاء والعودة للقائمة
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-lg fw-bold">
+                        <i class="bi bi-x-circle me-1"></i> إلغاء والعودة للقائمة
                     </a>
                 </div>
             </form>
@@ -77,4 +80,59 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        const personSelect = document.getElementById("personSelect");
+        const hallSelect = document.getElementById("hallSelect");
+        const blockSelect = document.getElementById("blockSelect");
+        const committeeSelect = document.getElementById("committeeSelect");
+
+     
+        function updateFieldsAvailability() {
+           
+            const selectedText = personSelect.options[personSelect.selectedIndex]?.text || "";
+
+          
+            hallSelect.disabled = false;
+            blockSelect.disabled = false;
+            committeeSelect.disabled = false;
+
+            if (selectedText.includes("أستاذ") || selectedText.includes("دكتور") || selectedText.includes("ممرض") || selectedText.includes("عميد")) {
+              
+                blockSelect.value = "";
+                committeeSelect.value = "";
+                blockSelect.disabled = true;
+                committeeSelect.disabled = true;
+            }
+            else if (selectedText.includes("مدرس") || selectedText.includes("معيد")) {
+               
+                committeeSelect.value = "";
+                committeeSelect.disabled = true;
+            }
+         
+        }
+
+        window.addEventListener('load', updateFieldsAvailability);
+
+        personSelect.addEventListener("change", updateFieldsAvailability);
+
+        hallSelect.addEventListener("change", function () {
+            const hallId = this.value;
+
+            blockSelect.innerHTML = '<option value="">-- بلا --</option>';
+            committeeSelect.innerHTML = '<option value="">-- بلا --</option>';
+
+            if (!hallId) return;
+
+            fetch(`/CommitteesAssignments/GetHallDetails?hallId=${hallId}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.blocks.forEach(b => blockSelect.add(new Option(b.name, b.id)));
+                    data.committees.forEach(c => committeeSelect.add(new Option(c.name, c.id)));
+
+                    updateFieldsAvailability();
+                })
+                .catch(err => console.error("Error loading hall details:", err));
+        });
+    </script>
 }
