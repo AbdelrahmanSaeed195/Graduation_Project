@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
+using projectweb.Models.ViewModels;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -148,6 +149,103 @@ namespace projectweb.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // =====================================
+        // PRINT ASSIGNMENTS (توزيع المراقبين)
+        // =====================================
+        public async Task<IActionResult> PrintAssignments(int id)
+        {
+            // 1. جلب بيانات الشخص (استخدام AsNoTracking لتحسين الأداء)
+            var person = await _context.Persons
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.PersonId == id);
+
+            if (person == null) return Content($"خطأ: لم يتم العثور على الموظف رقم {id}");
+
+            // 2. جلب التكليفات مع تضمين كل العلاقات اللازمة
+            var rawAssignments = await _context.CommitteesAssignments
+                .AsNoTracking()
+                .Include(a => a.Role)
+                .Include(a => a.ExamSchedule)
+                    .ThenInclude(es => es.Exam)
+                        .ThenInclude(e => e.Subject)
+                .Where(a => a.PersonID == id)
+                .ToListAsync();
+
+            // 3. تجهيز قاموس المواعيد الافتراضي
+            var yearTimesMap = new Dictionary<string, string> {
+            { "1", "---" }, { "2", "---" }, { "3", "---" }, { "4", "---" }
+        };
+
+            // 4. بناء الـ Rows (حتى لو كانت القائمة فارغة لن يعطي خطأ)
+            var groupedRows = new List<AssignmentRowGroup>();
+
+            if (rawAssignments != null && rawAssignments.Any())
+            {
+                groupedRows = rawAssignments
+                    .Where(a => a.ExamSchedule?.Exam != null)
+                    .GroupBy(a => a.ExamSchedule.Exam.ExamDate.Date)
+                    .Select(g => new AssignmentRowGroup
+                    {
+                        Date = g.Key,
+                        Day = g.Key.ToString("dddd", new System.Globalization.CultureInfo("ar-EG")),
+                        DailyItems = g.Select(a => {
+                            var exam = a.ExamSchedule.Exam;
+                            string yearText = exam.TargetAcademicYear ?? "";
+                            string yearNum = yearText.Contains("الأولى") ? "1" :
+                                             yearText.Contains("الثانية") ? "2" :
+                                             yearText.Contains("الثالثة") ? "3" :
+                                             yearText.Contains("الرابعة") ? "4" : "";
+
+                            // ملء المواعيد للهيدر لو كانت فاضية
+                            if (yearNum != "" && yearTimesMap[yearNum] == "---")
+                            {
+                                yearTimesMap[yearNum] = $"{DateTime.Today.Add(exam.StartTime):hh:mm tt} - {DateTime.Today.Add(exam.EndTime):hh:mm tt}";
+                            }
+
+                            return new AssignmentReportItem
+                            {
+                                SubjectName = exam.Subject?.SubjectName ?? "مادة غير محددة",
+                                TargetYear = yearNum,
+                                PersonFullName = person.FullName
+                            };
+                        }).ToList()
+                    })
+                    .OrderBy(x => x.Date)
+                    .ToList();
+            }
+
+            // 5. بناء الموديل النهائي (سيعمل سواء كان هناك تكليفات أو لا)
+            var model = new PrintReportViewModel
+            {
+                PersonFullName = person.FullName,
+                PersonRoleInReport = GetArabicJobTitle(person.JobRole),
+                Rows = groupedRows, // ستكون قائمة فارغة في حالة عدم وجود تكليف
+                YearTimes = yearTimesMap,
+                AcademicYear = "2025/2026",
+                CollegeName = "كلية علوم الرياضة"
+            };
+
+            return View(model);
+        }
+
+        // ميثود تحويل الـ Enum إلى نص عربي
+        private string GetArabicJobTitle(JobTitle job)
+        {
+            return job switch
+            {
+                JobTitle.ProfessorEmeritus => "أستاذ متفرغ",
+                JobTitle.AssistantProfessor => "أستاذ مساعد",
+                JobTitle.Professor => "أستاذ",
+                JobTitle.Dean => "عميد الكلية",
+                JobTitle.StaffObserver => "مدرس",
+                JobTitle.AssistantStaff => "مدرس مساعد",
+                JobTitle.Assistant => "معيد",
+                JobTitle.Employee => "موظف",
+                JobTitle.Doctor => "دكتور",
+                JobTitle.Nurse => "ممرض",
+                _ => "عضو هيئة تدريس"
+            };
+        }
         private bool PersonExists(int id) => _context.Persons.Any(e => e.PersonId == id);
     }
 }

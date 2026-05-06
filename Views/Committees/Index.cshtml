@@ -49,7 +49,6 @@
                             <tr>
                                 <td class="ps-4 fw-bold fs-5" style="color: var(--text-main);">@item.CommitteeNumber</td>
                                 <td>
-                                    @* تعديل عرض المكان ليظهر الأسماء بدلاً من الأرقام فقط *@
                                     <div class="badge bg-light border text-dark px-3 py-2 shadow-sm" style="border-radius: 8px; border-color: var(--border-color) !important;">
                                         <i class="bi bi-geo-alt-fill text-primary me-1"></i>
                                         @if (item.Block != null)
@@ -84,6 +83,9 @@
                                 </td>
                                 <td class="text-center pe-4">
                                     <div class="d-flex justify-content-center gap-2">
+                                        <a asp-action="PrintControlSheet" asp-route-id="@item.CommitteeID" class="btn btn-sm btn-outline-success shadow-sm" target="_blank"  title="طباعة كشف الملاحظين">
+                                            <i class="bi bi-printer-fill"></i>
+                                        </a>
                                         <a asp-action="Details" asp-route-id="@item.CommitteeID" class="btn btn-sm btn-outline-info shadow-sm" title="التفاصيل">
                                             <i class="bi bi-eye"></i>
                                         </a>

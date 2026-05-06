@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
+using projectweb.Models.ViewModels;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -208,6 +209,89 @@ namespace projectweb.Controllers
                 new SelectListItem { Value = "تحت الإعداد", Text = "تحت الإعداد" }
             };
             return new SelectList(list, "Value", "Text", selected);
+        }
+        // =====================================
+        // PRINT CONTROL SHEET (استمارة اللجنة)
+        // =====================================
+        public async Task<IActionResult> PrintControlSheet(int id) 
+        {
+       
+            var exam = await db.Exams
+                .AsNoTracking()
+                .Include(e => e.Subject)
+                .FirstOrDefaultAsync(e => e.ExamId == id);
+
+            if (exam == null)
+            {
+                return View(new ExamControlSheetViewModel
+                {
+                    SubjectName = "................", 
+                    Semester = "الفصل الدراسي الثاني",
+                    AcademicYear = "2025/2026"
+                });
+            }
+
+            var allAssignments = await db.CommitteesAssignments
+                .AsNoTracking()
+                .Include(a => a.Person)
+                .Include(a => a.Role)
+                .Include(a => a.ExamSchedule)
+                .Where(a => a.ExamSchedule.ExamId == id)
+                .ToListAsync();
+
+            var viewModel = new ExamControlSheetViewModel
+            {
+                SubjectName = exam.Subject?.SubjectName ?? "................",
+                TargetYear = exam.TargetAcademicYear ?? "................",
+                ExamDate = exam.ExamDate.ToString("yyyy/MM/dd"),
+                ExamDay = exam.ExamDate.ToString("dddd", new System.Globalization.CultureInfo("ar-EG")),
+                ExamTime = $"{DateTime.Today.Add(exam.StartTime):hh:mm tt} - {DateTime.Today.Add(exam.EndTime):hh:mm tt}",
+                Semester = "الفصل الدراسي الثاني",
+                AcademicYear = "2025/2026",
+
+                MainHead = allAssignments.FirstOrDefault(a => a.Role.RoleName.ToString().Contains("رئيس"))?.Person?.FullName ?? "................",
+                MainObserver = allAssignments.FirstOrDefault(a => a.Role.RoleName.ToString().Contains("مراقب"))?.Person?.FullName ?? "................",
+                ReserveHead = allAssignments.FirstOrDefault(a => a.Role.RoleName.ToString().Contains("احتياطي") && a.Role.RoleName.ToString().Contains("رئيس"))?.Person?.FullName ?? "................",
+                ReserveObserver = allAssignments.FirstOrDefault(a => a.Role.RoleName.ToString().Contains("احتياطي") && a.Role.RoleName.ToString().Contains("مراقب"))?.Person?.FullName ?? "................",
+
+                DoctorName = allAssignments.FirstOrDefault(a => a.Role.RoleName.ToString().Contains("دكتور") || a.Role.RoleName.ToString().Contains("طبيب"))?.Person?.FullName ?? "................",
+
+                ObserverRows = allAssignments
+                    .Where(a => a.Role.RoleName.ToString().Contains("ملاحظ") || a.Role.RoleName.ToString().Contains("عضو"))
+                    .Select(a => new ObserverRowItem { ObserverName = a.Person.FullName })
+                    .ToList()
+            };
+
+            return View(viewModel);
+        }
+
+        private void PopulateSchedulesDropDownList(object selectedSchedule = null)
+        {
+            var schedules = db.ExamSchedules
+                .Include(s => s.Exam)
+                    .ThenInclude(e => e.Subject)
+                .Include(s => s.Committee)
+                .OrderBy(s => s.ScheduledDate)
+                .ToList();
+
+            var dropdownList = schedules.Select(s => new
+            {
+                ID = s.ExamScheduleId,
+                Text = $"{(s.Exam?.Subject?.SubjectName ?? "مادة غير محددة")} | اللجنة: {(s.Committee?.CommitteeNumber ?? 0)} | التاريخ: {s.ScheduledDate.ToString("dd/MM/yyyy")}"
+            }).ToList();
+
+            ViewData["ScheduleID"] = new SelectList(dropdownList, "ID", "Text", selectedSchedule);
+        }
+
+        private string GetArabicRoleName(string englishName)
+        {
+            return englishName switch
+            {
+                "HallManager" => "رئيس صالة",
+                "BlockGroupLeader" => "مراقب",
+                "CommitteeObserver" => "ملاحظ",
+                _ => englishName
+            };
         }
     }
 }

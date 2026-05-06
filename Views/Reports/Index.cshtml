@@ -28,24 +28,12 @@
         </h1>
 
         <div class="d-flex gap-2">
-            <!-- الزر الجديد: كشف استلام كراسات الإجابة (المحضر رقم 2) -->
-            <!-- ملاحظة: هذا الزر يتطلب تمرير معرف الجلسة scheduleId، هنا وضعناه كزر عام أو يمكنك ربطه بجلسة محددة -->
-            <a asp-action="PrintControlSheet" asp-controller="Reports" target="_blank" class="btn btn-outline-info px-4 shadow-sm">
-                <i class="bi bi-file-earmark-check me-1"></i> كشف استلام الكراسات
-            </a>
-
-            <!-- زر طباعة كشوف التوزيع العامة (المحضر رقم 1) -->
-            <a asp-action="PrintAssignments" asp-controller="Reports" target="_blank" class="btn btn-outline-dark px-4 shadow-sm">
-                <i class="bi bi-printer me-1"></i> طباعة كشوف التوزيع
-            </a>
-
             <a asp-action="Create" asp-controller="Reports" class="btn btn-academic-primary px-4 shadow-sm">
                 <i class="bi bi-plus-circle me-1"></i> إنشاء محضر جديد
             </a>
         </div>
     </div>
 
-    <!-- Report Type Selection Section -->
     <div class="card academic-card mb-4">
         <div class="card-body p-4">
             <h5 class="fw-bold academic-heading mb-3"><i class="bi bi-funnel me-2"></i> تصفية حسب نوع التقرير</h5>
@@ -70,7 +58,6 @@
         </div>
     </div>
 
-    <!-- Reports Preview Section -->
     <div class="card academic-card overflow-hidden">
         <div class="card-header academic-card-header text-white p-3">
             <h5 class="mb-0 fw-bold text-white"><i class="bi bi-table me-2"></i> المحاضر المسجلة</h5>
@@ -154,11 +141,7 @@
                                     }
                                 </td>
                                 <td class="text-center pe-4">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <!-- زر طباعة المحضر الفردي (المحضر رقم 2 - استلام كراسات) -->
-                                        <a asp-action="PrintControlSheet" asp-route-scheduleId="@item.ScheduleID" target="_blank" class="btn btn-sm btn-outline-dark" title="طباعة محضر الاستلام">
-                                            <i class="bi bi-printer"></i>
-                                        </a>
+                                    <div class="d-flex justify-content-center gap-2">                                      
                                         <a asp-action="Details" asp-route-id="@item.ReportID" class="btn btn-sm btn-outline-info" title="عرض التفاصيل">
                                             <i class="bi bi-eye"></i>
                                         </a>
