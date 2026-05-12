@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace projectweb.Models
 {
+    [Index(nameof(BlockName), IsUnique = true)]
     public class Block
     {
         [Key]

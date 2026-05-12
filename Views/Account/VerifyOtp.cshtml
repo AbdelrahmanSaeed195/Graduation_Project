@@ -1,0 +1,21 @@
+﻿<h2>Verify OTP</h2>
+
+<form asp-action="VerifyOtp" method="post">
+
+    <div>
+        <label>Enter OTP</label>
+        <input name="otp" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-success mt-2">
+        Verify
+    </button>
+
+</form>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="text-danger">
+        Invalid OTP
+    </div>
+}

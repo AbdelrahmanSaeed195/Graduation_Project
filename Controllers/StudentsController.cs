@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OfficeOpenXml;
 using projectweb.Models;
 using projectweb.ViewModel;
 
@@ -23,9 +22,9 @@ namespace projectweb.Controllers
         {
             var students = await _context.Students
                 .Include(s => s.ExamSchedule)
-                .ThenInclude(e => e.Committee)
+                    .ThenInclude(e => e.Committee)
                 .Include(s => s.ExamSchedule)
-                .ThenInclude(e => e.Exam)
+                    .ThenInclude(e => e.Exam)
                 .OrderBy(s => s.AcademicYear)
                 .ThenBy(s => s.FullName)
                 .ToListAsync();
@@ -41,9 +40,9 @@ namespace projectweb.Controllers
         {
             var query = _context.Students
                 .Include(s => s.ExamSchedule)
-                .ThenInclude(e => e.Committee)
+                    .ThenInclude(e => e.Committee)
                 .Include(s => s.ExamSchedule)
-                .ThenInclude(e => e.Exam)
+                    .ThenInclude(e => e.Exam)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTerm))
@@ -69,7 +68,7 @@ namespace projectweb.Controllers
         {
             var student = await _context.Students
                 .Include(s => s.ExamSchedule)
-                .ThenInclude(e => e.Committee)
+                    .ThenInclude(e => e.Committee)
                 .Include(s => s.Relatives)
                 .FirstOrDefaultAsync(s => s.StudentId == id);
 
@@ -200,11 +199,8 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return BadRequest();
-            }
 
-            
             var student = await _context.Students
                 .Include(s => s.Relatives)
                 .Include(s => s.ExamSchedule)
@@ -212,90 +208,114 @@ namespace projectweb.Controllers
                 .FirstOrDefaultAsync(m => m.StudentId == id);
 
             if (student == null)
-            {
                 return NotFound();
-            }
 
             return View(student);
         }
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (id == null)
-            {
-                return BadRequest();
-            }
-
-           
             var student = await _context.Students
                 .Include(s => s.Relatives)
-                .Include(s => s.ExamSchedule)
-                    .ThenInclude(e => e.Committee)
                 .FirstOrDefaultAsync(m => m.StudentId == id);
 
             if (student == null)
-            {
                 return NotFound();
-            }
 
-            return View(student);
+            _context.Students.Remove(student);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
+
         // =====================================
         // DISTRIBUTE STUDENTS
         // =====================================
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DistributeStudents()
         {
+            // جيب الطلاب الغير موزعين
             var students = await _context.Students
                 .Where(s => s.ExamScheduleId == null)
                 .OrderBy(s => s.AcademicYear)
                 .ThenBy(s => s.FullName)
                 .ToListAsync();
 
+            // جيب الجلسات مع اللجان والامتحانات
             var schedules = await _context.ExamSchedules
                 .Include(e => e.Committee)
-                .Include(e => e.Exam) 
-                .OrderBy(e => e.Exam.ExamDate) 
-                .ThenBy(e => e.Exam.StartTime) 
+                .Include(e => e.Exam)
+                .OrderBy(e => e.Exam.ExamDate)
+                .ThenBy(e => e.Exam.StartTime)
                 .ThenBy(e => e.Committee.CommitteeNumber)
                 .ToListAsync();
 
-            var grouped = students.GroupBy(s => s.AcademicYear).ToList();
+            // جيب عدد الطلاب الحاليين في كل جلسة (query واحدة بدل N queries)
+            var scheduleCounts = await _context.Students
+                .Where(s => s.ExamScheduleId != null)
+                .GroupBy(s => s.ExamScheduleId)
+                .Select(g => new { ExamScheduleId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.ExamScheduleId!.Value, x => x.Count);
 
-            int scheduleIndex = 0;
+            // قسّم الطلاب على حسب فرقتهم
+            var groupedStudents = students
+                .GroupBy(s => s.AcademicYear)
+                .ToList();
 
-            foreach (var group in grouped)
+            foreach (var group in groupedStudents)
             {
+                string yearAsString = group.Key.ToString();
+
+                // الجلسات المخصصة لنفس الفرقة فقط
+                var relevantSchedules = schedules
+                    .Where(e => e.Exam.TargetAcademicYear == yearAsString)
+                    .ToList();
+
+                int scheduleIndex = 0;
+
                 foreach (var student in group)
                 {
-                    while (scheduleIndex < schedules.Count)
+                    // دور على جلسة فيها مكان
+                    while (scheduleIndex < relevantSchedules.Count)
                     {
-                        var scheduleId = schedules[scheduleIndex].ExamScheduleId;
+                        var schedule = relevantSchedules[scheduleIndex];
+                        var currentCount = scheduleCounts.GetValueOrDefault(schedule.ExamScheduleId, 0);
 
-                        var count = await _context.Students
-                            .CountAsync(s => s.ExamScheduleId == scheduleId);
-
-                        if (count < schedules[scheduleIndex].Committee.NumberOfStudent)
+                        if (currentCount < schedule.Committee.NumberOfStudent)
                             break;
 
                         scheduleIndex++;
                     }
 
-                    if (scheduleIndex >= schedules.Count)
+                    // مفيش جلسات كافية لهذه الفرقة
+                    if (scheduleIndex >= relevantSchedules.Count)
                         break;
 
-                    student.ExamScheduleId = schedules[scheduleIndex].ExamScheduleId;
-                }
+                    var assignedSchedule = relevantSchedules[scheduleIndex];
+                    student.ExamScheduleId = assignedSchedule.ExamScheduleId;
 
-                scheduleIndex++;
+                    // حدّث العداد في الميموري
+                    if (scheduleCounts.ContainsKey(assignedSchedule.ExamScheduleId))
+                        scheduleCounts[assignedSchedule.ExamScheduleId]++;
+                    else
+                        scheduleCounts[assignedSchedule.ExamScheduleId] = 1;
+                }
             }
 
             await _context.SaveChangesAsync();
 
-            foreach (var schedule in schedules)
-                await RecalculateSeatNumbers(schedule.ExamScheduleId);
+            // أعد حساب أرقام الجلوس للجلسات المتأثرة فقط
+            var affectedScheduleIds = students
+                .Where(s => s.ExamScheduleId != null)
+                .Select(s => s.ExamScheduleId!.Value)
+                .Distinct()
+                .ToList();
+
+            foreach (var scheduleId in affectedScheduleIds)
+                await RecalculateSeatNumbers(scheduleId);
 
             return RedirectToAction(nameof(Index));
         }
@@ -307,7 +327,7 @@ namespace projectweb.Controllers
         {
             var student = await _context.Students
                 .Include(s => s.ExamSchedule)
-                .ThenInclude(e => e.Committee)
+                    .ThenInclude(e => e.Committee)
                 .FirstOrDefaultAsync(s => s.StudentId == id);
 
             if (student == null)
