@@ -17,23 +17,34 @@
             <div class="card-body p-4 bg-white">
               
                 <div class="row g-4 mb-4">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="bg-light rounded p-3 border shadow-sm h-100">
                             <div class="small text-muted fw-bold mb-1"><i class="bi bi-tag me-1"></i> اسم البلوك</div>
-                            <div class="fw-bold fs-5 text-dark">@Model.BlockName</div>
+                            <div class="fw-bold fs-6 text-dark">@Model.BlockName</div>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="bg-light rounded p-3 border shadow-sm h-100">
-                            <div class="small text-muted fw-bold mb-1"><i class="bi bi-ui-checks me-1"></i> سعة اللجان المتاحة</div>
-                            <div class="fw-bold fs-5 text-dark">@Model.MaxCommittees لجان</div>
+                            <div class="small text-muted fw-bold mb-1"><i class="bi bi-ui-checks me-1"></i> سعة اللجان</div>
+                            <div class="fw-bold fs-6 text-dark">@Model.MaxCommittees لجان</div>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <div class="bg-light rounded p-3 border shadow-sm h-100">
+                            <div class="small text-muted fw-bold mb-1"><i class="bi bi-person-workspace me-1"></i> المراقب</div>
+                            <div class="fw-bold fs-6 text-dark">
+                                @{
+                                    var proctor = Model.Committees?.SelectMany(c => c.CommitteesAssignments ?? Enumerable.Empty<CommitteesAssignment>())
+                                                  .FirstOrDefault(a => a.BlockId == Model.BlockID && a.RoleID == 2)?.Person?.FullName;
+                                }
+                                @(proctor ?? "لم يتم التعيين بعد")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
                         <div class="bg-light rounded p-3 border shadow-sm h-100 border-primary border-opacity-25">
-                            <div class="small text-muted fw-bold mb-1"><i class="bi bi-building me-1"></i> الصالة / القاعة التابع لها</div>
-                            <div class="fw-bold fs-5 text-primary">
-                              
+                            <div class="small text-muted fw-bold mb-1"><i class="bi bi-building me-1"></i> الصالة / القاعة</div>
+                            <div class="fw-bold fs-6 text-primary text-truncate">
                                 @(Model.Hall != null ? Model.Hall.HallName : "غير محدد")
                             </div>
                         </div>

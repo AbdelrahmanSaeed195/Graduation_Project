@@ -81,11 +81,11 @@
                     </div>
                     <div class="col-md-6">
                         <div class="alert border shadow-sm h-100 mb-0 bg-light" style="border-radius: 10px;">
-                            <h6 class="fw-bold mb-3" style="color: #1a2c4e;"><i class="bi bi-person-lines-fill me-2 text-primary"></i> الطاقم الرقابي (الملاحظين)</h6>
-                            @if (Model.CommitteesAssignments != null && Model.CommitteesAssignments.Any())
+                            <h6 class="fw-bold mb-3" style="color: #1a2c4e;"><i class="bi bi-person-lines-fill me-2 text-primary"></i> الملاحظ المعين</h6>
+                            @if (Model.CommitteesAssignments != null && Model.CommitteesAssignments.Any(a => a.RoleID == 3))
                             {
                                 <ul class="list-unstyled mb-0">
-                                    @foreach (var assignment in Model.CommitteesAssignments)
+                                    @foreach (var assignment in Model.CommitteesAssignments.Where(a => a.RoleID == 3))
                                     {
                                         if (assignment.Person != null)
                                         {
@@ -98,7 +98,7 @@
                             }
                             else
                             {
-                                <div class="text-muted small p-2 bg-white rounded"><i class="bi bi-exclamation-triangle me-1"></i> لم يتم تعيين طاقم رقابي حتى الآن.</div>
+                                <div class="text-muted small p-2 bg-white rounded"><i class="bi bi-exclamation-triangle me-1"></i> لا يوجد ملاحظ معين حالياً</div>
                             }
                         </div>
                     </div>

@@ -63,8 +63,8 @@
                     </div>
                 </div>
 
-                <form asp-action="Delete" method="post">
-                    @Html.HiddenFor(m => m.StudentId)
+                <form asp-action="Delete" asp-route-id="@Model.StudentId" method="post">
+                    <input type="hidden" name="id" value="@Model.StudentId" />
 
                     <div class="d-flex justify-content-center gap-2 mt-4 pt-3 border-top">
                         @if (hasRelatives)

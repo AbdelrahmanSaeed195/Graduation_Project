@@ -42,6 +42,7 @@
                         <th>اسم البلوك</th>
                         <th>اسم الصالة / القاعة</th> 
                         <th class="text-center">السعة (أقصى عدد)</th>
+                        <th class="text-center">المراقب</th>
                         <th class="text-center">عدد اللجان المرتبطة</th>
                         <th class="text-center pe-4">الإجراءات</th>
                     </tr>
@@ -63,6 +64,20 @@
                                 </td>
                                 <td class="text-center fw-bold">
                                     @item.MaxCommittees
+                                </td>
+                                <td class="text-center">
+                                    @{
+                                        var proctor = item.Committees?.SelectMany(c => c.CommitteesAssignments ?? Enumerable.Empty<CommitteesAssignment>())
+                                                      .FirstOrDefault(a => a.BlockId == item.BlockID && a.RoleID == 2)?.Person?.FullName;
+                                    }
+                                    @if (!string.IsNullOrEmpty(proctor))
+                                    {
+                                        <span class="fw-bold" style="color: #1a3a5a;"><i class="bi bi-person-badge me-1"></i> @proctor</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">لم يتم التعيين بعد</span>
+                                    }
                                 </td>
                                 <td class="text-center">
                                     <span class="badge @(item.Committees != null && item.Committees.Any() ? "bg-success" : "bg-secondary") px-3 py-2" style="border-radius: 6px;">

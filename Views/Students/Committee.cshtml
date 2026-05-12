@@ -19,16 +19,22 @@
                 </div>
 
                 <div class="row g-3">
-                    <div class="col-6">
+                    <div class="col-4">
                         <div class="data-panel text-center">
                             <div class="panel-label">رقم اللجنة</div>
                             <div class="panel-value fs-3">@Model.CommitteeNumber</div>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-4">
                         <div class="data-panel text-center">
                             <div class="panel-label">رقم الجلوس</div>
                             <div class="panel-value fs-3" style="color: var(--accent-blue);">@Model.SeatNumber</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="data-panel text-center">
+                            <div class="panel-label">سعة اللجنة</div>
+                            <div class="panel-value fs-3" style="color: var(--text-muted);">@Model.NumberOfStudent</div>
                         </div>
                     </div>
                 </div>

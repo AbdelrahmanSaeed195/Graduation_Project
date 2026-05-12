@@ -25,7 +25,18 @@
                         </tr>
                         <tr>
                             <th class="bg-light">السعة المتاحة</th>
-                            <td colspan="3">@Model.MaxBlocks بلوكات</td>
+                            <td>@Model.MaxBlocks بلوكات</td>
+                            <th class="bg-light">رئيس اللجنة</th>
+                            <td>
+                                @if (Model.HallSupervisor != null)
+                                {
+                                    <span class="fw-bold text-primary">@Model.HallSupervisor.FullName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">لم يتم التعيين بعد</span>
+                                }
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -44,6 +55,7 @@
                                         <th>كود البلوك</th>
                                         <th>اسم البلوك</th>
                                         <th class="text-center">عدد اللجان المرتبطة</th>
+                                        <th class="text-center"> المراقب</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -57,6 +69,19 @@
                                                     @(block.Committees?.Count ?? 0) لجان
                                                 </span>
                                             </td>
+                                            <td>
+                                                @{
+                                                    var proctor = block.Committees?.SelectMany(c => c.CommitteesAssignments ?? Enumerable.Empty<CommitteesAssignment>())
+                                                    .FirstOrDefault(a => a.BlockId == block.BlockID && a.RoleID == 2)?.Person?.FullName;
+                                                }
+                                                @if (!string.IsNullOrEmpty(proctor))
+                                                {
+                                                    <span class="fw-bold" style="color: #1a3a5a;"><i class="bi bi-person-badge me-1"></i> @proctor</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small">لم يتم التعيين بعد</span>
+                                                }
                                         </tr>
                                     }
                                 </tbody>
@@ -72,7 +97,7 @@
                 </div>
 
 
-                <div class="card-footer bg-light p-3 d-flex justify-content-end gap-2">
+                <div class="card-footer bg-light p-3 d-flex justify-content-start gap-2">
                     @if(User.IsInRole("Admin"))
                     {
                         <a asp-action="Edit" asp-route-id="@Model.HallId" class="btn btn-academic-primary px-4 fw-bold">
