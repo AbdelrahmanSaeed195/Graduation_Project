@@ -6,19 +6,21 @@ using projectweb.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 builder.Services.AddSession(c => c.IdleTimeout = TimeSpan.FromMinutes(10));
-builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+{
+    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ " + "أبتثجحخدذرزسشصضطظعغفقكلمنهويءآأؤإئ";
+})
+.AddEntityFrameworkStores<ApplicationDbContext>(); 
 builder.Services.AddScoped<ICommitteesAssignmentsService, _CommitteesAssignmentsService>();
 
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");

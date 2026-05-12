@@ -7,15 +7,12 @@
 
 <div class="row justify-content-center" dir="rtl">
     <div class="col-xl-8">
-        <div class="card academic-card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
-
-           
+        <div class="card academic-card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">           
             <div class="card-header text-white p-4" style="background-color: #1a2c4e;">
                 <h4 class="mb-0 fw-bold"><i class="bi bi-plus-square-fill me-2"></i> تكوين بلوك جديد</h4>
             </div>
 
             <div class="card-body p-4 bg-white">
-
              
                 @if (!ViewData.ModelState.IsValid)
                 {
@@ -31,11 +28,8 @@
                         </div>
                     </div>
                 }
-
                 <form asp-action="Create" method="post">
                     <div class="row g-4 mb-4">
-
-                       
                         <div class="col-md-4">
                             <label asp-for="HallId" class="form-label fw-bold" style="color: #4a5568;">الصالة التابع لها <span class="text-danger">*</span></label>
                             <select asp-for="HallId" asp-items="ViewBag.HallId" class="form-select border-light-subtle shadow-sm" style="border-radius: 8px;">

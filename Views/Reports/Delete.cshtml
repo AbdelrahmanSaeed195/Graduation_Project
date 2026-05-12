@@ -1,103 +1,152 @@
 ﻿@model projectweb.Models.Report
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
 
 @{
     ViewData["Title"] = "تأكيد حذف محضر";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="row justify-content-center" dir="rtl">
-    <div class="col-xl-6">
-        <div class="card academic-card shadow-sm">
-            <div class="card-body p-4 bg-white">
-                <div class="text-center mb-4">
-                    <i class="bi bi-exclamation-octagon text-danger" style="font-size: 4rem;"></i>
-                    <h3 class="academic-heading fw-bold mt-2">تأكيد الحذف</h3>
-                </div>
+<div class="row justify-content-center mt-5" dir="rtl">
+    <div class="col-xl-7 col-lg-8">
+        <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+            @* رأس البطاقة التحذيري *@
+            <div class="card-header bg-danger text-white p-4 border-0 text-center">
+                <i class="bi bi-exclamation-octagon-fill fs-1 d-block mb-2"></i>
+                <h4 class="mb-0 fw-bold">تأكيد عملية الحذف النهائية</h4>
+                <p class="mb-0 small opacity-75">يرجى مراجعة بيانات المحضر رقم (#@Model.ReportID) قبل التأكيد</p>
+            </div>
 
+            <div class="card-body p-4 p-md-5 bg-white">
+
+                @* حالة المنع: إذا كان هناك موقعون على المحضر *@
                 @if (Model.ReportPersons != null && Model.ReportPersons.Any())
                 {
-                    <div class="alert alert-danger border-0 mb-4 shadow-sm">
-                        <i class="bi bi-x-circle-fill fs-5 me-2"></i>
-                        <strong>عفواً، لا يمكن حذف هذا المحضر.</strong>
-                        <p class="mb-0 small opacity-90 mt-1">
-                            النظام يمنع حذف أي محضر يحتوي على توقيعات مسجلة. يرجى إزالة التوقيعات المرتبطة أولاً.
-                        </p>
+                    <div class="alert alert-danger border-0 mb-4 shadow-sm d-flex align-items-start p-3" style="border-right: 5px solid #dc3545 !important;">
+                        <i class="bi bi-shield-lock-fill fs-4 me-3"></i>
+                        <div>
+                            <strong class="d-block mb-1 fs-5">إجراء محظور قانونياً!</strong>
+                            <p class="small mb-0 lh-base">
+                                هذا المحضر محمي لوجود <strong>(@Model.ReportPersons.Count)</strong> طرف مسجل عليه (طلاب/موظفون).
+                                لحماية الأرشيف الأكاديمي، لا يمكن حذف المحاضر التي تحتوي على أطراف معنية. يرجى مراجعة الإدارة المختصة.
+                            </p>
+                        </div>
                     </div>
                 }
                 else
                 {
-                    <div class="alert alert-warning border-0 d-flex gap-2 align-items-center mb-4 shadow-sm">
-                        <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                    <div class="alert alert-warning border-0 mb-4 shadow-sm d-flex align-items-start p-3" style="border-right: 5px solid #ffc107 !important;">
+                        <i class="bi bi-question-circle-fill fs-4 me-3 text-warning"></i>
                         <div>
-                            <strong>تأكيد عملية الحذف!</strong><br />
-                            <span class="small">أنت على وشك حذف المحضر رقم <strong>#@Model.ReportID</strong> نهائياً. هل أنت متأكد؟</span>
+                            <strong class="d-block mb-1 text-dark fs-5">هل أنت متأكد من الحذف؟</strong>
+                            <p class="small text-muted mb-0 lh-base">
+                                سيتم مسح كافة البيانات المرتبطة بهذا المحضر نهائياً من النظام. هذا الإجراء <strong>لا يمكن الرجوع عنه</strong>.
+                            </p>
                         </div>
                     </div>
                 }
 
-                <div class="row g-3 mb-4 text-center">
-                    <div class="col-4">
-                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
-                            <div class="small academic-label mb-1">المادة</div>
-                            <div class="fw-bold mt-1" style="color: var(--text-main);">
-                                @(Model.ExamSchedule?.Exam?.Subject?.SubjectName ?? "—")
+                @* عرض ملخص البيانات *@
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="rounded p-3 border bg-light h-100 shadow-sm text-center">
+                            <div class="small text-muted mb-1 fw-bold">المادة / الامتحان</div>
+                            <div class="fw-bold text-navy">
+                                <i class="bi bi-journal-text me-1 text-primary"></i>
+                                @(Model.ExamSchedule?.Exam?.Subject?.SubjectName ?? "غير محدد")
                             </div>
                         </div>
                     </div>
-                    <div class="col-4">
-                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
-                            <div class="small academic-label mb-1">نوع المحضر</div>
-                            <div class="fw-bold mt-1">
-                                @switch (Model.Status)
-                                {
-                                    case ReportStatus.Normal:
-                                        <span class="badge bg-success px-2 py-1">طبيعي</span>
-                                        break;
-                                    case ReportStatus.Cheating:
-                                        <span class="badge bg-danger px-2 py-1">غش</span>
-                                        break;
-                                    case ReportStatus.Disturbance:
-                                        <span class="badge bg-warning text-dark px-2 py-1">شغب</span>
-                                        break;
-                                    case ReportStatus.Emergency:
-                                        <span class="badge bg-danger px-2 py-1">طوارئ</span>
-                                        break;
-                                    case ReportStatus.AbsenceIssue:
-                                        <span class="badge bg-secondary px-2 py-1">غياب</span>
-                                        break;
+                    <div class="col-md-3">
+                        <div class="rounded p-3 border bg-light text-center h-100 shadow-sm">
+                            <div class="small text-muted mb-1 fw-bold">رقم اللجنة</div>
+                            <div class="fw-bold fs-5 text-dark">
+                                @(Model.ExamSchedule?.Committee?.CommitteeNumber ?? 0)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="rounded p-3 border bg-light text-center h-100 shadow-sm">
+                            <div class="small text-muted mb-1 fw-bold">حالة المحضر</div>
+                            <div class="mt-1">
+                                @{
+                                    var enumType = Model.Status.GetType();
+                                    var memberInfo = enumType.GetMember(Model.Status.ToString());
+                                    var displayAttr = memberInfo[0].GetCustomAttribute<DisplayAttribute>();
+                                    var arabicStatusName = displayAttr?.Name ?? Model.Status.ToString();
+                                    var badgeClass = Model.Status == projectweb.Models.ReportStatus.Normal ? "bg-success" : "bg-danger";
                                 }
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="rounded p-3 border" style="background-color: var(--bg-light); border-color: var(--border-color) !important;">
-                            <div class="small academic-label mb-1">التوقيعات</div>
-                            <div class="fw-bold mt-1 @(Model.ReportPersons != null && Model.ReportPersons.Any() ? "text-danger" : "text-success")">
-                                @(Model.ReportPersons?.Count ?? 0) توقيع
+                                <span class="badge @badgeClass shadow-sm px-3 py-2">
+                                    @arabicStatusName
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <div class="p-3 border rounded mb-4 bg-light bg-opacity-50">
+                    <div class="small text-muted fw-bold mb-1">تاريخ تحرير المحضر:</div>
+                    <div class="small fw-bold text-dark text-start" dir="ltr">
+                        @Model.CreatedDate.ToString("yyyy/MM/dd - hh:mm tt") <i class="bi bi-calendar-check ms-1"></i>
+                    </div>
+                </div>
+
+                @* أزرار التحكم *@
                 <form asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="ReportID" />
-                    <div class="d-flex justify-content-center gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+
+                    <div class="d-flex justify-content-center gap-3 mt-4 pt-3 border-top">
                         @if (Model.ReportPersons == null || !Model.ReportPersons.Any())
                         {
-                            <button type="submit" class="btn btn-danger px-4 fw-bold">
-                                <i class="bi bi-trash me-1"></i> تأكيد الحذف
+                            <button type="submit" class="btn btn-danger px-5 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-trash3-fill me-2"></i> تأكيد الحذف النهائي
                             </button>
                         }
                         else
                         {
-                            <button type="button" class="btn btn-secondary px-4 fw-bold" disabled>
-                                <i class="bi bi-lock-fill me-1"></i> الحذف غير متاح
+                            <button type="button" class="btn btn-secondary px-5 py-2 fw-bold shadow-sm opacity-75" disabled>
+                                <i class="bi bi-lock-fill me-2"></i> الحذف معطل
                             </button>
                         }
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4">تراجع والعودة</a>
+
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 border-0">
+                            <i class="bi bi-arrow-right me-1"></i> تراجع والعودة للقائمة
+                        </a>
                     </div>
                 </form>
             </div>
         </div>
+
+        <div class="text-center mt-3 text-muted small">
+            <i class="bi bi-info-circle me-1"></i> تنبيه: كافة عمليات الحذف يتم توثيقها في سجلات رقابة النظام لأغراض التدقيق.
+        </div>
     </div>
 </div>
+
+<style>
+    .text-navy {
+        color: #1a3a5a;
+    }
+
+    .academic-card {
+        transition: all 0.3s ease;
+    }
+
+    .badge {
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border: none;
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+
+        .btn-danger:hover {
+            background-color: #bb2d3b;
+            transform: scale(1.02);
+        }
+</style>

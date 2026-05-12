@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,9 @@ namespace projectweb.Controllers
         {
             _context = context;
         }
-
+        // =====================================
+        // INDEX
+        //  =====================================
         public async Task<IActionResult> Index(string search)
         {
             var query = _context.Persons.AsQueryable();
@@ -42,7 +45,9 @@ namespace projectweb.Controllers
             ViewBag.Search = search;
             return View(uniqueResult);
         }
-
+        //  =====================================
+        // DETAILS
+        //  =====================================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -50,7 +55,10 @@ namespace projectweb.Controllers
             if (person == null) return NotFound();
             return View(person);
         }
-
+        //  =====================================
+        // CREATE
+        //  =====================================
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -58,9 +66,10 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Person person)
         {
-            // التحقق من التكرار
+          
             if (_context.Persons.Any(p => p.NationalId == person.NationalId))
             {
                 ModelState.AddModelError("NationalId", "عفواً، هذا الرقم القومي مسجل مسبقاً.");
@@ -70,7 +79,6 @@ namespace projectweb.Controllers
             {
                 try
                 {
-                    // نضمن إن الـ RoleID واخد قيمة موجودة فعلياً في جدول الـ Roles
                     if (person.RoleID == 0) person.RoleID = 1;
 
                     _context.Add(person);
@@ -85,6 +93,10 @@ namespace projectweb.Controllers
             }
             return View(person);
         }
+        //  =====================================
+        // EDIT
+        //  =====================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -96,6 +108,7 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, Person person)
         {
             if (id != person.PersonId) return NotFound();
@@ -127,7 +140,10 @@ namespace projectweb.Controllers
 
             return View(person);
         }
-
+        //  =====================================
+        // DELETE
+        //  =====================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -138,6 +154,7 @@ namespace projectweb.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var person = await _context.Persons.FindAsync(id);
@@ -154,14 +171,14 @@ namespace projectweb.Controllers
         // =====================================
         public async Task<IActionResult> PrintAssignments(int id)
         {
-            // 1. جلب بيانات الشخص (استخدام AsNoTracking لتحسين الأداء)
+            // 1. جلب بيانات الشخص (للتأكد من وجوده وللحصول على اسمه الكامل والوظيفة)
             var person = await _context.Persons
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.PersonId == id);
 
             if (person == null) return Content($"خطأ: لم يتم العثور على الموظف رقم {id}");
 
-            // 2. جلب التكليفات مع تضمين كل العلاقات اللازمة
+            // 2. جلب جميع التكليفات المتعلقة بهذا الشخص مع التفاصيل اللازمة (المادة، السنة المستهدفة، المواعيد)
             var rawAssignments = await _context.CommitteesAssignments
                 .AsNoTracking()
                 .Include(a => a.Role)
@@ -171,12 +188,12 @@ namespace projectweb.Controllers
                 .Where(a => a.PersonID == id)
                 .ToListAsync();
 
-            // 3. تجهيز قاموس المواعيد الافتراضي
+            // 3. إعداد خريطة لتخزين مواعيد كل سنة دراسية (للهيدر)
             var yearTimesMap = new Dictionary<string, string> {
             { "1", "---" }, { "2", "---" }, { "3", "---" }, { "4", "---" }
         };
 
-            // 4. بناء الـ Rows (حتى لو كانت القائمة فارغة لن يعطي خطأ)
+            // 4. تجميع التكليفات حسب التاريخ لعرضها في التقرير
             var groupedRows = new List<AssignmentRowGroup>();
 
             if (rawAssignments != null && rawAssignments.Any())
@@ -196,7 +213,7 @@ namespace projectweb.Controllers
                                              yearText.Contains("الثالثة") ? "3" :
                                              yearText.Contains("الرابعة") ? "4" : "";
 
-                            // ملء المواعيد للهيدر لو كانت فاضية
+                            // تحديث خريطة مواعيد السنوات إذا كانت السنة موجودة ولم يتم تعيين موعد لها بعد
                             if (yearNum != "" && yearTimesMap[yearNum] == "---")
                             {
                                 yearTimesMap[yearNum] = $"{DateTime.Today.Add(exam.StartTime):hh:mm tt} - {DateTime.Today.Add(exam.EndTime):hh:mm tt}";
@@ -214,12 +231,12 @@ namespace projectweb.Controllers
                     .ToList();
             }
 
-            // 5. بناء الموديل النهائي (سيعمل سواء كان هناك تكليفات أو لا)
+            // 5. إعداد الـ ViewModel لتمريره إلى العرض
             var model = new PrintReportViewModel
             {
                 PersonFullName = person.FullName,
                 PersonRoleInReport = GetArabicJobTitle(person.JobRole),
-                Rows = groupedRows, // ستكون قائمة فارغة في حالة عدم وجود تكليف
+                Rows = groupedRows, 
                 YearTimes = yearTimesMap,
                 AcademicYear = "2025/2026",
                 CollegeName = "كلية علوم الرياضة"
@@ -228,7 +245,7 @@ namespace projectweb.Controllers
             return View(model);
         }
 
-        // ميثود تحويل الـ Enum إلى نص عربي
+        // دالة مساعدة لتحويل الوظيفة إلى نص عربي لعرضه في التقرير
         private string GetArabicJobTitle(JobTitle job)
         {
             return job switch

@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
-using projectweb.Models.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace projectweb.Controllers
 {
@@ -19,99 +21,138 @@ namespace projectweb.Controllers
             _context = context;
         }
 
-        // =====================================
-        // INDEX
-        // =====================================
+        // 1. INDEX
         public async Task<IActionResult> Index(int? reportType)
         {
             var reportsQuery = _context.Reports
-                .Include(r => r.ExamSchedule)
-                    .ThenInclude(s => s.Exam)
-                        .ThenInclude(e => e.Subject)
-                .Include(r => r.ExamSchedule)
-                    .ThenInclude(s => s.Committee)
+                .Include(r => r.ExamSchedule).ThenInclude(s => s.Exam).ThenInclude(e => e.Subject)
+                .Include(r => r.ExamSchedule).ThenInclude(s => s.Committee)
                 .AsQueryable();
 
             if (reportType.HasValue && reportType.Value > 0)
             {
                 var status = (ReportStatus)reportType.Value;
                 reportsQuery = reportsQuery.Where(r => r.Status == status);
-                ViewBag.SelectedReportType = reportType.Value;
             }
 
-            var reports = await reportsQuery
-                .OrderByDescending(r => r.CreatedDate)
-                .ToListAsync();
-
+            var reports = await reportsQuery.OrderByDescending(r => r.CreatedDate).ToListAsync();
+            ViewBag.ReportStatusList = GetArabicEnumList<ReportStatus>();
             return View(reports);
         }
 
-        // =====================================
-        // DETAILS
-        // =====================================
+        // 2. DETAILS
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
 
             var report = await _context.Reports
-                .Include(r => r.ExamSchedule)
-                    .ThenInclude(s => s.Exam)
-                        .ThenInclude(e => e.Subject) // أضفنا Subject هنا للوضوح
-                .Include(r => r.ExamSchedule)
-                    .ThenInclude(s => s.Committee)
-                .Include(r => r.ReportPersons)
-                    .ThenInclude(rp => rp.Person)
+                .Include(r => r.ExamSchedule).ThenInclude(s => s.Exam).ThenInclude(e => e.Subject)
+                .Include(r => r.ExamSchedule).ThenInclude(s => s.Committee)
+                .Include(r => r.ReportPersons).ThenInclude(rp => rp.Person)
+                .Include(r => r.ReportPersons).ThenInclude(rp => rp.Student)
+                .Include(r => r.ReportPersons).ThenInclude(rp => rp.Role)
                 .FirstOrDefaultAsync(m => m.ReportID == id);
 
             if (report == null) return NotFound();
-
             return View(report);
         }
-        // =====================================
-        // CREATE
-        // =====================================
+
+        // 3. CREATE
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
-            PopulateSchedulesDropDownList();
+            PopulateExamsDropDownList();
+            ViewBag.StatusList = GetArabicEnumList<ReportStatus>();
             return View();
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ReportID,Status,Notes,ScheduleID")] Report report)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Create([Bind("ReportID,Status,Notes,ScheduleID")] Report report, int[] SelectedStaffIds, int? SelectedStudentId)
         {
             if (ModelState.IsValid)
             {
                 report.CreatedDate = DateTime.Now;
                 _context.Add(report);
                 await _context.SaveChangesAsync();
+
+                // حفظ الطالب
+                if (SelectedStudentId.HasValue)
+                {
+                    _context.ReportPersons.Add(new ReportPerson
+                    {
+                        ReportID = report.ReportID,
+                        PersonID = 0, // قيمة افتراضية لأن المفتاح مركب ويتطلب PersonID
+                        StudentId = SelectedStudentId.Value,
+                        RoleID = 1,
+                        SignedAt = DateTime.Now,
+                        Signature = "Waiting"
+                    });
+                }
+
+                // حفظ الموظفين
+                if (SelectedStaffIds != null)
+                {
+                    foreach (var staffId in SelectedStaffIds)
+                    {
+                        var assignment = await _context.CommitteesAssignments
+                            .FirstOrDefaultAsync(a => a.PersonID == staffId && a.ExamScheduleId == report.ScheduleID);
+
+                        _context.ReportPersons.Add(new ReportPerson
+                        {
+                            ReportID = report.ReportID,
+                            PersonID = staffId,
+                            RoleID = assignment?.RoleID ?? 1,
+                            SignedAt = DateTime.Now,
+                            Signature = "Pending"
+                        });
+                    }
+                }
+
+                await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "تم إنشاء المحضر بنجاح";
                 return RedirectToAction(nameof(Index));
             }
 
-            PopulateSchedulesDropDownList(report.ScheduleID);
+            PopulateExamsDropDownList();
+            ViewBag.StatusList = GetArabicEnumList<ReportStatus>();
             return View(report);
         }
 
-        // =====================================
-        // EDIT
-        // =====================================
+        // 4. EDIT - تم تعديله لضمان إرسال البيانات للـ View
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var report = await _context.Reports.FindAsync(id);
+            var report = await _context.Reports
+                .Include(r => r.ExamSchedule).ThenInclude(s => s.Exam)
+                .Include(r => r.ReportPersons)
+                .FirstOrDefaultAsync(r => r.ReportID == id);
+
             if (report == null) return NotFound();
 
-            PopulateSchedulesDropDownList(report.ScheduleID);
+            // استرجاع الطالب المختار
+            var studentParty = report.ReportPersons.FirstOrDefault(rp => rp.StudentId != null);
+            ViewBag.SelectedStudentId = studentParty?.StudentId;
+
+            // استرجاع الموظفين المختارين
+            ViewBag.CurrentStaffIds = report.ReportPersons.Where(rp => rp.PersonID != 0 && rp.PersonID != null).Select(rp => rp.PersonID).ToArray();
+
+            int currentExamId = report.ExamSchedule?.ExamId ?? 0;
+            PopulateExamsDropDownList(currentExamId);
+            ViewBag.StatusList = GetArabicEnumList<ReportStatus>();
+            ViewBag.SelectedExamId = currentExamId;
+            ViewBag.SelectedScheduleId = report.ScheduleID;
+
             return View(report);
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ReportID,CreatedDate,Status,Notes,ScheduleID")] Report report)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Edit(int id, [Bind("ReportID,CreatedDate,Status,Notes,ScheduleID")] Report report, int[] SelectedStaffIds, int? SelectedStudentId)
         {
             if (id != report.ReportID) return NotFound();
 
@@ -120,6 +161,42 @@ namespace projectweb.Controllers
                 try
                 {
                     _context.Update(report);
+
+                    var existingPersons = _context.ReportPersons.Where(rp => rp.ReportID == id);
+                    _context.ReportPersons.RemoveRange(existingPersons);
+                    await _context.SaveChangesAsync();
+
+                    if (SelectedStudentId.HasValue)
+                    {
+                        _context.ReportPersons.Add(new ReportPerson
+                        {
+                            ReportID = report.ReportID,
+                            PersonID = 0,
+                            StudentId = SelectedStudentId.Value,
+                            RoleID = 1,
+                            SignedAt = DateTime.Now,
+                            Signature = "Waiting"
+                        });
+                    }
+
+                    if (SelectedStaffIds != null)
+                    {
+                        foreach (var staffId in SelectedStaffIds)
+                        {
+                            var assignment = await _context.CommitteesAssignments
+                                .FirstOrDefaultAsync(a => a.PersonID == staffId && a.ExamScheduleId == report.ScheduleID);
+
+                            _context.ReportPersons.Add(new ReportPerson
+                            {
+                                ReportID = report.ReportID,
+                                PersonID = staffId,
+                                RoleID = assignment?.RoleID ?? 1,
+                                SignedAt = DateTime.Now,
+                                Signature = "Pending"
+                            });
+                        }
+                    }
+
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "تم تحديث المحضر بنجاح";
                 }
@@ -130,183 +207,84 @@ namespace projectweb.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-
-            PopulateSchedulesDropDownList(report.ScheduleID);
             return View(report);
         }
 
-        // =====================================
-        // DELETE
-        // =====================================
+        // 5. DELETE
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
 
             var report = await _context.Reports
-                .Include(r => r.ExamSchedule)
-                    .ThenInclude(s => s.Exam)
+                .Include(r => r.ExamSchedule).ThenInclude(s => s.Exam).ThenInclude(e => e.Subject)
+                .Include(r => r.ExamSchedule).ThenInclude(s => s.Committee)
+                .Include(r => r.ReportPersons)
                 .FirstOrDefaultAsync(m => m.ReportID == id);
 
             if (report == null) return NotFound();
-
             return View(report);
         }
 
-
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var associatedPersons = _context.ReportPersons.Where(rp => rp.ReportID == id);
+            _context.ReportPersons.RemoveRange(associatedPersons);
+
             var report = await _context.Reports.FindAsync(id);
             if (report != null)
             {
-                try
-                {
-                    _context.Reports.Remove(report);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "تم حذف المحضر بنجاح";
-                }
-                catch (Exception)
-                {
-                    TempData["ErrorMessage"] = "لا يمكن حذف المحضر لوجود أشخاص مرتبطين به في جدول التوقيعات.";
-                }
+                _context.Reports.Remove(report);
+                await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
         }
 
-        // =====================================
-        // PRINT ASSIGNMENTS (توزيع المراقبين)
-        // =====================================
-        public async Task<IActionResult> PrintAssignments(int id)
+        // AJAX METHODS
+        [HttpGet]
+        public async Task<JsonResult> GetCommitteeParties(int scheduleId)
         {
-            // 1. جلب البيانات مع التأكد من Inclusion للموديلات الجديدة
-            var rawAssignments = await _context.CommitteesAssignments
-                .Include(a => a.Person)
-                .Include(a => a.Role)
-                .Include(a => a.ExamSchedule)
-                    .ThenInclude(es => es.Exam) // الوصول لجدول الامتحان الأساسي
-                        .ThenInclude(e => e.Subject) // الوصول لاسم المادة
-                .Where(a => a.PersonID == id)
+            var students = await _context.Students
+                .Where(s => s.ExamScheduleId == scheduleId)
+                .Select(s => new { id = s.StudentId, name = s.FullName + " (جلوس: " + s.SeatNumber + ")" })
                 .ToListAsync();
 
-            // 2. التحقق من وجود بيانات لمنع انهيار البرنامج
-            if (rawAssignments == null || !rawAssignments.Any())
-                return Content("لا توجد بيانات لهذا الشخص");
-
-            // 3. بناء قاموس المواعيد من موديل Exam (المنطق الجديد)
-            var yearTimesMap = rawAssignments
-                .Where(a => a.ExamSchedule?.Exam != null)
-                .GroupBy(a => a.ExamSchedule.Exam.TargetAcademicYear ?? "غير محدد")
-                .ToDictionary(
-                    g => g.Key,
-                    g => {
-                        var exam = g.First().ExamSchedule.Exam;
-                        // تحويل TimeSpan لتنسيق 12 ساعة احترافي
-                        return $"{DateTime.Today.Add(exam.StartTime):hh:mm tt} - {DateTime.Today.Add(exam.EndTime):hh:mm tt}";
-                    }
-                );
-
-            // 4. تجميع البيانات للعرض في الجدول
-            var groupedRows = rawAssignments
-                .GroupBy(a => a.ExamSchedule.ScheduledDate.Date)
-                .Select(g => new AssignmentRowGroup
-                {
-                    Date = g.Key,
-                    Day = g.Key.ToString("dddd", new System.Globalization.CultureInfo("ar-EG")),
-                    DailyItems = g.Select(a => new AssignmentReportItem
-                    {
-                        SubjectName = a.ExamSchedule?.Exam?.Subject?.SubjectName ?? "مادة غير محددة",
-                        TargetYear = a.ExamSchedule?.Exam?.TargetAcademicYear ?? "",
-                        PersonFullName = a.Person?.FullName ?? ""
-                    }).ToList()
-                }).OrderBy(x => x.Date).ToList();
-
-            // 5. استخدام ! لإخبار الفيزوال ستوديو أن القائمة ليست فارغة (يحل الخط الأحمر)
-            var firstEntry = rawAssignments.FirstOrDefault()!;
-
-            var model = new PrintReportViewModel
-            {
-                Rows = groupedRows,
-                PersonRoleInReport = GetArabicRoleName(firstEntry?.Role?.RoleName.ToString() ?? ""),
-                YearTimes = yearTimesMap // تمرير القاموس للـ ViewModel
-            };
-
-            return View(model);
-        }
-
-        // =====================================
-        // PRINT CONTROL SHEET (استمارة اللجنة)
-        // =====================================
-        public async Task<IActionResult> PrintControlSheet(int? scheduleId)
-        {
-            if (scheduleId == null)
-            {
-                return View(new ExamControlSheetViewModel { ObserverRows = new List<ObserverRowItem>() });
-            }
-
-            var schedule = await _context.ExamSchedules
-                .Include(s => s.Exam)
-                    .ThenInclude(e => e.Subject)
-                .Include(s => s.Committee)
-                .FirstOrDefaultAsync(s => s.ExamScheduleId == scheduleId);
-
-            if (schedule == null) return NotFound();
-
-            var observers = await _context.CommitteesAssignments
-                .Where(a => a.ExamScheduleId == scheduleId)
+            var staff = await _context.CommitteesAssignments
                 .Include(a => a.Person)
-                .Select(a => new ObserverRowItem
-                {
-                    ObserverName = a.Person.FullName
-                }).ToListAsync();
+                .Where(a => a.ExamScheduleId == scheduleId)
+                .Select(a => new { id = a.PersonID, name = a.Person.FullName + " [" + GetEnumDisplayName(a.Person.JobRole) + "]" })
+                .ToListAsync();
 
-            var viewModel = new ExamControlSheetViewModel
-            {
-                SubjectName = schedule.Exam?.Subject?.SubjectName ?? "................",
-                TargetYear = schedule.Exam?.TargetAcademicYear ?? "................",
-                // تعديل هنا: سحب الوقت من schedule.Exam وليس من schedule مباشرة
-                ExamTime = schedule.Exam != null
-                    ? $"{DateTime.Today.Add(schedule.Exam.StartTime):hh:mm tt} - {DateTime.Today.Add(schedule.Exam.EndTime):hh:mm tt}"
-                    : "................",
-                ObserverRows = observers
-            };
-
-            return View(viewModel);
+            return Json(new { students = students, staff = staff });
         }
 
-        private void PopulateSchedulesDropDownList(object selectedSchedule = null)
+        [HttpGet]
+        public async Task<JsonResult> GetCommitteesByExam(int examId)
         {
-            var schedules = _context.ExamSchedules
-                .Include(s => s.Exam)
-                    .ThenInclude(e => e.Subject)
+            var committees = await _context.ExamSchedules
                 .Include(s => s.Committee)
-                .OrderBy(s => s.ScheduledDate)
-                .ToList();
-
-            var dropdownList = schedules.Select(s => new
-            {
-                ID = s.ExamScheduleId,
-                // سحب اسم المادة من Exam المرتبط
-                Text = $"{(s.Exam?.Subject?.SubjectName ?? "مادة غير محددة")} | اللجنة: {(s.Committee?.CommitteeNumber ?? 0)} | التاريخ: {s.ScheduledDate.ToString("dd/MM/yyyy")}"
-            }).ToList();
-
-            ViewData["ScheduleID"] = new SelectList(dropdownList, "ID", "Text", selectedSchedule);
+                .Where(s => s.ExamId == examId)
+                .Select(s => new { id = s.ExamScheduleId, name = "لجنة رقم: " + s.Committee.CommitteeNumber })
+                .ToListAsync();
+            return Json(committees);
         }
 
-        private string GetArabicRoleName(string englishName)
+        private string GetEnumDisplayName(Enum enumValue) =>
+            enumValue.GetType().GetMember(enumValue.ToString()).First().GetCustomAttribute<DisplayAttribute>()?.Name ?? enumValue.ToString();
+
+        private List<SelectListItem> GetArabicEnumList<T>() where T : Enum =>
+            Enum.GetValues(typeof(T)).Cast<T>().Select(e => new SelectListItem { Value = Convert.ToInt32(e).ToString(), Text = GetEnumDisplayName(e) }).ToList();
+
+        private void PopulateExamsDropDownList(object selectedExam = null)
         {
-            return englishName switch
-            {
-                "HallManager" => "رئيس صالة",
-                "BlockGroupLeader" => "مراقب",
-                "CommitteeObserver" => "ملاحظ",
-                _ => englishName
-            };
+            var exams = _context.Exams.Include(e => e.Subject).OrderByDescending(e => e.ExamDate)
+                .Select(e => new { ID = e.ExamId, Text = $"{e.Subject.SubjectName} | {e.ExamDate:yyyy/MM/dd}" }).ToList();
+            ViewData["ExamID"] = new SelectList(exams, "ID", "Text", selectedExam);
         }
 
-        private bool ReportExists(int id)
-        {
-            return _context.Reports.Any(e => e.ReportID == id);
-        }
+        private bool ReportExists(int id) => _context.Reports.Any(e => e.ReportID == id);
     }
 }

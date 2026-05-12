@@ -11,6 +11,7 @@ namespace projectweb.ViewModel
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }
+
         public bool IsPrisist { get; set; }
 
     }

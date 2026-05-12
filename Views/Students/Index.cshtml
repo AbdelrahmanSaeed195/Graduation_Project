@@ -7,20 +7,21 @@
 
 <div class="content-body" dir="rtl">
 
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-mortarboard-fill me-2"></i> سجل الطلاب</h1>
 
         <div class="d-flex gap-2">
-            <a asp-action="DistributeStudents"
-               class="btn btn-success px-4 shadow-sm"
-               onclick="return confirm('هل تريد توزيع الطلاب الآن؟');">
-                <i class="bi bi-diagram-3 me-1"></i> توزيع الطلاب
-            </a>
-
-            <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
-                <i class="bi bi-person-plus-fill me-1"></i> إضافة طالب
-            </a>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="DistributeStudents"
+                   class="btn btn-success px-4 shadow-sm"
+                   onclick="return confirm('هل تريد توزيع الطلاب الآن؟');">
+                    <i class="bi bi-diagram-3 me-1"></i> توزيع الطلاب
+                </a>
+                <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
+                    <i class="bi bi-person-plus-fill me-1"></i> إضافة طالب
+                </a>
+            }
         </div>
     </div>
 
@@ -38,7 +39,6 @@
         </div>
     </div>
 
-    <!-- Table -->
     <div class="card academic-card overflow-hidden shadow-sm">
         <div class="table-responsive">
             <table class="table academic-table table-hover align-middle mb-0 text-center">
@@ -112,12 +112,15 @@
                                     <a asp-action="Details" asp-route-id="@s.StudentId" class="btn btn-sm btn-info text-white" title="التفاصيل">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a asp-action="Edit" asp-route-id="@s.StudentId" class="btn btn-sm btn-warning" title="تعديل">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a asp-action="Delete" asp-route-id="@s.StudentId" class="btn btn-sm btn-danger" title="حذف">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@s.StudentId" class="btn btn-sm btn-warning" title="تعديل">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@s.StudentId" class="btn btn-sm btn-danger" title="حذف">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    }
                                 </td>
                             </tr>
                         }

@@ -30,7 +30,6 @@
             line-height: 1.4;
         }
 
-        /* تنسيق الترويسة العلوية الرسمية */
         .header-container {
             display: flex;
             justify-content: space-between;
@@ -115,10 +114,8 @@
             <p style="font-weight:bold; margin-top:10px; font-size:14pt;">تحية طيبة وبعد،،،</p>
         </div>
 
-     @* --- الجزء المطور للفحص --- *@
         @if (Model.Rows == null || !Model.Rows.Any() || !Model.Rows.Any(r => r.DailyItems.Any()))
         {
-            @* رسالة تظهر في حالة عدم وجود تكليفات *@
             <div style="text-align: center; padding: 50px; border: 2px dashed #ccc; border-radius: 10px; margin: 20px 0;">
                 <h3 style="color: #666;">نود الإحاطة بأنه لا توجد تكليفات مسجلة لسيادتكم حالياً</h3>
                 <p style="color: #888;">برجاء مراجعة إدارة شئون الطلاب في حالة وجود أي استفسار.</p>

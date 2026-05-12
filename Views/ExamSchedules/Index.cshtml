@@ -19,9 +19,13 @@
         <h1 class="h3 mb-0 fw-bold academic-heading">
             <i class="bi bi-calendar3 me-2"></i> جدول توزيع اللجان
         </h1>
-        <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm" style="background-color: #1a2c4e; color: white;">
-            <i class="bi bi-plus-circle me-1"></i> إضافة توزيع جديد
-        </a>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm" style="background-color: #1a2c4e; color: white;">
+                <i class="bi bi-plus-circle me-1"></i> إضافة توزيع جديد
+            </a>
+        }
+       
     </div>
 
     <div class="card academic-card shadow-sm overflow-hidden border-0" style="border-radius: 15px;">
@@ -80,12 +84,15 @@
                                         <a asp-action="Details" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-outline-info" style="border-radius: 6px;" title="عرض">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a asp-action="Edit" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-outline-dark" style="border-radius: 6px;" title="تعديل">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
-                                        <a asp-action="Delete" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-outline-danger" style="border-radius: 6px;" title="حذف">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+                                        @if (User.IsInRole("Admin"))
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-outline-dark" style="border-radius: 6px;" title="تعديل">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-outline-danger" style="border-radius: 6px;" title="حذف">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        }
                                     </div>
                                 </td>
                             </tr>

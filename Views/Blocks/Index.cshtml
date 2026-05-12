@@ -24,9 +24,13 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-collection-fill me-2"></i> إدارة البلوكات</h1>
-        <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
-            <i class="bi bi-plus-circle me-1"></i> تكوين بلوك جديد
-        </a>
+              @if(User.IsInRole("Admin"))
+            {
+                 <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> تكوين بلوك جديد
+                </a>
+             }
+      
     </div>
 
     <div class="card academic-card overflow-hidden border-0 shadow-sm" style="border-radius: 12px;">
@@ -70,12 +74,15 @@
                                         <a asp-action="Details" asp-route-id="@item.BlockID" class="btn btn-sm btn-outline-info shadow-sm" title="عرض التفاصيل">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a asp-action="Edit" asp-route-id="@item.BlockID" class="btn btn-sm btn-outline-secondary shadow-sm" title="تعديل">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
-                                        <a asp-action="Delete" asp-route-id="@item.BlockID" class="btn btn-sm btn-outline-danger shadow-sm" title="حذف">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+                                        @if (User.IsInRole("Admin"))
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.BlockID" class="btn btn-sm btn-outline-secondary shadow-sm" title="تعديل">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.BlockID" class="btn btn-sm btn-outline-danger shadow-sm" title="حذف">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        }
                                     </div>
                                 </td>
                             </tr>

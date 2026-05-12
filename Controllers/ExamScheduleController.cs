@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace projectweb.Controllers
 {
@@ -23,7 +24,7 @@ namespace projectweb.Controllers
         // =====================================
         public async Task<IActionResult> Index()
         {
-            // تم تعديل الترتيب ليعتمد على بيانات موديل الامتحان المرتبط
+            
             var examSchedules = _context.ExamSchedules
                 .Include(e => e.Committee)
                 .Include(e => e.Exam)
@@ -55,6 +56,7 @@ namespace projectweb.Controllers
         // =====================================
         // CREATE
         // =====================================
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             PopulateDropdowns();
@@ -63,9 +65,10 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("ExamScheduleId,ExamId,CommitteeId")] ExamSchedule examSchedule)
         {
-            // تم حذف التحقق من الوقت هنا لأنه يتبع الموعد الرئيسي للامتحان
+            
             if (ModelState.IsValid)
             {
                 _context.Add(examSchedule);
@@ -82,6 +85,7 @@ namespace projectweb.Controllers
         // =====================================  
         // EDIT
         // =====================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -95,6 +99,7 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, [Bind("ExamScheduleId,ExamId,CommitteeId")] ExamSchedule examSchedule)
         {
             if (id != examSchedule.ExamScheduleId) return NotFound();
@@ -122,6 +127,7 @@ namespace projectweb.Controllers
         // =====================================
         // DELETE
         // =====================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -139,6 +145,7 @@ namespace projectweb.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var examSchedule = await _context.ExamSchedules.FindAsync(id);

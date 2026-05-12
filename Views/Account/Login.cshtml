@@ -4,46 +4,94 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="auth-shell d-flex justify-content-center align-items-center">
-    <div class="card academic-card" style="max-width:460px; width:100%;">
-        <div class="card-header academic-card-header text-white text-center py-4">
+<div class="auth-shell d-flex justify-content-center align-items-center min-vh-100" style="background-color: #f4f7f6;">
+    <div class="card academic-card shadow-lg border-0" style="max-width: 460px; width: 100%; border-radius: 15px; overflow: hidden;">
+
+        <div class="card-header text-white text-center py-4" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%);">
             <h4 class="mb-1 fw-bold text-white">تسجيل الدخول</h4>
             <p class="mb-0 small opacity-75">منصة إدارة لجان الامتحانات الجامعية</p>
         </div>
-        <div class="card-body p-4" style="background-color: var(--surface-white);">
+
+        <div class="card-body p-4 p-md-5" style="background-color: #ffffff;">
             <form asp-action="Login" method="post" novalidate>
                 @Html.AntiForgeryToken()
-                <div class="mb-3">
-                <div asp-validation-summary="All" class="text-danger small mb-3"></div>
-                    <label asp-for="Email" class="form-label academic-label required">البريد الإلكتروني</label>
-                    <div class="input-group">
-                        <span class="input-group-text" style="background-color: var(--bg-light); border-color: var(--border-color);"><i class="bi bi-envelope"></i></span>
-                        <input asp-for="Email" class="form-control academic-input" placeholder="example@email.com" type="email" autocomplete="email" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-4 text-center fw-bold"></div>
+
+                <div class="row g-4">
+                    <div class="col-12">
+                        <label asp-for="Email" class="form-label fw-bold small text-secondary">البريد الإلكتروني</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+                            <input asp-for="Email" class="form-control border-start-0 academic-input" placeholder="example@email.com" type="email" autocomplete="email" style="background-color: #fcfcfc;" />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger" style="font-size: 0.75rem;"></span>
                     </div>
-                    <span asp-validation-for="Email" class="text-danger small mt-1 d-block"></span>
-                </div>
-                <div class="mb-3">
-                    <label asp-for="Password" class="form-label academic-label required">كلمة المرور</label>
-                    <div class="input-group">
-                        <button type="button" class="btn btn-outline-secondary" id="togglePassBtn" onclick="togglePass()" style="border-color: var(--border-color);"><i id="eyeIcon" class="bi bi-eye"></i></button>
-                        <input asp-for="Password" class="form-control academic-input" placeholder="password" id="passInput" type="password" dir="ltr" />
+
+                    <div class="col-12">
+                        <label asp-for="Password" class="form-label fw-bold small text-secondary">كلمة المرور</label>
+                        <div class="input-group shadow-sm-hover">
+                            <button type="button" class="btn btn-light border border-end-0 text-muted" onclick="togglePass()" style="border-radius: 0 8px 8px 0 !important; z-index: 4;">
+                                <i id="eyeIcon" class="bi bi-eye"></i>
+                            </button>
+                            <input asp-for="Password" type="password" class="form-control border-start-0 border-end-0 academic-input" id="passInput" placeholder="أدخل كلمة المرور" dir="ltr" style="background-color: #fcfcfc;" />
+                            <span class="input-group-text bg-light border-start-0"><i class="bi bi-lock text-muted"></i></span>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger" style="font-size: 0.75rem;"></span>
                     </div>
-                    <span asp-validation-for="Password" class="text-danger small mt-1 d-block"></span>
+
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input asp-for="IsPrisist" class="form-check-input shadow-none" style="cursor: pointer;" />
+                            <label asp-for="IsPrisist" class="form-check-label small text-muted" style="cursor: pointer;">تذكرني على هذا الجهاز</label>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-check mb-4">
-                    <input asp-for="IsPrisist" class="form-check-input" style="border-color: var(--border-color);" />
-                    <label asp-for="IsPrisist" class="form-check-label academic-label">تذكرني</label>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary py-2 fw-bold shadow" style="background-color: #1a3a5a; border: none; border-radius: 8px;">
+                        <i class="bi bi-box-arrow-in-left me-2"></i> دخول
+                    </button>
                 </div>
-                <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-academic-primary py-2 fw-semibold"><i class="bi bi-box-arrow-in-left me-1"></i> دخول</button>
-                </div>
-                <div class="text-center small">
-                    <span class="text-muted">لا تملك حسابًا؟</span> <a asp-action="Register" class="fw-bold text-decoration-none academic-heading">إنشاء حساب جديد</a>
+
+                <div class="text-center mt-4">
+                    <p class="small text-muted">
+                        لا تملك حسابًا؟ <a asp-action="Register" class="fw-bold text-decoration-none" style="color: #2e5a88;">إنشاء حساب جديد</a>
+                    </p>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<style>
+    .academic-input:focus {
+        border-color: #2e5a88;
+        box-shadow: none;
+        background-color: #fff !important;
+    }
+
+    [dir="rtl"] .input-group-text:first-child {
+        border-radius: 0 8px 8px 0 !important;
+        border-left: 0;
+    }
+
+    [dir="rtl"] .academic-input {
+        border-radius: 0 !important;
+    }
+
+    [dir="rtl"] .input-group > .academic-input:not(:first-child):not(:last-child) {
+        border-radius: 0 !important;
+    }
+
+    [dir="rtl"] .input-group-text:last-child {
+        border-radius: 8px 0 0 8px !important;
+        border-right: 0;
+    }
+    [dir="rtl"] .input-group:not(.shadow-sm-hover) .academic-input {
+        border-radius: 8px 0 0 8px !important;
+    }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
@@ -53,10 +101,10 @@
             var icon = document.getElementById('eyeIcon');
             if (input.type === 'password') {
                 input.type = 'text';
-                icon.className = 'bi bi-eye-slash';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
             } else {
                 input.type = 'password';
-                icon.className = 'bi bi-eye';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
             }
         }
     </script>

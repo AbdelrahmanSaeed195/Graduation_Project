@@ -98,8 +98,11 @@
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2">
                                     <a asp-action="Details" asp-route-id="@r.RelativeId" class="btn btn-sm btn-outline-academic" title="عرض"><i class="bi bi-eye"></i></a>
-                                    <a asp-action="Edit" asp-route-id="@r.RelativeId" class="btn btn-sm btn-outline-academic" title="تعديل"><i class="bi bi-pencil-square"></i></a>
-                                    <a asp-action="Delete" asp-route-id="@r.RelativeId" class="btn btn-sm btn-outline-danger" title="حذف"><i class="bi bi-trash"></i></a>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@r.RelativeId" class="btn btn-sm btn-outline-academic" title="تعديل"><i class="bi bi-pencil-square"></i></a>
+                                        <a asp-action="Delete" asp-route-id="@r.RelativeId" class="btn btn-sm btn-outline-danger" title="حذف"><i class="bi bi-trash"></i></a>
+                                    }
                                 </div>
                             </td>
                         </tr>

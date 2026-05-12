@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace projectweb.Controllers
 {
@@ -18,55 +20,59 @@ namespace projectweb.Controllers
         {
             _context = context;
         }
+
         // =====================================
-        // INDEX
+        // 1. القائمة الرئيسية - INDEX
         // =====================================
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.ReportPersons
+            var reportPersons = await _context.ReportPersons
                 .Include(r => r.Person)
                 .Include(r => r.Report)
+                    .ThenInclude(rep => rep.ExamSchedule)
+                        .ThenInclude(s => s.Exam)
+                            .ThenInclude(e => e.Subject)
                 .Include(r => r.Role)
-                .OrderByDescending(rp => rp.SignedAt);
+                .OrderByDescending(rp => rp.SignedAt)
+                .ToListAsync();
 
-            return View(await applicationDbContext.ToListAsync());
+            return View(reportPersons);
         }
+
         // =====================================
-        // DETAILS
+        // 2. التفاصيل - DETAILS
         // =====================================
         public async Task<IActionResult> Details(int? reportId, int? personId)
         {
-            if (reportId == null || personId == null)
-            {
-                return NotFound();
-            }
+            if (reportId == null || personId == null) return NotFound();
 
             var reportPerson = await _context.ReportPersons
                 .Include(r => r.Person)
-                .Include(r => r.Report)
                 .Include(r => r.Role)
+                .Include(r => r.Report)
+                    .ThenInclude(rep => rep.ExamSchedule)
+                        .ThenInclude(s => s.Exam)
+                            .ThenInclude(e => e.Subject)
                 .FirstOrDefaultAsync(m => m.ReportID == reportId && m.PersonID == personId);
 
-            if (reportPerson == null)
-            {
-                return NotFound();
-            }
+            if (reportPerson == null) return NotFound();
 
             return View(reportPerson);
         }
+
         // =====================================
-        // CREATE
+        // 3. إنشاء ارتباط جديد - CREATE
         // =====================================
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
-            ViewData["PersonID"] = new SelectList(_context.Persons, "PersonID", "FullName");
-            ViewData["ReportID"] = new SelectList(_context.Reports, "ReportID", "ReportID");
-            ViewData["RoleID"] = new SelectList(_context.Roles, "RoleID", "RoleName");
+            PopulateDropdowns();
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("ReportID,PersonID,RoleID,Signature,SignedAt")] ReportPerson reportPerson)
         {
             if (ModelState.IsValid)
@@ -83,44 +89,32 @@ namespace projectweb.Controllers
                     TempData["SuccessMessage"] = "تم ربط الشخص بالمحضر بنجاح";
                     return RedirectToAction(nameof(Index));
                 }
-               
             }
-            ViewData["PersonID"] = new SelectList(_context.Persons, "PersonID", "FullName", reportPerson.PersonID);
-            ViewData["ReportID"] = new SelectList(_context.Reports, "ReportID", "ReportID", reportPerson.ReportID);
-            ViewData["RoleID"] = new SelectList(_context.Roles, "RoleID", "RoleName", reportPerson.RoleID);
+            PopulateDropdowns(reportPerson);
             return View(reportPerson);
         }
+
         // =====================================
-        // EDIT
+        // 4. تعديل الارتباط - EDIT
         // =====================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? reportId, int? personId)
         {
-            if (reportId == null || personId == null)
-            {
-                return NotFound();
-            }
+            if (reportId == null || personId == null) return NotFound();
 
-            var reportPerson = await _context.ReportPersons
-                .FirstOrDefaultAsync(m => m.ReportID == reportId && m.PersonID == personId);
+            var reportPerson = await _context.ReportPersons.FindAsync(reportId, personId);
+            if (reportPerson == null) return NotFound();
 
-            if (reportPerson == null)
-            {
-                return NotFound();
-            }
-            ViewData["PersonID"] = new SelectList(_context.Persons, "PersonID", "FullName", reportPerson.PersonID);
-            ViewData["ReportID"] = new SelectList(_context.Reports, "ReportID", "ReportID", reportPerson.ReportID);
-            ViewData["RoleID"] = new SelectList(_context.Roles, "RoleID", "RoleName", reportPerson.RoleID);
+            PopulateDropdowns(reportPerson);
             return View(reportPerson);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int reportId, int personId, [Bind("ReportID,PersonID,RoleID,Signature,SignedAt")] ReportPerson reportPerson)
         {
-            if (reportId != reportPerson.ReportID || personId != reportPerson.PersonID)
-            {
-                return NotFound();
-            }
+            if (reportId != reportPerson.ReportID || personId != reportPerson.PersonID) return NotFound();
 
             if (ModelState.IsValid)
             {
@@ -128,65 +122,84 @@ namespace projectweb.Controllers
                 {
                     _context.Update(reportPerson);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "تم تحديث بيانات ارتباط الشخص بالمحضر بنجاح";
+                    TempData["SuccessMessage"] = "تم تحديث البيانات بنجاح";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ReportPersonExists(reportPerson.ReportID, reportPerson.PersonID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!ReportPersonExists(reportPerson.ReportID, reportPerson.PersonID)) return NotFound();
+                    else throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["PersonID"] = new SelectList(_context.Persons, "PersonID", "FullName", reportPerson.PersonID);
-            ViewData["ReportID"] = new SelectList(_context.Reports, "ReportID", "ReportID", reportPerson.ReportID);
-            ViewData["RoleID"] = new SelectList(_context.Roles, "RoleID", "RoleName", reportPerson.RoleID);
+            PopulateDropdowns(reportPerson);
             return View(reportPerson);
         }
+
         // =====================================
-        // DELETE
+        // 5. الحذف - DELETE
         // =====================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? reportId, int? personId)
         {
-            if (reportId == null || personId == null)
-            {
-                return NotFound();
-            }
+            if (reportId == null || personId == null) return NotFound();
 
             var reportPerson = await _context.ReportPersons
                 .Include(r => r.Person)
                 .Include(r => r.Report)
-                .Include(r => r.Role)
                 .FirstOrDefaultAsync(m => m.ReportID == reportId && m.PersonID == personId);
 
-            if (reportPerson == null)
-            {
-                return NotFound();
-            }
+            if (reportPerson == null) return NotFound();
 
             return View(reportPerson);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int reportId, int personId)
         {
-            var reportPerson = await _context.ReportPersons
-                .FirstOrDefaultAsync(m => m.ReportID == reportId && m.PersonID == personId);
-
+            var reportPerson = await _context.ReportPersons.FindAsync(reportId, personId);
             if (reportPerson != null)
             {
                 _context.ReportPersons.Remove(reportPerson);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "تم إزالة الشخص من المحضر بنجاح";
+                TempData["SuccessMessage"] = "تم إزالة الشخص من المحضر";
             }
-
             return RedirectToAction(nameof(Index));
+        }
+
+        // ==================================================
+        // HELPERS (دوال مساعدة لتحسين تجربة المستخدم)
+        // ==================================================
+
+        private void PopulateDropdowns(ReportPerson rp = null)
+        {
+            var persons = _context.Persons.AsNoTracking().ToList().Select(p => new
+            {
+                ID = p.PersonId,
+                Name = $"{p.FullName} ({GetEnumDisplayName(p.JobRole)})"
+            });
+
+            var reports = _context.Reports
+                .Include(r => r.ExamSchedule).ThenInclude(s => s.Exam).ThenInclude(e => e.Subject)
+                .AsNoTracking().ToList().Select(r => new
+                {
+                    ID = r.ReportID,
+                    Text = $"محضر #{r.ReportID} - {r.ExamSchedule?.Exam?.Subject?.SubjectName} ({r.CreatedDate:yyyy/MM/dd})"
+                });
+
+            ViewData["PersonID"] = new SelectList(persons, "ID", "Name", rp?.PersonID);
+            ViewData["ReportID"] = new SelectList(reports, "ID", "Text", rp?.ReportID);
+            ViewData["RoleID"] = new SelectList(_context.Roles, "RoleID", "RoleName", rp?.RoleID);
+        }
+
+        private string GetEnumDisplayName(Enum enumValue)
+        {
+            return enumValue.GetType()
+                            .GetMember(enumValue.ToString())
+                            .First()
+                            .GetCustomAttribute<DisplayAttribute>()
+                            ?.Name ?? enumValue.ToString();
         }
 
         private bool ReportPersonExists(int reportId, int personId)

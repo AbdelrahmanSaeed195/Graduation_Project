@@ -22,7 +22,5 @@ namespace projectweb.Models
         [ValidateNever]
         [Display(Name = "الامتحانات المرتبطة")]
         public virtual ICollection<Exam> Exams { get; set; }
-
-      
     }
 }

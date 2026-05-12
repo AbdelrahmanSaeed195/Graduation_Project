@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
@@ -81,6 +82,7 @@ namespace projectweb.Controllers
         // =====================================
         // CREATE
         // =====================================
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -88,6 +90,7 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(StudentCreateViewModel model)
         {
             if (!ModelState.IsValid)
@@ -131,6 +134,7 @@ namespace projectweb.Controllers
         // =====================================
         // EDIT
         // =====================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var student = await _context.Students.FindAsync(id);
@@ -151,6 +155,7 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, StudentCreateViewModel model)
         {
             if (!ModelState.IsValid)
@@ -191,6 +196,7 @@ namespace projectweb.Controllers
         // =====================================
         // DELETE
         // =====================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -214,6 +220,7 @@ namespace projectweb.Controllers
         }
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             if (id == null)
@@ -238,6 +245,7 @@ namespace projectweb.Controllers
         // =====================================
         // DISTRIBUTE STUDENTS
         // =====================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DistributeStudents()
         {
             var students = await _context.Students

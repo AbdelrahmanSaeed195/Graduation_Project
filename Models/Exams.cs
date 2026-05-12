@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace projectweb.Models
 {
-    public class Exam
+    public class Exam : IValidatableObject
     {
         [Key]
         [Display(Name = "كود الامتحان")]
@@ -43,7 +43,26 @@ namespace projectweb.Models
         [ValidateNever]
         [Display(Name = "جدول توزيع اللجان")]
         public virtual ICollection<ExamSchedule> ExamSchedules { get; set; }
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            var durationMinutes = (EndTime - StartTime).TotalMinutes;
 
-        
+            if (EndTime <= StartTime)
+            {
+                yield return new ValidationResult(
+                    "وقت الانتهاء يجب أن يكون بعد وقت البدء.",
+                    new[] { nameof(EndTime) }
+                );
+            }
+            else if (durationMinutes > 180)
+            {
+                yield return new ValidationResult(
+                    "عفواً، لا يمكن أن تتجاوز مدة الامتحان 3 ساعات (180 دقيقة).",
+                    new[] { nameof(EndTime) }
+                );
+            }
+
+            
+        }
     }
 }

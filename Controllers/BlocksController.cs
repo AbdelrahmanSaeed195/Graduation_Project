@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
@@ -52,6 +53,7 @@ namespace projectweb.Controllers
         // =========================
         // CREATE - GET
         // =========================
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             // عرض أسماء الصالات بدلاً من الأكواد
@@ -64,9 +66,9 @@ namespace projectweb.Controllers
         // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Block block)
         {
-            // 1️⃣ التحقق من سعة الصالة (MaxBlocks)
             var hall = await db.Halls.Include(h => h.Blocks).FirstOrDefaultAsync(h => h.HallId == block.HallId);
             if (hall != null)
             {
@@ -76,7 +78,6 @@ namespace projectweb.Controllers
                 }
             }
 
-            // 2️⃣ التحقق من تكرار اسم البلوك داخل نفس الصالة
             bool isNameExist = await db.Blocks.AnyAsync(b => b.BlockName == block.BlockName && b.HallId == block.HallId);
             if (isNameExist)
             {
@@ -107,6 +108,7 @@ namespace projectweb.Controllers
         // =========================
         // EDIT - GET
         // =========================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return BadRequest();
@@ -120,11 +122,11 @@ namespace projectweb.Controllers
         // =========================
         // EDIT - POST
         // =========================
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Block block)
         {
-            // التحقق من تكرار الاسم مع استبعاد البلوك الحالي
             bool isNameExist = await db.Blocks.AnyAsync(b => b.BlockName == block.BlockName
                                                             && b.HallId == block.HallId
                                                             && b.BlockID != block.BlockID);
@@ -157,6 +159,7 @@ namespace projectweb.Controllers
         // =========================
         // DELETE - POST
         // =========================
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

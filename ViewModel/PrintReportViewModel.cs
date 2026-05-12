@@ -24,7 +24,7 @@ namespace projectweb.Models.ViewModels
     {
         public string SubjectName { get; set; }
         public string TargetYear { get; set; }
-        public string ExamTimeRange { get; set; } // خاصية الوقت لكل مادة
+        public string ExamTimeRange { get; set; } 
         public string PersonFullName { get; set; }
     }
 }

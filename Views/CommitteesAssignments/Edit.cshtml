@@ -13,14 +13,12 @@
             <form asp-action="Edit">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm border-0 mb-4 py-2 small"></div>
 
-                @* الحقول المخفية الأساسية *@
                 <input type="hidden" asp-for="AssignmentID" />
                 <input type="hidden" asp-for="AssignmentType" />
                 <input type="hidden" asp-for="ExamScheduleId" />
                 <input type="hidden" asp-for="RoleID" id="roleInput" /> 
                 <input type="hidden" asp-for="RoleType" id="roleTypeText" />
 
-                @* اختيار الموظف *@
                 <div class="mb-4">
                     <label class="form-label fw-bold"><i class="bi bi-person-badge me-1"></i> الموظف المكلف</label>
                     <select asp-for="PersonID" id="personSelect" class="form-select shadow-sm border-primary" asp-items="ViewBag.PersonID">
@@ -29,13 +27,11 @@
                     <span asp-validation-for="PersonID" class="text-danger small"></span>
                 </div>
 
-                @* نطاق المسئولية *@
                 <div class="row bg-light p-3 rounded border mb-3 mx-0 shadow-sm">
                     <h6 class="fw-bold border-bottom pb-2 mb-3 text-secondary">
                         <i class="bi bi-geo-alt me-1"></i> تعديل نطاق المسئولية (المكان)
                     </h6>
 
-                    @* الصالة *@
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold small text-muted">الصالة</label>
                         <select asp-for="HallId" id="hallSelect" class="form-select shadow-sm" asp-items="ViewBag.HallId">
@@ -44,7 +40,6 @@
                         <small class="text-muted" style="font-size: 0.65rem;">خاص برؤساء الصالة والطاقم الطبي</small>
                     </div>
 
-                    @* البلوك *@
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold small text-muted">البلوك</label>
                         <select asp-for="BlockId" id="blockSelect" class="form-select shadow-sm" asp-items="ViewBag.BlockId">
@@ -53,7 +48,6 @@
                         <small class="text-muted" style="font-size: 0.65rem;">خاص بمراقبي البلوكات</small>
                     </div>
 
-                    @* اللجنة *@
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold small text-muted">اللجنة</label>
                         <select asp-for="CommitteeID" id="committeeSelect" class="form-select shadow-sm" asp-items="ViewBag.CommitteeID">

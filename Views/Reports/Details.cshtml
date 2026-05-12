@@ -1,152 +1,161 @@
 ﻿@model projectweb.Models.Report
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
 
 @{
-    ViewData["Title"] = "تفاصيل المحضر";
+    ViewData["Title"] = "تفاصيل المحضر الرسمي";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="row justify-content-center" dir="rtl">
     <div class="col-xl-10">
-        <div class="card academic-card mb-4">
-            <div class="card-header academic-card-header text-white p-4 d-flex justify-content-between align-items-center">
-                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-info-circle-fill me-2"></i> بيانات المحضر</h4>
-                <span class="badge bg-light fs-6" style="color: var(--primary-navy);">كود المحضر #@Model.ReportID</span>
+        <div class="card academic-card shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
+            @* رأس البطاقة - تصميم احترافي *@
+            <div class="card-header academic-card-header text-white p-4 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
+                <div>
+                    <h4 class="mb-0 fw-bold text-white"><i class="bi bi-file-earmark-text-fill me-2"></i> تفاصيل المحضر الرسمي</h4>
+                    <small class="text-white-50">توثيق وقائع الجلسة الامتحانية رقم #@Model.ReportID</small>
+                </div>
+                <div class="text-start">
+                    <span class="badge bg-white text-dark shadow-sm px-3 py-2 fs-6">سجل رقم: @Model.ReportID</span>
+                </div>
             </div>
-            <div class="card-body p-4" style="background-color: var(--surface-white);">
 
-                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3" style="border-color: var(--border-color) !important;">المعلومات الأساسية</h5>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <div class="data-panel">
-                            <div class="panel-label">جلسة الامتحان</div>
-                            <div class="panel-value">
-                                @if (Model.ExamSchedule != null)
-                                {
-                                    <i class="bi bi-book me-1" style="color: var(--accent-blue);"></i>
-                                    @if (Model.ExamSchedule.Exam != null && Model.ExamSchedule.Exam.Subject != null)
-                                    {
-                                        @Model.ExamSchedule.Exam.Subject.SubjectName
-                                    }
-                                }
-                                else
-                                {
-                                    <span class="text-muted">غير محدد</span>
-                                }
+            <div class="card-body p-4 p-md-5" style="background-color: #ffffff;">
+
+                @* القسم الأول: البيانات الأساسية *@
+                <div class="row g-4 mb-5 text-center">
+                    <div class="col-md-6 col-lg-4 text-start">
+                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm">
+                            <label class="small text-muted d-block mb-1 fw-bold">المادة / الامتحان</label>
+                            <div class="panel-value fw-bold text-navy">
+                                <i class="bi bi-journal-bookmark-fill me-1 text-primary"></i>
+                                @(Model.ExamSchedule?.Exam?.Subject?.SubjectName ?? "غير محدد")
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="data-panel">
-                            <div class="panel-label">اللجنة</div>
-                            <div class="panel-value">
-                                @(Model.ExamSchedule?.Committee != null ? $"لجنة {Model.ExamSchedule.Committee.CommitteeNumber}" : "غير محدد")
+
+                    <div class="col-md-6 col-lg-2">
+                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm text-center">
+                            <label class="small text-muted d-block mb-1 fw-bold">رقم اللجنة</label>
+                            <div class="panel-value fw-bold fs-5">
+                                <span class="badge rounded-pill bg-white text-navy border px-3">@(Model.ExamSchedule?.Committee?.CommitteeNumber ?? 0)</span>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="data-panel">
-                            <div class="panel-label">نوع / حالة المحضر</div>
-                            <div class="panel-value mt-1">
-                                @switch (Model.Status)
-                                {
-                                    case ReportStatus.Normal:
-                                        <span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle me-1"></i> طبيعي</span>
-                                        break;
-                                    case ReportStatus.Cheating:
-                                        <span class="badge bg-danger px-3 py-2"><i class="bi bi-exclamation-diamond me-1"></i> غش</span>
-                                        break;
-                                    case ReportStatus.Disturbance:
-                                        <span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-megaphone me-1"></i> شغب</span>
-                                        break;
-                                    case ReportStatus.Emergency:
-                                        <span class="badge bg-danger px-3 py-2"><i class="bi bi-lightning me-1"></i> طوارئ</span>
-                                        break;
-                                    case ReportStatus.AbsenceIssue:
-                                        <span class="badge bg-secondary px-3 py-2"><i class="bi bi-person-x me-1"></i> غياب</span>
-                                        break;
-                                }
+
+                    <div class="col-md-6 col-lg-3 text-start">
+                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm">
+                            <label class="small text-muted d-block mb-1 fw-bold">تاريخ التوثيق</label>
+                            <div class="panel-value fw-bold">
+                                <i class="bi bi-clock-history me-1 text-secondary"></i>
+                                @Model.CreatedDate.ToString("yyyy/MM/dd hh:mm tt")
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="data-panel">
-                            <div class="panel-label">تاريخ تحرير المحضر</div>
-                            <div class="panel-value">
-                                <i class="bi bi-calendar3 me-1"></i> @Model.CreatedDate.ToString("yyyy/MM/dd hh:mm tt")
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="data-panel">
-                            <div class="panel-label">موعد الجلسة</div>
-                            <div class="panel-value">
-                                @if (Model.ExamSchedule != null)
-                                {
-                                    <i class="bi bi-clock me-1"></i> 
-                                    @Model.ExamSchedule.ScheduledDate.ToString("yyyy/MM/dd")
-                                }
-                                else
-                                {
-                                    <span class="text-muted">—</span>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="data-panel">
-                            <div class="panel-label">عدد الموقعين</div>
-                            <div class="panel-value text-success">@(Model.ReportPersons?.Count ?? 0) موقع</div>
+
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm text-center">
+                            <label class="small text-muted d-block mb-1 fw-bold">تصنيف الحالة</label>
+                            @{
+                                var statusEnum = Model.Status;
+                                var statusName = statusEnum.GetType().GetMember(statusEnum.ToString()).FirstOrDefault()?.GetCustomAttribute<DisplayAttribute>()?.Name ?? statusEnum.ToString();
+                                var statusClass = statusEnum == projectweb.Models.ReportStatus.Normal ? "bg-success" : "bg-danger";
+                            }
+                            <span class="badge @statusClass px-3 py-2 shadow-sm w-100" style="border-radius: 8px;">@statusName</span>
                         </div>
                     </div>
                 </div>
 
-                @if (!string.IsNullOrEmpty(Model.Notes))
-                {
-                    <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 mt-4" style="border-color: var(--border-color) !important;">
-                        <i class="bi bi-card-text me-2"></i> ملاحظات وتفاصيل
-                    </h5>
-                    <div class="alert alert-secondary border-0 mb-4" style="background-color: var(--bg-light);">
-                        @Model.Notes
-                    </div>
-                }
+                @* القسم الثاني: تفاصيل الملاحظات *@
+                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 text-primary">
+                    <i class="bi bi-chat-left-text-fill me-2"></i> وقائع وتفاصيل المحضر
+                </h5>
+                <div class="p-4 rounded border mb-5 shadow-sm" style="background-color: #fdfdfd; border-right: 5px solid #1a3a5a !important;">
+                    <p class="mb-0 fs-6 lh-lg text-dark" style="white-space: pre-line;">@(string.IsNullOrEmpty(Model.Notes) ? "لا توجد تفاصيل إضافية مسجلة." : Model.Notes)</p>
+                </div>
 
-                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 mt-4" style="border-color: var(--border-color) !important;">
-                    <i class="bi bi-pen me-2"></i> الموقعون على المحضر
+                @* القسم الثالث: أطراف المحضر *@
+                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 text-primary">
+                    <i class="bi bi-people-fill me-2"></i> أطراف المحضر (المكلفون والطلاب)
                 </h5>
 
                 @if (Model.ReportPersons != null && Model.ReportPersons.Any())
                 {
-                    <div class="table-responsive">
-                        <table class="table academic-table align-middle">
-                            <thead>
+                    <div class="table-responsive rounded border shadow-sm mb-4">
+                        <table class="table academic-table align-middle mb-0">
+                            <thead class="bg-light text-center">
                                 <tr>
-                                    <th>الاسم</th>
-                                    <th>الصفة / الدور</th>
-                                    <th>وقت التوقيع</th>
-                                    <th>التوقيع</th>
+                                    <th class="ps-3 text-start">الاسم بالكامل</th>
+                                    <th>المسمى الوظيفي</th>
+                                    <th>الدور في المحضر</th>
+                                    <th>وقت التوثيق</th>
+                                    <th class="pe-3">الحالة</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var rp in Model.ReportPersons)
                                 {
-                                    <tr>
-                                        <td class="fw-medium" style="color: var(--primary-navy);">
-                                            <i class="bi bi-person me-1"></i> @(rp.Person?.FullName ?? "غير محدد")
+                                    <tr class="text-center">
+                                        <td class="ps-3 text-start">
+                                            <div class="d-flex align-items-center">
+                                                @if (rp.StudentId != null)
+                                                {
+                                                    <div class="bg-info bg-opacity-10 text-info rounded-circle p-2 me-2" title="طالب">
+                                                        <i class="bi bi-mortarboard-fill"></i>
+                                                    </div>
+                                                    <span class="fw-bold text-navy">@(rp.Student?.FullName ?? "طالب غير معروف")</span>
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-2" title="موظف">
+                                                        <i class="bi bi-person-badge-fill"></i>
+                                                    </div>
+                                                    <span class="fw-bold text-navy">@(rp.Person?.FullName ?? "موظف غير معروف")</span>
+                                                }
+                                            </div>
                                         </td>
                                         <td>
-                                            <span class="badge bg-light border px-3 py-1" style="color: var(--primary-navy); border-color: var(--border-color) !important;">
-                                                @(rp.Role != null ? rp.Role.RoleName.ToString() : "—")
+                                            @{
+                                                string arabicJob = "—";
+                                                if (rp.StudentId != null)
+                                                {
+                                                    arabicJob = "طالب نظامي";
+                                                }
+                                                else if (rp.Person != null)
+                                                {
+                                                    var pEnum = rp.Person.JobRole;
+                                                    arabicJob = pEnum.GetType().GetMember(pEnum.ToString()).FirstOrDefault()?.GetCustomAttribute<DisplayAttribute>()?.Name ?? pEnum.ToString();
+                                                }
+                                            }
+                                            <span class="text-muted small">@arabicJob</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border px-3 py-2 shadow-none" style="font-weight: 500;">
+                                                @{
+                                                    string roleArabicName = rp.StudentId != null ? "معني بالواقعة" : "—";
+                                                    if (rp.Role != null)
+                                                    {
+                                                        var rEnum = rp.Role.RoleName;
+                                                        roleArabicName = rEnum.GetType().GetMember(rEnum.ToString()).FirstOrDefault()?.GetCustomAttribute<DisplayAttribute>()?.Name ?? rEnum.ToString();
+                                                    }
+                                                }
+                                                @roleArabicName
                                             </span>
                                         </td>
                                         <td class="text-muted small">@rp.SignedAt.ToString("yyyy/MM/dd hh:mm tt")</td>
-                                        <td>
-                                            @if (!string.IsNullOrEmpty(rp.Signature))
+                                        <td class="pe-3">
+                                            @if (!string.IsNullOrEmpty(rp.Signature) && rp.Signature != "Pending" && rp.Signature != "Waiting")
                                             {
-                                                <i class="bi bi-check-circle-fill text-success me-1"></i> <span class="text-success small">موقع</span>
+                                                <span class="text-success small fw-bold">
+                                                    <i class="bi bi-patch-check-fill me-1"></i> تم التوثيق
+                                                </span>
                                             }
                                             else
                                             {
-                                                <i class="bi bi-x-circle text-muted me-1"></i> <span class="text-muted small">لم يوقع بعد</span>
+                                                <span class="text-warning small italic">
+                                                    <i class="bi bi-hourglass-split me-1"></i> بانتظار الإجراء
+                                                </span>
                                             }
                                         </td>
                                     </tr>
@@ -157,18 +166,87 @@
                 }
                 else
                 {
-                    <div class="alert alert-secondary border-0 text-center" style="background-color: var(--bg-light); color: var(--text-main);">
-                        لا يوجد موقعون على هذا المحضر حالياً.
+                    <div class="text-center py-5 border rounded-3 bg-light bg-opacity-25 mb-4 border-dashed">
+                        <i class="bi bi-people text-muted opacity-50 display-4 d-block mb-3"></i>
+                        <h6 class="text-muted fw-bold">لا يوجد أطراف مسجلة على هذا المحضر حالياً</h6>
+                        <p class="small text-muted mb-0">يمكنك إضافة أطراف (مراقبين أو طلاب) من خلال تعديل المحضر.</p>
                     </div>
                 }
 
-                <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
-                    <a asp-action="Edit" asp-route-id="@Model.ReportID" class="btn btn-academic-primary px-4 fw-bold">
-                        <i class="bi bi-pencil-square me-1"></i> تعديل
+                @* أزرار الإجراءات *@
+                <div class="d-flex flex-wrap gap-2 mt-5 pt-4 border-top no-print">
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.ReportID" class="btn btn-academic-primary px-5 fw-bold shadow-sm py-2">
+                            <i class="bi bi-pencil-square me-1"></i> تعديل المحضر
+                        </a>
+                    }
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 border-0">
+                        <i class="bi bi-arrow-right me-1"></i> العودة للقائمة
                     </a>
-                    <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
+                    <button onclick="window.print()" class="btn btn-dark px-4 ms-auto shadow-sm py-2">
+                        <i class="bi bi-printer-fill me-1"></i> طباعة المحضر الرسمي
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .text-navy {
+        color: #1a3a5a;
+    }
+
+    .btn-academic-primary {
+        background-color: #1a3a5a;
+        color: white;
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+
+        .btn-academic-primary:hover {
+            background-color: #2e5a88;
+            transform: translateY(-2px);
+        }
+
+    .academic-heading {
+        color: #1a3a5a;
+        font-weight: 700;
+    }
+
+    .border-dashed {
+        border-style: dashed !important;
+        border-width: 2px !important;
+    }
+
+    @@media print {
+        .no-print {
+            display: none !important;
+        }
+
+        body {
+            background: white !important;
+        }
+
+        .academic-card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .card-header {
+            background: #f8f9fa !important;
+            color: black !important;
+            border-bottom: 2px solid black !important;
+        }
+
+            .card-header h4, .card-header small, .badge {
+                color: black !important;
+            }
+
+        .badge {
+            border: 1px solid #000 !important;
+            background: transparent !important;
+        }
+    }
+</style>

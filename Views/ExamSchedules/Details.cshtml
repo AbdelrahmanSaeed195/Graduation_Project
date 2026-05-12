@@ -56,7 +56,6 @@
                                     <div class="border rounded-3 p-3 text-center shadow-sm">
                                         <i class="bi bi-calendar-check text-primary fs-2 mb-2"></i>
                                         <div class="small text-muted">تاريخ الامتحان المقرر</div>
-                                        @* جلب التاريخ من الموديل المرتبط *@
                                         <div class="fw-bold fs-5">@Model.Exam?.ExamDate.ToString("yyyy/MM/dd")</div>
                                     </div>
                                 </div>
@@ -64,8 +63,20 @@
                                     <div class="border rounded-3 p-3 text-center shadow-sm">
                                         <i class="bi bi-clock-history text-success fs-2 mb-2"></i>
                                         <div class="small text-muted">فترة الامتحان</div>
-                                        @* جلب الوقت من الموديل المرتبط *@
-                                        <div class="fw-bold fs-5">@Model.Exam?.StartTime.ToString(@"hh\:mm") - @Model.Exam?.EndTime.ToString(@"hh\:mm")</div>
+                                        <div class="fw-bold fs-5" dir="ltr">
+                                            @if (Model.Exam != null)
+                                            {
+                                                @* تحويل TimeSpan إلى DateTime لعرض التوقيت بنظام 12 ساعة *@
+                                                var startTime = DateTime.Today.Add(Model.Exam.StartTime).ToString("hh:mm tt");
+                                                var endTime = DateTime.Today.Add(Model.Exam.EndTime).ToString("hh:mm tt");
+
+                                                <span>@startTime - @endTime</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">غير محدد</span>
+                                            }
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -74,9 +85,12 @@
                     </div>
 
                     <div class="mt-5 d-flex justify-content-center gap-3">
-                        <a asp-action="Edit" asp-route-id="@Model.ExamScheduleId" class="btn btn-lg px-5" style="background-color: #1a2c4e; color: white; border-radius: 8px;">
-                            <i class="bi bi-pencil-square me-2"></i> تعديل التوزيع
-                        </a>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.ExamScheduleId" class="btn btn-lg px-5" style="background-color: #1a2c4e; color: white; border-radius: 8px;">
+                                <i class="bi bi-pencil-square me-2"></i> تعديل التوزيع
+                            </a>
+                        }
                         <a asp-action="Index" class="btn btn-lg btn-outline-secondary px-4" style="border-radius: 8px;">
                             العودة للقائمة
                         </a>

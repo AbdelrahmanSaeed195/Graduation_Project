@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
+using projectweb.Models.ViewModels;
 using projectweb.Services;
 using System;
 using System.Collections.Generic;
@@ -68,6 +70,14 @@ namespace projectweb.Controllers
                 .ThenBy(a => a.CommitteeID == null)
                 .ToListAsync();
 
+            foreach (var item in assignments)
+            {
+                if (item.Person != null)
+                {
+                    ViewData["Job_" + item.PersonID] = GetEnumDisplayName(item.Person.JobRole);
+                }
+            }
+
             ViewBag.SelectedExamId = examId;
             return View(assignments);
         }
@@ -75,6 +85,7 @@ namespace projectweb.Controllers
         // ============================================================
         // 2. ConfirmAutoAssign (GET): تختار فيها الصالة والامتحان يدوياً
         // ============================================================
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> ConfirmAutoAssign()
         {
@@ -96,6 +107,7 @@ namespace projectweb.Controllers
         // ============================================================
         // 3. RunAutoAssign (POST): تنفيذ التوزيع بناءً على الاختيارات
         // ============================================================
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RunAutoAssign(int hallId, int examId)
@@ -135,12 +147,11 @@ namespace projectweb.Controllers
         {
             if (id == null) return NotFound();
 
-          
             var assignment = await _context.CommitteesAssignments
                 .Include(a => a.Person)
                 .Include(a => a.Role)
                 .Include(a => a.Hall)
-                .Include(a => a.Block).ThenInclude(b => b.Hall) 
+                .Include(a => a.Block).ThenInclude(b => b.Hall)
                 .Include(a => a.Committee)
                     .ThenInclude(c => c.Block)
                         .ThenInclude(b => b.Hall)
@@ -151,12 +162,18 @@ namespace projectweb.Controllers
 
             if (assignment == null) return NotFound();
 
+            if (assignment.Person != null)
+            {
+                ViewBag.ArabicJobRole = GetEnumDisplayName(assignment.Person.JobRole);
+            }
+
             return View(assignment);
         }
 
         // ============================================================
         // 5. Create
         // ============================================================
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             LoadDropdowns();
@@ -165,6 +182,7 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(CommitteesAssignment assignment)
         {
             if (ModelState.IsValid)
@@ -195,6 +213,7 @@ namespace projectweb.Controllers
         // ============================================================
         // 6. Edit
         // ============================================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -229,6 +248,7 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, CommitteesAssignment assignment)
         {
             if (id != assignment.AssignmentID) return NotFound();
@@ -239,13 +259,13 @@ namespace projectweb.Controllers
                 {
                     var isBusy = await _context.CommitteesAssignments
                         .AnyAsync(a => a.ExamScheduleId == assignment.ExamScheduleId &&
-                                       a.PersonID == assignment.PersonID &&
-                                       a.AssignmentID != assignment.AssignmentID);
+                                         a.PersonID == assignment.PersonID &&
+                                         a.AssignmentID != assignment.AssignmentID);
 
                     if (isBusy)
                     {
                         ModelState.AddModelError("", "هذا الموظف مشغول بتكليف آخر بالفعل في نفس الجلسة!");
-                        LoadDropdowns(assignment); 
+                        LoadDropdowns(assignment);
                         return View(assignment);
                     }
 
@@ -274,18 +294,19 @@ namespace projectweb.Controllers
         // ============================================================
         // 7. Delete
         // ============================================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
 
             var assignment = await _context.CommitteesAssignments
                 .Include(a => a.Person)
-                .Include(a => a.Hall) 
-                .Include(a => a.Block) 
-                .Include(a => a.Committee) 
+                .Include(a => a.Hall)
+                .Include(a => a.Block)
+                .Include(a => a.Committee)
                 .Include(a => a.ExamSchedule)
                     .ThenInclude(es => es.Exam)
-                        .ThenInclude(e => e.Subject) 
+                        .ThenInclude(e => e.Subject)
                 .FirstOrDefaultAsync(m => m.AssignmentID == id);
 
             if (assignment == null) return NotFound();
@@ -295,23 +316,24 @@ namespace projectweb.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-          
+
             var assignment = await _context.CommitteesAssignments
                 .Include(a => a.ExamSchedule)
                 .FirstOrDefaultAsync(a => a.AssignmentID == id);
 
             if (assignment != null)
             {
-                int? examId = assignment.ExamSchedule?.ExamId; 
+                int? examId = assignment.ExamSchedule?.ExamId;
 
                 _context.CommitteesAssignments.Remove(assignment);
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "تم حذف التكليف بنجاح.";
 
-             
+
                 return RedirectToAction(nameof(Index), new { examId = examId });
             }
 
@@ -339,12 +361,13 @@ namespace projectweb.Controllers
 
             return Json(new { blocks = blocks, committees = committees });
         }
+
         private void LoadDropdowns(CommitteesAssignment? assignment = null)
         {
             var activeStaff = _context.Persons
                 .Where(p => p.IsActiveForAssignment)
                 .OrderBy(p => p.FullName)
-                .AsEnumerable()
+                .AsEnumerable() 
                 .Select(p => new {
                     p.PersonId,
                     FullNameWithJob = $"{p.FullName} ({GetEnumDisplayName(p.JobRole)})"
@@ -398,8 +421,11 @@ namespace projectweb.Controllers
 
             ViewBag.ExamScheduleId = new SelectList(schedules, "Id", "Name", assignment?.ExamScheduleId);
         }
+
         private string GetEnumDisplayName(Enum enumValue)
         {
+            if (enumValue == null) return "غير محدد";
+
             return enumValue.GetType()
                             .GetMember(enumValue.ToString())
                             .FirstOrDefault()?

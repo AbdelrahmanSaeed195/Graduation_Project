@@ -19,7 +19,7 @@ namespace projectweb.ViewModel
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
-        [Compare("Password", ErrorMessage = "Passwords do not match")]
+        [Compare("Password", ErrorMessage = "كلمة المرور وتأكيد كلمة المرور غير متطابقين")]
         public string ConfirmPassword { get; set; }
     }
 }

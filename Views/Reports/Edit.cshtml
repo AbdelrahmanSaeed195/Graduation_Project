@@ -1,4 +1,6 @@
 ﻿@model projectweb.Models.Report
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
 
 @{
     ViewData["Title"] = "تعديل بيانات المحضر";
@@ -6,46 +8,114 @@
 }
 
 <div class="row justify-content-center" dir="rtl">
-    <div class="col-xl-8">
-        <div class="card academic-card">
-            <div class="card-header academic-card-header text-white p-4">
-                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-pencil-square me-2"></i> تعديل بيانات المحضر رقم (#@Model.ReportID)</h4>
+    <div class="col-xl-9">
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm mb-4 border-0" style="border-radius: 10px;">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> برجاء مراجعة الأخطاء التالية قبل الحفظ.
             </div>
-            <div class="card-body p-4" style="background-color: var(--surface-white);">
-                <form asp-action="Edit" method="post">
+        }
+
+        <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+            @* رأس البطاقة *@
+            <div class="card-header academic-card-header text-white p-4" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
+                <div class="d-flex align-items-center">
+                    <div class="bg-white bg-opacity-25 rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                        <i class="bi bi-pencil-square text-white fs-4"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-0 fw-bold text-white">تعديل المحضر رقم (#@Model.ReportID)</h4>
+                        <p class="mb-0 small text-white-50">تحديث البيانات المسجلة بتاريخ @Model.CreatedDate.ToString("yyyy/MM/dd")</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4 p-md-5" style="background-color: #ffffff;">
+                <form asp-action="Edit" method="post" id="editReportForm">
+                    @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="ReportID" />
                     <input type="hidden" asp-for="CreatedDate" />
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
 
-                    <div class="row g-4 mb-4">
+                    <div class="row g-4">
+                        @* 1. اختيار المادة *@
                         <div class="col-md-6">
-                            <label asp-for="ScheduleID" class="form-label academic-label required">جلسة الامتحان</label>
-                            <select asp-for="ScheduleID" asp-items="@(ViewData["ScheduleID"] as SelectList)" class="form-select academic-input">
-                                <option value="">-- اختر جلسة الامتحان --</option>
-                            </select>
-                            <span asp-validation-for="ScheduleID" class="text-danger small mt-1 d-block"></span>
+                            <label class="form-label academic-label required fw-bold mb-2">المادة / الامتحان</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-book"></i></span>
+                                <select id="examSelect" class="form-select academic-input border-start-0"
+                                        asp-items="@(ViewData["ExamID"] as SelectList)">
+                                    <option value="">-- اختر المادة --</option>
+                                </select>
+                            </div>
                         </div>
 
+                        @* 2. اختيار اللجنة *@
                         <div class="col-md-6">
-                            <label asp-for="Status" class="form-label academic-label required">نوع / حالة المحضر</label>
-                            <select asp-for="Status" class="form-select academic-input" asp-items="Html.GetEnumSelectList<ReportStatus>()">
-                                <option value="">-- اختر نوع المحضر --</option>
-                            </select>
-                            <span asp-validation-for="Status" class="text-danger small mt-1 d-block"></span>
+                            <label asp-for="ScheduleID" class="form-label academic-label required fw-bold mb-2">اللجنة المختصة</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-door-open"></i></span>
+                                <select asp-for="ScheduleID" id="committeeSelect" class="form-select academic-input border-start-0">
+                                    <option value="">-- اختر اللجنة --</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="ScheduleID" class="text-danger small fw-bold"></span>
                         </div>
 
+                        @* 3. نوع / حالة المحضر *@
                         <div class="col-md-12">
-                            <label asp-for="Notes" class="form-label academic-label">ملاحظات وتفاصيل</label>
-                            <textarea asp-for="Notes" class="form-control academic-input" rows="4" placeholder="أدخل أي ملاحظات أو تفاصيل إضافية حول المحضر..."></textarea>
-                            <span asp-validation-for="Notes" class="text-danger small mt-1 d-block"></span>
+                            <label asp-for="Status" class="form-label academic-label required fw-bold mb-2">نوع / حالة المحضر</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-info-square"></i></span>
+                                <select asp-for="Status" class="form-select academic-input border-start-0"
+                                        asp-items="ViewBag.StatusList">
+                                    <option value="">-- اختر نوع المحضر --</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        @* 4. الطالب المعني *@
+                        <div class="col-md-6 party-section">
+                            <label class="form-label academic-label fw-bold mb-2">الطالب المعني (إن وجد)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-person-badge"></i></span>
+                                <select name="SelectedStudentId" id="studentSelect" class="form-select academic-input border-start-0">
+                                    <option value="">-- اختر الطالب --</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        @* 5. المكلفون الذين رصدوا الواقعة *@
+                        <div class="col-md-6 party-section">
+                            <label class="form-label academic-label required fw-bold mb-2">المكلفون الذين رصدوا الواقعة</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-people"></i></span>
+                                <select name="SelectedStaffIds" id="staffSelect" class="form-select academic-input border-start-0" multiple style="height: 120px;">
+                                </select>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.75rem;">يمكنك استخدام Ctrl لاختيار أكثر من موظف</small>
+                        </div>
+
+                        @* 6. الملاحظات *@
+                        <div class="col-12 mt-4">
+                            <label asp-for="Notes" class="form-label academic-label fw-bold mb-2">تفاصيل ووقائع المحضر</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 align-items-start pt-3 text-muted">
+                                    <i class="bi bi-pencil-square"></i>
+                                </span>
+                                <textarea asp-for="Notes" class="form-control academic-input border-start-0" rows="6"
+                                          placeholder="تعديل وصف الواقعة..."></textarea>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
-                        <button type="submit" class="btn btn-academic-primary px-4 fw-bold">
-                            <i class="bi bi-check-circle me-1"></i> حفظ التعديلات
+                    @* أزرار التحكم *@
+                    <div class="d-flex flex-wrap gap-2 mt-5 pt-4 border-top">
+                        <button type="submit" class="btn btn-academic-primary px-5 fw-bold shadow-sm py-2">
+                            <i class="bi bi-save me-1"></i> حفظ التغييرات
                         </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 border-0">
+                            <i class="bi bi-arrow-right me-1"></i> العودة للقائمة
+                        </a>
                     </div>
                 </form>
             </div>
@@ -55,4 +125,113 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function () {
+            // استلام البيانات من الكنترولر
+            var initialExamId = $('#examSelect').val();
+            var initialScheduleId = '@(ViewBag.SelectedScheduleId ?? Model.ScheduleID)';
+            var currentStaffIds = @Html.Raw(Json.Serialize(ViewBag.CurrentStaffIds));
+            var selectedStudentId = '@(ViewBag.SelectedStudentId ?? "")';
+
+            // 1. عند فتح الصفحة: إذا كان هناك مادة مختارة، حمل اللجان
+            if (initialExamId) {
+                loadCommittees(initialExamId, initialScheduleId);
+            }
+
+            // 2. عند تغيير المادة يدوياً
+            $('#examSelect').change(function () {
+                loadCommittees($(this).val(), null);
+            });
+
+            // 3. عند تغيير اللجنة يدوياً
+            $('#committeeSelect').change(function () {
+                loadParties($(this).val());
+            });
+
+            function loadCommittees(examId, selectedId) {
+                var committeeSelect = $('#committeeSelect');
+                committeeSelect.empty().append('<option value="">-- جاري التحميل... --</option>');
+
+                if (examId) {
+                    $.getJSON('@Url.Action("GetCommitteesByExam")', { examId: examId }, function (data) {
+                        committeeSelect.empty().append('<option value="">-- اختر اللجنة --</option>');
+                        $.each(data, function (index, item) {
+                            var option = $('<option>', { value: item.id, text: item.name });
+                            if (item.id == selectedId) option.attr('selected', 'selected');
+                            committeeSelect.append(option);
+                        });
+
+                        // تحميل الأطراف فوراً بعد تحميل اللجان إذا كانت هناك لجنة محددة
+                        var currentId = selectedId || committeeSelect.val();
+                        if (currentId) {
+                            loadParties(currentId);
+                        }
+                    });
+                }
+            }
+
+            function loadParties(scheduleId) {
+                if(!scheduleId) return;
+
+                $.getJSON('@Url.Action("GetCommitteeParties")', { scheduleId: scheduleId }, function (data) {
+                    // تعبئة الطلاب
+                    var studentSelect = $('#studentSelect');
+                    studentSelect.empty().append('<option value="">-- اختر الطالب --</option>');
+                    $.each(data.students, function (i, s) {
+                        var option = $('<option>', { value: s.id, text: s.name });
+                        if (s.id == selectedStudentId) option.attr('selected', 'selected');
+                        studentSelect.append(option);
+                    });
+
+                    // تعبئة الموظفين
+                    var staffSelect = $('#staffSelect');
+                    staffSelect.empty();
+                    $.each(data.staff, function (i, s) {
+                        var option = $('<option>', { value: s.id, text: s.name });
+                        // التحقق من الموظفين المختارين سابقاً
+                        if (currentStaffIds && currentStaffIds.indexOf(s.id) !== -1) {
+                            option.attr('selected', 'selected');
+                        }
+                        staffSelect.append(option);
+                    });
+                });
+            }
+        });
+    </script>
+
+    <style>
+        .academic-input:focus {
+            border-color: #1a3a5a !important;
+            box-shadow: 0 0 0 0.25rem rgba(26, 58, 90, 0.1) !important;
+        }
+
+        .input-group-text {
+            border-radius: 0 8px 8px 0 !important;
+            border-color: #dee2e6;
+            background-color: #f8f9fa;
+        }
+
+        .academic-input {
+            border-radius: 8px 0 0 8px !important;
+            border-color: #dee2e6;
+        }
+
+        .academic-label.required::after {
+            content: " *";
+            color: red;
+        }
+
+        .btn-academic-primary {
+            background-color: #1a3a5a;
+            color: white;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+            .btn-academic-primary:hover {
+                background-color: #2e5a88;
+                transform: translateY(-2px);
+            }
+    </style>
 }

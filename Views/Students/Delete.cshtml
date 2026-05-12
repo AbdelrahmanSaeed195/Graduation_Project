@@ -3,8 +3,6 @@
 @{
     ViewData["Title"] = "تأكيد حذف طالب";
     Layout = "~/Views/Shared/_Layout.cshtml";
-
-    // التحقق من وجود علاقات تمنع الحذف
     bool hasRelatives = Model.Relatives != null && Model.Relatives.Any();
 }
 
@@ -66,7 +64,6 @@
                 </div>
 
                 <form asp-action="Delete" method="post">
-                    @* استخدام HiddenFor لضمان وصول المعرف بشكل صحيح *@
                     @Html.HiddenFor(m => m.StudentId)
 
                     <div class="d-flex justify-content-center gap-2 mt-4 pt-3 border-top">

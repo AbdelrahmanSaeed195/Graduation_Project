@@ -8,8 +8,8 @@
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-7">
             <div class="card shadow-lg border-0 rounded-3 border-danger" style="border-top-width: 5px !important;">
-                <div class="card-header bg-danger text-white py-3 border-0 rounded-top-3">
-                    <h3 class="card-title mb-0 fw-bold text-center">
+                <div class="card-header bg-danger text-white py-3 border-0 rounded-top-3 text-center">
+                    <h3 class="card-title mb-0 fw-bold">
                         <i class="bi bi-exclamation-triangle me-2"></i> تأكيد حذف توزيع اللجنة
                     </h3>
                 </div>
@@ -30,10 +30,23 @@
                                 <small class="text-muted fw-normal fs-6">(@Model.Exam?.TargetAcademicYear)</small>
                             </h5>
                             <p class="mb-2"><strong>اللجنة:</strong> لجنة @Model.Committee?.CommitteeNumber</p>
-                            @* تم التعديل لجلب التاريخ والوقت من موديل الامتحان المرتبط *@
                             <p class="mb-2"><strong>التاريخ المقرر:</strong> @Model.Exam?.ExamDate.ToString("dd / MM / yyyy")</p>
+
+                            @* التعديل هنا: عرض الوقت بنظام 12 ساعة *@
                             <p class="mb-0">
-                                <strong>توقيت الامتحان:</strong> @Model.Exam?.StartTime.ToString(@"hh\:mm") - @Model.Exam?.EndTime.ToString(@"hh\:mm")
+                                <strong>توقيت الامتحان:</strong>
+                                <span dir="ltr">
+                                    @if (Model.Exam != null)
+                                    {
+                                        var startTime = DateTime.Today.Add(Model.Exam.StartTime).ToString("hh:mm tt");
+                                        var endTime = DateTime.Today.Add(Model.Exam.EndTime).ToString("hh:mm tt");
+                                        @($"{startTime} - {endTime}")
+                                    }
+                                    else
+                                    {
+                                        <span>غير محدد</span>
+                                    }
+                                </span>
                             </p>
                         </div>
                     </div>

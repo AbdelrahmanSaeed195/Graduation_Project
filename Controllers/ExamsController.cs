@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
@@ -19,27 +20,35 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // INDEX
+        // 1. القائمة الرئيسية - INDEX
         // =====================================
         public async Task<IActionResult> Index()
         {
             var exams = _context.Exams
+                .AsNoTracking()
                 .Include(e => e.Subject)
                 .Include(e => e.ExamSchedules)
+                    .ThenInclude(es => es.Committee)
                 .OrderByDescending(e => e.ExamDate);
 
             return View(await exams.ToListAsync());
         }
 
         // =====================================
-        // DETAILS
+        // 2. التفاصيل - DETAILS (تم حذف جزء الموظفين المكلفين)
         // =====================================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
 
+            // جلب الامتحان مع اللجان فقط
             var exam = await _context.Exams
+                .AsNoTracking()
                 .Include(e => e.Subject)
+                .Include(e => e.ExamSchedules)
+                    .ThenInclude(es => es.Committee)
+                        .ThenInclude(c => c.Block)
+                            .ThenInclude(b => b.Hall)
                 .FirstOrDefaultAsync(m => m.ExamId == id);
 
             if (exam == null) return NotFound();
@@ -48,8 +57,9 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // CREATE
+        // 3. إنشاء امتحان جديد - CREATE
         // =====================================
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             PopulateSubjects();
@@ -58,47 +68,56 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ExamId,ExamDate,StartTime,EndTime,TargetAcademicYear,SubjectID")] Exam exam)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Create([Bind("ExamId,ExamDate,StartTime,EndTime,SubjectID")] Exam exam)
         {
-            // 1. التحقق من منطق الوقت (البداية قبل النهاية)
-            if (exam.EndTime <= exam.StartTime)
+            var selectedSubject = await _context.Subjects.AsNoTracking().FirstOrDefaultAsync(s => s.SubjectId == exam.SubjectID);
+            if (selectedSubject != null)
             {
-                ModelState.AddModelError("EndTime", "يجب أن يكون وقت انتهاء الامتحان بعد وقت البدء.");
+                exam.TargetAcademicYear = selectedSubject.AcademicYear;
             }
 
-            // 2. التحقق من عدم وجود تداخل في المواعيد (Overlap Check)
+            var durationMinutes = (exam.EndTime - exam.StartTime).TotalMinutes;
+            if (durationMinutes > 180)
+            {
+                ModelState.AddModelError("EndTime", "عفواً، لا يمكن أن تتجاوز مدة الامتحان 3 ساعات (180 دقيقة).");
+            }
+            if (exam.EndTime <= exam.StartTime)
+            {
+                ModelState.AddModelError("EndTime", "يجب أن يكون وقت الانتهاء بعد وقت البدء.");
+            }
+
             bool isOverlapping = await _context.Exams.AnyAsync(e =>
                 e.ExamDate.Date == exam.ExamDate.Date &&
                 ((exam.StartTime >= e.StartTime && exam.StartTime < e.EndTime) ||
-                 (exam.EndTime > e.StartTime && exam.EndTime <= e.EndTime) ||
-                 (exam.StartTime <= e.StartTime && exam.EndTime >= e.EndTime)));
+                 (exam.EndTime > e.StartTime && exam.EndTime <= e.EndTime)));
 
             if (isOverlapping)
             {
-                ModelState.AddModelError("", "يوجد امتحان آخر مسجل في نفس هذا التاريخ والوقت. يرجى اختيار موعد مختلف.");
+                ModelState.AddModelError("", "يوجد امتحان آخر مسجل في نفس هذا الموعد.");
             }
 
             if (ModelState.IsValid)
             {
                 _context.Add(exam);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "تم إضافة بيانات الامتحان بنجاح.";
+                TempData["SuccessMessage"] = "تم إضافة الامتحان بنجاح.";
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["ErrorMessage"] = "فشل في حفظ البيانات، يرجى التأكد من المدخلات.";
             PopulateSubjects(exam.SubjectID);
             return View(exam);
         }
 
         // =====================================
-        // EDIT
+        // 4. تعديل امتحان - EDIT
         // =====================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var exam = await _context.Exams.FindAsync(id);
+            var exam = await _context.Exams.Include(e => e.Subject).FirstOrDefaultAsync(x => x.ExamId == id);
             if (exam == null) return NotFound();
 
             PopulateSubjects(exam.SubjectID);
@@ -107,26 +126,36 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ExamId,ExamDate,StartTime,EndTime,TargetAcademicYear,SubjectID")] Exam exam)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Edit(int id, [Bind("ExamId,ExamDate,StartTime,EndTime,SubjectID")] Exam exam)
         {
             if (id != exam.ExamId) return NotFound();
 
-            if (exam.EndTime <= exam.StartTime)
+            var selectedSubject = await _context.Subjects.AsNoTracking().FirstOrDefaultAsync(s => s.SubjectId == exam.SubjectID);
+            if (selectedSubject != null)
             {
-                ModelState.AddModelError("EndTime", "يجب أن يكون وقت انتهاء الامتحان بعد وقت البدء.");
+                exam.TargetAcademicYear = selectedSubject.AcademicYear;
             }
 
-            // التحقق من التداخل مع استبعاد الامتحان الحالي من الفحص
+            var durationMinutes = (exam.EndTime - exam.StartTime).TotalMinutes;
+            if (durationMinutes > 180)
+            {
+                ModelState.AddModelError("EndTime", "عفواً، لا يمكن أن تتجاوز مدة الامتحان 3 ساعات عند التعديل.");
+            }
+            if (exam.EndTime <= exam.StartTime)
+            {
+                ModelState.AddModelError("EndTime", "يجب أن يكون وقت الانتهاء بعد وقت البدء.");
+            }
+
             bool isOverlapping = await _context.Exams.AnyAsync(e =>
                 e.ExamId != exam.ExamId &&
                 e.ExamDate.Date == exam.ExamDate.Date &&
                 ((exam.StartTime >= e.StartTime && exam.StartTime < e.EndTime) ||
-                 (exam.EndTime > e.StartTime && exam.EndTime <= e.EndTime) ||
-                 (exam.StartTime <= e.StartTime && exam.EndTime >= e.EndTime)));
+                 (exam.EndTime > e.StartTime && exam.EndTime <= e.EndTime)));
 
             if (isOverlapping)
             {
-                ModelState.AddModelError("", "هذا التعديل يتداخل مع موعد امتحان آخر في نفس اليوم.");
+                ModelState.AddModelError("", "هذا التعديل يتسبب في تداخل مع موعد امتحان آخر.");
             }
 
             if (ModelState.IsValid)
@@ -142,10 +171,6 @@ namespace projectweb.Controllers
                     if (!ExamExists(exam.ExamId)) return NotFound();
                     else throw;
                 }
-                catch (Exception)
-                {
-                    TempData["ErrorMessage"] = "حدث خطأ غير متوقع أثناء التعديل.";
-                }
                 return RedirectToAction(nameof(Index));
             }
 
@@ -154,14 +179,16 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // DELETE
+        // 5. الحذف - DELETE
         // =====================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
 
             var exam = await _context.Exams
                 .Include(e => e.Subject)
+                .Include(e => e.ExamSchedules)
                 .FirstOrDefaultAsync(m => m.ExamId == id);
 
             if (exam == null) return NotFound();
@@ -171,6 +198,7 @@ namespace projectweb.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var exam = await _context.Exams.FindAsync(id);
@@ -180,45 +208,45 @@ namespace projectweb.Controllers
                 {
                     _context.Exams.Remove(exam);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "تم حذف بيانات الامتحان بنجاح.";
+                    TempData["SuccessMessage"] = "تم حذف الامتحان.";
                 }
                 catch (Exception)
                 {
-                    TempData["ErrorMessage"] = "لا يمكن حذف هذا الامتحان لوجود جداول امتحانات أو لجان مرتبطة به.";
+                    TempData["ErrorMessage"] = "لا يمكن حذف الامتحان لوجود لجان مرتبطة به.";
                 }
             }
             return RedirectToAction(nameof(Index));
         }
 
-        // --- أكشن لجلب تفاصيل المادة (السنة الدراسية) ---
+        // =====================================
+        // روابط مساعدة (AJAX)
+        // =====================================
+
         [HttpGet]
-        public async Task<JsonResult> GetSubjectDetails(int id)
+        public async Task<JsonResult> GetSubjectYear(int subjectId)
         {
-            var subject = await _context.Subjects.FindAsync(id);
-            if (subject != null)
-            {
-                return Json(new { academicYear = subject.AcademicYear });
-            }
-            return Json(null);
+            var subject = await _context.Subjects.AsNoTracking().FirstOrDefaultAsync(s => s.SubjectId == subjectId);
+            return Json(new { academicYear = subject?.AcademicYear ?? "" });
         }
 
-        // --- أكشن لفحص تداخل المواعيد عبر Ajax ---
         [HttpGet]
-        public async Task<JsonResult> CheckTimeOverlap(DateTime date, TimeSpan start, TimeSpan end, int? excludeId)
+        public async Task<JsonResult> CheckConstraints(DateTime date, TimeSpan start, TimeSpan end, int? excludeId)
         {
+            var durationMinutes = (end - start).TotalMinutes;
+            var isValidDuration = durationMinutes > 0 && durationMinutes <= 180;
+
             bool isOverlapping = await _context.Exams.AnyAsync(e =>
                 (excludeId == null || e.ExamId != excludeId) &&
                 e.ExamDate.Date == date.Date &&
                 ((start >= e.StartTime && start < e.EndTime) ||
-                 (end > e.StartTime && end <= e.EndTime) ||
-                 (start <= e.StartTime && end >= e.EndTime)));
+                 (end > e.StartTime && end <= e.EndTime)));
 
-            return Json(new { overlap = isOverlapping });
+            return Json(new { isValidDuration = isValidDuration, isOverlapping = isOverlapping });
         }
 
         private void PopulateSubjects(object selectedSubject = null)
         {
-            var subjectsQuery = _context.Subjects.OrderBy(s => s.SubjectName);
+            var subjectsQuery = _context.Subjects.AsNoTracking().OrderBy(s => s.SubjectName);
             ViewBag.SubjectID = new SelectList(subjectsQuery, "SubjectId", "SubjectName", selectedSubject);
         }
 

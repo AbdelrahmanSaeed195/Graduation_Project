@@ -15,7 +15,9 @@ namespace projectweb.Controllers
         {
             _db = db;
         }
-
+        // =====================================
+        // INDEX
+        // =====================================
         public async Task<IActionResult> Index(int? personId)
         {
             var query = _db.Relatives
@@ -41,8 +43,23 @@ namespace projectweb.Controllers
 
             return View("Index", result);
         }
-
-        
+        // =====================================
+        // DETAILS
+        // =====================================
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null) return NotFound();
+            var relative = await _db.Relatives
+                .Include(r => r.Person)
+                .Include(r => r.Student)
+                .FirstOrDefaultAsync(m => m.RelativeId == id);
+            if (relative == null) return NotFound();
+            return View(relative);
+        }
+        // =====================================
+        // CREATE
+        // =====================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create()
         {
             ViewBag.PersonsList = await _db.Persons
@@ -58,6 +75,7 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Relative relative)
         {
             ModelState.Remove("Person");
@@ -72,7 +90,10 @@ namespace projectweb.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
+        // =====================================
+        // EDIT
+        // =====================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -86,6 +107,7 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, Relative relative)
         {
             if (id != relative.RelativeId) return NotFound();
@@ -111,18 +133,10 @@ namespace projectweb.Controllers
             ViewBag.StudentsList = new SelectList(_db.Students, "StudentId", "FullName", relative.StudentId);
             return View(relative);
         }
-
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null) return NotFound();
-            var relative = await _db.Relatives
-                .Include(r => r.Person)
-                .Include(r => r.Student)
-                .FirstOrDefaultAsync(m => m.RelativeId == id);
-            if (relative == null) return NotFound();
-            return View(relative);
-        }
-
+        // =====================================
+        // DELETE
+        // =====================================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -136,6 +150,7 @@ namespace projectweb.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var relative = await _db.Relatives.FindAsync(id);

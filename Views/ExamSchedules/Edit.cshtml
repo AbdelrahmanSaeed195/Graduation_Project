@@ -23,23 +23,22 @@
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4 rounded-3 @(ViewData.ModelState.IsValid ? "d-none" : "")"></div>
 
                         <div class="row g-4">
-                            
+
                             <div class="col-md-7 mb-3">
                                 <label asp-for="ExamId" class="form-label fw-bold small text-muted mb-1">اسم المادة / الامتحان المقرر <span class="text-danger">*</span></label>
-                                <select asp-for="ExamId" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.ExamId" style="border-radius: 8px; font-size: 0.95rem;">
+                                <select asp-for="ExamId" id="ExamSelect" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.ExamId" style="border-radius: 8px; font-size: 0.95rem;">
                                 </select>
                                 <span asp-validation-for="ExamId" class="text-danger small mt-1 d-block"></span>
                             </div>
 
-                           
                             <div class="col-md-5 mb-3">
                                 <label class="form-label fw-bold small text-muted mb-1 text-center d-block">السنة الدراسية</label>
-                                <div class="p-2 border rounded-3 bg-light text-center fw-bold shadow-sm" style="font-size: 1.1rem; height: calc(3.5rem + 2px); display: flex; align-items: center; justify-content: center;">
+                                @* إضافة ID لهذا الحقل ليتم تحديثه عبر JavaScript *@
+                                <div id="AcademicYearDisplay" class="p-2 border rounded-3 bg-light text-center fw-bold shadow-sm" style="font-size: 1.1rem; height: calc(3.5rem + 2px); display: flex; align-items: center; justify-content: center;">
                                     @(Model.Exam?.TargetAcademicYear ?? "-")
                                 </div>
                             </div>
 
-                            @* اختيار اللجنة *@
                             <div class="col-12 mb-3">
                                 <label asp-for="CommitteeId" class="form-label fw-bold small text-muted mb-1">اللجنة المختصة <span class="text-danger">*</span></label>
                                 <select asp-for="CommitteeId" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.CommitteeId" style="border-radius: 8px; font-size: 0.95rem;">
@@ -47,7 +46,6 @@
                                 <span asp-validation-for="CommitteeId" class="text-danger small mt-1 d-block"></span>
                             </div>
 
-                            @* تنبيه للمستخدم *@
                             <div class="col-12">
                                 <div class="alert alert-info border-0 shadow-sm mb-0">
                                     <i class="bi bi-info-circle-fill me-2"></i>
@@ -77,4 +75,26 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        $(document).ready(function () {
+            $('#ExamSelect').change(function () {
+                // استخراج السنة الدراسية من النص الموجود داخل الـ Option المختار
+                // النص يكون بالتنسيق: "اسم المادة - التاريخ (السنة الدراسية)"
+                var selectedText = $(this).find("option:selected").text();
+                var academicYear = "-";
+
+                // البحث عن النص الموجود بين الأقواس
+                var regExp = /\(([^)]+)\)/;
+                var matches = regExp.exec(selectedText);
+
+                if (matches && matches.length > 1) {
+                    academicYear = matches[1];
+                }
+
+                // تحديث العرض في الصفحة
+                $('#AcademicYearDisplay').text(academicYear);
+            });
+        });
+    </script>
 }

@@ -6,92 +6,120 @@
 }
 
 <div class="row justify-content-center mt-5" dir="rtl">
-    <div class="col-xl-6">
+    <div class="col-xl-7 col-lg-8">
         <div class="card academic-card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
-            <div class="card-body p-4 bg-white">
-                <div class="text-center mb-4">
-                    <i class="bi bi-exclamation-octagon text-danger" style="font-size: 4rem;"></i>
-                    <h3 class="fw-bold mt-2" style="color: #1a2c4e;">تأكيد حذف الامتحان</h3>
-                </div>
+            @* رأس البطاقة الملون للتحذير *@
+            <div class="card-header bg-danger text-white p-4 border-0 text-center">
+                <i class="bi bi-exclamation-octagon-fill fs-1"></i>
+                <h3 class="fw-bold mt-2 text-white">تأكيد حذف السجل</h3>
+            </div>
 
-                @* فحص إذا كان الامتحان مرتبط بجداول توزيع (لجان) *@
+            <div class="card-body p-4 p-md-5 bg-white">
+
+                @* الحالة الأولى: الامتحان مرتبط بلجان (منع الحذف برمجياً) *@
                 @if (Model.ExamSchedules != null && Model.ExamSchedules.Any())
                 {
-                    <div class="alert alert-danger border-0 mb-4 shadow-sm" style="border-radius: 10px;">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-x-circle-fill fs-4 me-2"></i>
-                            <strong class="ms-2">عفواً، لا يمكن حذف هذا الامتحان حالياً.</strong>
+                    <div class="alert alert-danger border-0 mb-4 shadow-sm p-4" style="border-radius: 12px; border-right: 6px solid #dc3545 !important;">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-shield-lock-fill fs-3 me-2"></i>
+                            <strong class="fs-5 ms-2">إجراء محظور</strong>
                         </div>
-                        <p class="mb-0 small opacity-90 mt-2 ms-4">
-                            هذا الامتحان مرتبط بـ <strong>(@Model.ExamSchedules.Count)</strong> لجنة توزيع.
-                            يرجى حذف جداول توزيع اللجان المرتبطة بهذا الامتحان أولاً قبل محاولة حذفه.
+                        <p class="mb-0 lh-lg text-dark">
+                            لا يمكن حذف هذا الامتحان لوجود <strong>(@Model.ExamSchedules.Count)</strong> لجنة توزيع مرتبطة به.
+                            حذف الامتحان سيؤدي إلى كسر روابط الجداول والتقارير المرتبطة.
+                            <br>
+                            <span class="badge bg-danger mt-2">الإجراء المطلوب:</span> يجب إلغاء توزيع اللجان لهذا الامتحان أولاً.
                         </p>
                     </div>
                 }
+                @* الحالة الثانية: السجل نظيف وقابل للحذف *@
                 else
                 {
-                    <div class="alert alert-warning border-0 mb-4 shadow-sm" style="border-radius: 10px;">
-                        <div class="d-flex align-items-start gap-2">
-                            <i class="bi bi-exclamation-triangle-fill fs-4 text-warning"></i>
-                            <div>
-                                <strong class="text-dark">تحذير عملية حذف!</strong><br />
-                                <span class="small text-muted">
-                                    أنت على وشك حذف سجل امتحان مادة "<strong>@(Model.Subject?.SubjectName ?? "غير محدد")</strong>".
-                                    هذا الإجراء سيقوم بمسح كافة بيانات الامتحان نهائياً من النظام.
-                                </span>
-                            </div>
+                    <div class="alert alert-warning border-0 mb-4 shadow-sm p-4" style="border-radius: 12px; border-right: 6px solid #ffc107 !important;">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-exclamation-triangle-fill fs-3 text-warning me-2"></i>
+                            <strong class="text-dark fs-5 ms-2">تحذير نهائي</strong>
                         </div>
+                        <p class="mb-0 text-muted lh-lg">
+                            أنت على وشك حذف سجل امتحان مادة <strong>"@(Model.Subject?.SubjectName ?? "غير محدد")"</strong>.
+                            هذا الإجراء <strong>قطعي ولا يمكن التراجع عنه</strong> بعد التنفيذ.
+                        </p>
                     </div>
                 }
 
-                @* تفاصيل الامتحان المراد حذفه *@
-                <div class="row g-3 mb-4 text-center">
-                    <div class="col-4">
-                        <div class="rounded p-3 border shadow-sm" style="background-color: #f8f9fa;">
-                            <div class="small text-muted mb-1">المادة</div>
-                            <div class="fw-bold text-dark">@(Model.Subject?.SubjectName ?? "—")</div>
+                @* ملخص البيانات المختار حذفها *@
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="rounded p-3 border shadow-sm text-center bg-light h-100">
+                            <div class="small text-muted mb-1 fw-bold">المادة الدراسية</div>
+                            <div class="fw-bold text-navy">@(Model.Subject?.SubjectName ?? "—")</div>
                         </div>
                     </div>
-                    <div class="col-4">
-                        <div class="rounded p-3 border shadow-sm" style="background-color: #f8f9fa;">
-                            <div class="small text-muted mb-1">التاريخ</div>
+                    <div class="col-md-4">
+                        <div class="rounded p-3 border shadow-sm text-center bg-light h-100">
+                            <div class="small text-muted mb-1 fw-bold">تاريخ الامتحان</div>
                             <div class="fw-bold text-dark">@Model.ExamDate.ToString("yyyy/MM/dd")</div>
                         </div>
                     </div>
-                    <div class="col-4">
-                        <div class="rounded p-3 border shadow-sm" style="background-color: #f8f9fa;">
-                            <div class="small text-muted mb-1">اللجان المرتبطة</div>
+                    <div class="col-md-4">
+                        <div class="rounded p-3 border shadow-sm text-center bg-light h-100">
+                            <div class="small text-muted mb-1 fw-bold">الارتباطات</div>
                             <div class="fw-bold @(Model.ExamSchedules != null && Model.ExamSchedules.Any() ? "text-danger" : "text-success")">
-                                @(Model.ExamSchedules?.Count ?? 0) سجل
+                                <i class="bi bi-layers-half me-1"></i>
+                                @(Model.ExamSchedules?.Count ?? 0) لجنة
                             </div>
                         </div>
                     </div>
                 </div>
 
+                @* أزرار التحكم *@
                 <form asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="ExamId" />
 
                     <div class="d-flex justify-content-center gap-3 mt-4 pt-3 border-top">
-                        @* زر الحذف يظهر فقط إذا لم تكن هناك جداول مرتبطة *@
                         @if (Model.ExamSchedules == null || !Model.ExamSchedules.Any())
                         {
-                            <button type="submit" class="btn btn-danger px-5 fw-bold shadow-sm" style="border-radius: 8px;">
-                                <i class="bi bi-trash me-1"></i> نعم، احذف السجل
+                            <button type="submit" class="btn btn-danger px-5 py-2 fw-bold shadow-sm" style="border-radius: 8px;">
+                                <i class="bi bi-trash3-fill me-2"></i> تأكيد الحذف النهائي
                             </button>
                         }
                         else
                         {
-                            <button type="button" class="btn btn-secondary px-4 fw-bold shadow-sm" style="border-radius: 8px;" disabled>
-                                <i class="bi bi-lock-fill me-1"></i> الحذف معطل
+                            <button type="button" class="btn btn-secondary px-5 py-2 fw-bold shadow-sm opacity-75" style="border-radius: 8px;" disabled>
+                                <i class="bi bi-lock-fill me-2"></i> الحذف معطل
                             </button>
                         }
 
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4 shadow-sm" style="border-radius: 8px;">
-                            إلغاء وتراجع
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 border-0 fw-bold">
+                            تراجع والعودة للقائمة
                         </a>
                     </div>
                 </form>
             </div>
         </div>
+
+        <p class="text-center mt-3 text-muted small">
+            <i class="bi bi-info-circle me-1"></i> ملاحظة: كافة عمليات الحذف يتم تسجيلها في سجل مراقبة النظام لأغراض التدقيق.
+        </p>
     </div>
 </div>
+
+<style>
+    .text-navy {
+        color: #1a3a5a;
+    }
+
+    .academic-card {
+        transition: all 0.3s ease;
+    }
+
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+
+    .btn-danger:hover {
+        background-color: #bb2d3b;
+        transform: scale(1.02);
+    }
+</style>

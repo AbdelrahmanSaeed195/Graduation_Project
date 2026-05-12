@@ -23,6 +23,13 @@ namespace projectweb.Models
         [Display(Name = "بيانات الموقع")]
         public virtual Person Person { get; set; }
 
+        [Display(Name = "الطالب المعني")]
+        public int? StudentId { get; set; }
+
+        [ForeignKey("StudentId")]
+        [Display(Name = "بيانات الطالب")]
+        public virtual Student Student { get; set; }
+
         [Required(ErrorMessage = "يجب تحديد صفة الموقع")]
         [Display(Name = "الصفة في المحضر")]
         public int RoleID { get; set; }

@@ -8,20 +8,26 @@
 <div class="row justify-content-center" dir="rtl">
     <div class="col-xl-10">
         <div class="card academic-card mb-4 shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
-            <div class="card-header academic-card-header text-white p-4 d-flex justify-content-between align-items-center" style="background-color: #1a2c4e;">
-                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-info-circle-fill me-2"></i> بيانات الامتحان التفصيلية</h4>
-                <span class="badge bg-light fs-6 text-dark" style="border-radius: 8px;">كود الامتحان #@Model.ExamId</span>
+            @* رأس البطاقة *@
+            <div class="card-header academic-card-header text-white p-4 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
+                <div>
+                    <h4 class="mb-0 fw-bold text-white"><i class="bi bi-info-circle-fill me-2"></i> بيانات الامتحان التفصيلية</h4>
+                    <p class="mb-0 small text-white-50 mt-1">عرض المادة واللجان المرتبطة بها</p>
+                </div>
+                <span class="badge bg-white text-dark shadow-sm px-3 py-2 fs-6" style="border-radius: 8px;">كود الامتحان #@Model.ExamId</span>
             </div>
-            <div class="card-body p-4 bg-white">
 
-                <div class="row g-4 mb-4">
+            <div class="card-body p-4 p-md-5 bg-white">
+
+                @* القسم الأول: البيانات الأساسية *@
+                <div class="row g-4 mb-5">
                     <div class="col-md-4">
-                        <div class="bg-light rounded p-3 border shadow-sm">
+                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm">
                             <div class="small text-muted mb-1 fw-bold">المادة الدراسية</div>
-                            <div class="fw-bold fs-5 text-dark">
+                            <div class="fw-bold fs-5 text-navy">
                                 @if (Model.Subject != null)
                                 {
-                                    <i class="bi bi-book me-1 text-primary"></i>
+                                    <i class="bi bi-journal-bookmark-fill me-1 text-primary"></i>
                                     @Model.Subject.SubjectName
                                 }
                                 else
@@ -32,72 +38,72 @@
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="bg-light rounded p-3 border shadow-sm">
+                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm text-center">
                             <div class="small text-muted mb-1 fw-bold">تاريخ الامتحان</div>
                             <div class="fw-bold fs-5 text-dark">
-                                <i class="bi bi-calendar-event me-1 text-primary"></i> @Model.ExamDate.ToString("yyyy/MM/dd")
+                                <i class="bi bi-calendar3 me-1 text-primary"></i> @Model.ExamDate.ToString("yyyy/MM/dd")
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="bg-light rounded p-3 border shadow-sm">
+                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm text-center">
                             <div class="small text-muted mb-1 fw-bold">السنة الدراسية</div>
-                            <div class="fw-bold fs-5 text-dark">
-                                <span class="badge bg-info text-dark px-3 py-2 fs-6" style="border-radius: 8px;">@Model.TargetAcademicYear</span>
-                            </div>
+                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fs-6 mt-1" style="border: 1px solid rgba(13, 110, 253, 0.2); border-radius: 8px;">@Model.TargetAcademicYear</span>
                         </div>
                     </div>
 
+                    @* وقت الامتحان *@
                     <div class="col-md-6">
-                        <div class="bg-light rounded p-3 border shadow-sm text-center">
-                            <div class="small text-muted mb-1 fw-bold">وقت البدء</div>
-                            <div class="fw-bold fs-4 text-dark">
-                                @{
-                                    var startTime = DateTime.Today.Add(Model.StartTime);
-                                }
-                                <i class="bi bi-clock me-1 text-info"></i> @startTime.ToString("hh:mm tt")
+                        <div class="p-3 border rounded bg-white shadow-sm border-info text-center" style="border-width: 2px !important;">
+                            <div class="small text-muted mb-1 fw-bold text-info">موعد البدء</div>
+                            <div class="fw-bold fs-3 text-dark">
+                                <i class="bi bi-clock me-1"></i> @DateTime.Today.Add(Model.StartTime).ToString("hh:mm tt")
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="bg-light rounded p-3 border shadow-sm text-center">
-                            <div class="small text-muted mb-1 fw-bold">وقت الانتهاء</div>
-                            <div class="fw-bold fs-4 text-dark">
-                                @{
-                                    var endTime = DateTime.Today.Add(Model.EndTime);
-                                }
-                                <i class="bi bi-clock-fill me-1 text-info"></i> @endTime.ToString("hh:mm tt")
+                        <div class="p-3 border rounded bg-white shadow-sm border-info text-center" style="border-width: 2px !important;">
+                            <div class="small text-muted mb-1 fw-bold text-info">موعد الانتهاء</div>
+                            <div class="fw-bold fs-3 text-dark">
+                                <i class="bi bi-clock-fill me-1"></i> @DateTime.Today.Add(Model.EndTime).ToString("hh:mm tt")
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <h5 class="fw-bold border-bottom pb-2 mb-3 mt-5" style="color: #1a2c4e;">
-                    <i class="bi bi-table me-2"></i> لجان التوزيع المسجلة لهذا الامتحان
-                </h5>
+                @* القسم الثاني: جدول اللجان فقط *@
+                <div class="border-bottom pb-2 mb-3 mt-4">
+                    <h5 class="fw-bold mb-0 text-navy">
+                        <i class="bi bi-diagram-3-fill me-2"></i> توزيع اللجان (@(Model.ExamSchedules?.Count ?? 0))
+                    </h5>
+                </div>
 
                 @if (Model.ExamSchedules != null && Model.ExamSchedules.Any())
                 {
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle border">
-                            <thead class="table-dark">
-                                <tr class="text-center">
+                    <div class="table-responsive rounded shadow-sm border">
+                        <table class="table table-hover align-middle mb-0 text-center academic-table">
+                            <thead class="bg-light">
+                                <tr>
                                     <th>كود الجلسة</th>
-                                    <th>اللجنة</th>
-                                    <th>الإجراء</th>
+                                    <th>رقم اللجنة</th>
+                                    <th>الموقع (الصالة/البلوك)</th>
+                                    <th>الإجراءات</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var s in Model.ExamSchedules)
                                 {
-                                    <tr class="text-center">
-                                        <td class="fw-bold text-muted">#@s.ExamScheduleId</td>
-                                        <td class="fw-bold text-primary">
-                                            @(s.Committee != null ? $"لجنة {s.Committee.CommitteeNumber}" : "غير محدد")
+                                    <tr>
+                                        <td class="fw-bold text-muted small">#@s.ExamScheduleId</td>
+                                        <td><span class="fw-bold text-navy fs-6">لجنة @s.Committee?.CommitteeNumber</span></td>
+                                        <td class="small text-muted">
+                                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                            @(s.Committee?.Block?.Hall?.HallName) - @(s.Committee?.Block?.BlockName)
                                         </td>
                                         <td>
-                                            <a asp-controller="ExamSchedules" asp-action="Details" asp-route-id="@s.ExamScheduleId" class="btn btn-sm btn-outline-primary shadow-sm" style="border-radius: 6px;">
-                                                <i class="bi bi-eye"></i> عرض اللجنة
+                                            <a asp-controller="ExamSchedules" asp-action="Details" asp-route-id="@s.ExamScheduleId"
+                                               class="btn btn-sm btn-outline-primary px-3 py-1 fw-bold" style="border-radius: 6px;">
+                                                <i class="bi bi-eye-fill"></i> تفاصيل اللجنة
                                             </a>
                                         </td>
                                     </tr>
@@ -108,19 +114,55 @@
                 }
                 else
                 {
-                    <div class="alert alert-secondary border-0 text-center shadow-sm" style="background-color: #f8f9fa;">
-                        <i class="bi bi-info-circle me-1"></i> لا توجد لجان موزعة لهذا الامتحان بعد.
-                        يمكنك إضافة توزيع جديد من قائمة "توزيع اللجان".
+                    <div class="text-center p-5 border rounded bg-light bg-opacity-25 border-dashed">
+                        <i class="bi bi-calendar-x fs-1 text-muted opacity-25"></i>
+                        <p class="text-muted mt-2 mb-0 fw-bold">لا توجد لجان موزعة لهذا الامتحان بعد.</p>
                     </div>
                 }
 
-                <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
-                    <a asp-action="Edit" asp-route-id="@Model.ExamId" class="btn btn-academic-primary px-5 fw-bold shadow-sm" style="background-color: #1a2c4e; color: white; border-radius: 8px;">
-                        <i class="bi bi-pencil-square me-1"></i> تعديل بيانات الامتحان
+                @* أزرار التحكم *@
+                <div class="d-flex flex-wrap gap-2 mt-5 pt-4 border-top">
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.ExamId" class="btn btn-academic-primary px-5 fw-bold shadow-sm py-2">
+                            <i class="bi bi-pencil-square me-1"></i> تعديل بيانات الامتحان
+                        </a>
+                    }
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4 shadow-sm py-2 border-0">
+                        <i class="bi bi-arrow-right me-1"></i> العودة للقائمة
                     </a>
-                    <a asp-action="Index" class="btn btn-outline-secondary px-4 shadow-sm" style="border-radius: 8px;">العودة للقائمة</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .text-navy {
+        color: #1a3a5a;
+    }
+
+    .border-dashed {
+        border-style: dashed !important;
+        border-width: 2px !important;
+    }
+
+    .academic-table thead th {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .btn-academic-primary {
+        background-color: #1a3a5a;
+        color: white;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+        .btn-academic-primary:hover {
+            background-color: #2e5a88;
+            color: white;
+            transform: translateY(-2px);
+        }
+</style>

@@ -8,63 +8,58 @@
 <div class="row justify-content-center" dir="rtl">
     <div class="col-xl-8">
         <div class="card academic-card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
-            <div class="card-header academic-card-header text-white p-4" style="background-color: #1a2c4e;">
+            <div class="card-header academic-card-header text-white p-4" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
                 <h4 class="mb-0 fw-bold text-white"><i class="bi bi-plus-square-fill me-2"></i> إضافة امتحان جديد</h4>
             </div>
             <div class="card-body p-4" style="background-color: #ffffff;">
 
-                <!-- رسالة تنبيه لخطأ الوقت أو التداخل تظهر وتختفي ديناميكياً -->
-                <div id="timeError" class="alert alert-danger border-0 shadow-sm mb-4" style="display:none;">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    <span id="timeErrorMessage"></span>
+                <div id="timeError" class="alert alert-danger border-0 shadow-sm mb-4" style="display:none; border-radius: 10px;">
+                    <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>
+                    <span id="timeErrorMessage" class="fw-bold"></span>
                 </div>
 
                 <form asp-action="Create" method="post" id="examForm">
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3 border-0 shadow-sm" style="border-radius: 8px;"></div>
 
                     <div class="row g-4 mb-4">
                         <div class="col-md-6">
                             <label asp-for="SubjectID" class="form-label fw-bold" style="color: #4a5568;">المادة الدراسية <span class="text-danger">*</span></label>
-                            <select asp-for="SubjectID" id="SubjectSelect" asp-items="@(ViewBag.SubjectID)" class="form-select border-light-subtle shadow-sm" style="border-radius: 8px;">
+                            <select asp-for="SubjectID" id="SubjectSelect" asp-items="@(ViewBag.SubjectID)" class="form-select border-light-subtle shadow-sm academic-input" style="border-radius: 8px;">
                                 <option value="">-- اختر المادة --</option>
                             </select>
-                            <span asp-validation-for="SubjectID" class="text-danger small mt-1 d-block"></span>
+                            <span asp-validation-for="SubjectID" class="text-danger small mt-1 d-block fw-bold"></span>
                         </div>
 
                         <div class="col-md-6">
                             <label asp-for="TargetAcademicYear" class="form-label fw-bold" style="color: #4a5568;">السنة الدراسية <span class="text-muted small">(تُجلب تلقائياً)</span></label>
-                            <input asp-for="TargetAcademicYear" id="AcademicYearField" class="form-control bg-light shadow-sm" readonly style="border-radius: 8px;" placeholder="سيتم تحديد السنة بناءً على المادة" />
-                            <span asp-validation-for="TargetAcademicYear" class="text-danger small mt-1 d-block"></span>
-                        </div>
-
-                        <div class="col-md-12">
-                            <hr />
-                        </div>
+                            <input asp-for="TargetAcademicYear" id="AcademicYearField" class="form-control bg-light shadow-sm fw-bold text-navy" readonly style="border-radius: 8px;" placeholder="بانتظار اختيار المادة..." />
+                        </div>                        
 
                         <div class="col-md-4">
                             <label asp-for="ExamDate" class="form-label fw-bold" style="color: #4a5568;">تاريخ الامتحان <span class="text-danger">*</span></label>
-                            <input asp-for="ExamDate" id="ExamDate" class="form-control border-light-subtle shadow-sm" type="date" style="border-radius: 8px;" />
-                            <span asp-validation-for="ExamDate" class="text-danger small mt-1 d-block"></span>
+                            <input asp-for="ExamDate" id="ExamDate" class="form-control border-light-subtle shadow-sm academic-input" type="date" style="border-radius: 8px;" />
+                            <span asp-validation-for="ExamDate" class="text-danger small mt-1 d-block fw-bold"></span>
                         </div>
 
                         <div class="col-md-4">
                             <label asp-for="StartTime" class="form-label fw-bold" style="color: #4a5568;">وقت البدء <span class="text-danger">*</span></label>
-                            <input asp-for="StartTime" id="StartTime" class="form-control border-light-subtle shadow-sm text-center" type="time" style="border-radius: 8px;" />
-                            <span asp-validation-for="StartTime" class="text-danger small mt-1 d-block"></span>
+                            <input asp-for="StartTime" id="StartTime" class="form-control border-light-subtle shadow-sm text-center fw-bold academic-input" type="time" style="border-radius: 8px;" />
+                            <span asp-validation-for="StartTime" class="text-danger small mt-1 d-block fw-bold"></span>
                         </div>
 
                         <div class="col-md-4">
                             <label asp-for="EndTime" class="form-label fw-bold" style="color: #4a5568;">وقت الانتهاء <span class="text-danger">*</span></label>
-                            <input asp-for="EndTime" id="EndTime" class="form-control border-light-subtle shadow-sm text-center" type="time" style="border-radius: 8px;" />
-                            <span asp-validation-for="EndTime" class="text-danger small mt-1 d-block"></span>
+                            <input asp-for="EndTime" id="EndTime" class="form-control border-light-subtle shadow-sm text-center fw-bold academic-input" type="time" style="border-radius: 8px;" />
+                            <span asp-validation-for="EndTime" class="text-danger small mt-1 d-block fw-bold"></span>
                         </div>
                     </div>
 
                     <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
-                        <button type="submit" id="submitBtn" class="btn btn-academic-primary px-5 fw-bold shadow-sm" style="background-color: #1a2c4e; color: white; border-radius: 8px;">
+                        <button type="submit" id="submitBtn" class="btn btn-academic-primary px-5 fw-bold shadow-sm py-2">
                             <i class="bi bi-check-circle me-1"></i> حفظ الامتحان
                         </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4 shadow-sm" style="border-radius: 8px;">إلغاء</a>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4 shadow-sm py-2 border-0">إلغاء</a>
                     </div>
                 </form>
             </div>
@@ -77,14 +72,13 @@
 
     <script>
         $(document).ready(function () {
-            // 1. جلب السنة الدراسية تلقائياً
             $('#SubjectSelect').change(function () {
                 var subjectId = $(this).val();
                 if (subjectId) {
                     $.ajax({
-                        url: '/Exams/GetSubjectDetails',
+                        url: '/Exams/GetSubjectYear', 
                         type: 'GET',
-                        data: { id: subjectId },
+                        data: { subjectId: subjectId },
                         success: function (data) {
                             if (data) {
                                 $('#AcademicYearField').val(data.academicYear);
@@ -96,8 +90,7 @@
                 }
             });
 
-            // 2. دالة للتحقق من تداخل المواعيد عبر Ajax
-            function checkOverlap() {
+            function checkConstraints() {
                 var date = $('#ExamDate').val();
                 var start = $('#StartTime').val();
                 var end = $('#EndTime').val();
@@ -106,17 +99,25 @@
                 var submitBtn = $('#submitBtn');
 
                 if (date && start && end) {
-                    // التحقق أولاً من أن وقت النهاية بعد وقت البدء
-                    if (end <= start) {
+                    var startTime = new Date("1970-01-01 " + start);
+                    var endTime = new Date("1970-01-01 " + end);
+                    var diffMinutes = (endTime - startTime) / (1000 * 60);
+
+                    if (diffMinutes <= 0) {
                         errorMessage.text("خطأ: يجب أن يكون وقت انتهاء الامتحان بعد وقت البدء.");
                         errorDiv.fadeIn();
                         submitBtn.attr('disabled', 'disabled');
                         return;
                     }
 
-                    // التحقق من التداخل في قاعدة البيانات
-                    $.get('/Exams/CheckTimeOverlap', { date: date, start: start, end: end }, function (data) {
-                        if (data.overlap) {
+                    if (diffMinutes > 180) {
+                        errorMessage.text("عفواً، لا يمكن أن تتجاوز مدة الامتحان 3 ساعات كحد أقصى. (المدة الحالية: " + (diffMinutes/60).toFixed(1) + " ساعة)");
+                        errorDiv.fadeIn();
+                        submitBtn.attr('disabled', 'disabled');
+                        return;
+                    }
+                    $.get('/Exams/CheckConstraints', { date: date, start: start, end: end }, function (data) {
+                        if (data.isOverlapping) {
                             errorMessage.text("تنبيه: يوجد امتحان آخر مسجل في نفس هذا الموعد والتاريخ.");
                             errorDiv.fadeIn();
                             submitBtn.attr('disabled', 'disabled');
@@ -128,22 +129,48 @@
                 }
             }
 
-            // تشغيل الفحص عند تغيير التاريخ أو الأوقات
-            $('#ExamDate, #StartTime, #EndTime').change(function () {
-                checkOverlap();
+            $('#ExamDate, #StartTime, #EndTime').on('change', function () {
+                checkConstraints();
             });
 
-            // 3. التحقق النهائي عند الإرسال (Back-up validation)
             $('#examForm').submit(function (e) {
                 var start = $('#StartTime').val();
                 var end = $('#EndTime').val();
-                if (start && end && end <= start) {
-                    e.preventDefault();
-                    $('#timeErrorMessage').text("خطأ في المواعيد: يجب أن يكون وقت انتهاء الامتحان لاحقاً لوقت البدء.");
-                    $('#timeError').fadeIn();
-                    $('html, body').animate({ scrollTop: 0 }, 'slow');
+                if (start && end) {
+                    var st = new Date("1970-01-01 " + start);
+                    var et = new Date("1970-01-01 " + end);
+                    var duration = (et - st) / (1000 * 60);
+                    if (duration > 180 || duration <= 0) {
+                        e.preventDefault();
+                        alert("لا يمكن الحفظ: يرجى التأكد من أن المدة لا تتجاوز 3 ساعات وأن وقت النهاية بعد وقت البدء.");
+                        return false;
+                    }
                 }
             });
         });
     </script>
+
+    <style>
+        .text-navy {
+            color: #1a3a5a;
+        }
+
+        .academic-input:focus {
+            border-color: #1a3a5a;
+            box-shadow: 0 0 0 0.25rem rgba(26, 58, 90, 0.1);
+        }
+
+        .btn-academic-primary {
+            background-color: #1a3a5a;
+            color: white;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+            .btn-academic-primary:hover {
+                background-color: #2e5a88;
+                color: white;
+                transform: translateY(-2px);
+            }
+    </style>
 }

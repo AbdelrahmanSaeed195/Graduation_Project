@@ -29,7 +29,7 @@ namespace projectweb.Models
             base.OnModelCreating(modelBuilder);
 
             /* =======================================================
-               1. Seed Data (Roles)
+               1. Seed Data (ادوار )
             ======================================================= */
             modelBuilder.Entity<Role>().HasData(
                 new Role { RoleID = 1, RoleName = StaffPosition.HallManager, RoleDescription = "رئيس صالة" },
@@ -39,19 +39,16 @@ namespace projectweb.Models
                 new Role { RoleID = 5, RoleName = StaffPosition.Nurse, RoleDescription = "ممرض" }
             );
 
-            /* =======================================================
-               2. CommitteesAssignment Configuration (The Critical Fix)
-            ======================================================= */
-            // ضبط المفتاح الأساسي ليكون AssignmentID فقط (تم إزالة المفتاح المركب القديم)
+            // CommitteesAssignment Configuration
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasKey(ca => ca.AssignmentID);
 
-            // منع تكرار الموظف في نفس الجلسة لضمان عدم التضارب
+          
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasIndex(ca => new { ca.PersonID, ca.ExamScheduleId })
                 .IsUnique();
 
-            // علاقات التكليف الأساسية
+          
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasOne(ca => ca.Person)
                 .WithMany(p => p.CommitteesAssignments)
@@ -70,7 +67,7 @@ namespace projectweb.Models
                 .HasForeignKey(ca => ca.RoleID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ضبط نطاقات المسئولية لتكون اختيارية (تسمح بـ NULL) لحل مشكلة SqlException
+          
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasOne(ca => ca.Hall)
                 .WithMany()
@@ -92,11 +89,9 @@ namespace projectweb.Models
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            /* =======================================================
-               3. Other Entity Relationships
-            ======================================================= */
 
-            // Relatives Relationships
+
+            // Relatives Configuration
             modelBuilder.Entity<Relative>()
                 .HasOne(r => r.Student)
                 .WithMany(s => s.Relatives)
@@ -109,7 +104,7 @@ namespace projectweb.Models
                 .HasForeignKey(r => r.PersonId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Hall & Infrastructure
+            // Hall & Block & Committee Configuration 
             modelBuilder.Entity<Hall>()
                 .HasOne(h => h.HallSupervisor)
                 .WithMany()
@@ -141,18 +136,19 @@ namespace projectweb.Models
                 .HasForeignKey(es => es.CommitteeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // التأكد من عدم حجز نفس اللجنة في نفس التاريخ مرتين
+            
             modelBuilder.Entity<ExamSchedule>()
                 .HasIndex(e => new { e.ScheduledDate, e.CommitteeId })
                 .IsUnique();
 
-            // Reports & Signatures
+            // Report Configuration
             modelBuilder.Entity<Report>()
                 .HasOne(r => r.ExamSchedule)
                 .WithMany(es => es.Reports)
                 .HasForeignKey(r => r.ScheduleID)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // ReportPerson Configuration
             modelBuilder.Entity<ReportPerson>()
                 .HasKey(rp => new { rp.ReportID, rp.PersonID });
 

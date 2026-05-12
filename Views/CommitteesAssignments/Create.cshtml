@@ -25,7 +25,6 @@
                         <span asp-validation-for="PersonID" class="text-danger small"></span>
                     </div>
 
-                    @* جلسة الامتحان *@
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold text-dark"><i class="bi bi-calendar-check me-1"></i> جلسة الامتحان</label>
                         <select asp-for="ExamScheduleId" class="form-select shadow-sm border-light-subtle" asp-items="ViewBag.ExamScheduleId">
@@ -34,7 +33,6 @@
                         <span asp-validation-for="ExamScheduleId" class="text-danger small"></span>
                     </div>
 
-                    @* الدور في اللجنة *@
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold text-dark"><i class="bi bi-briefcase me-1"></i> الدور في اللجنة</label>
                         <select asp-for="RoleID" id="roleSelect" class="form-select shadow-sm border-light-subtle" asp-items="ViewBag.RoleID">
@@ -48,7 +46,6 @@
                             <i class="bi bi-geo-alt-fill me-1"></i> تحديد نطاق المسئولية 
                         </h6>
                         <div class="row">
-                            @* قائمة الصالات - الماستر *@
                             <div class="col-md-4 mb-2">
                                 <label class="small text-muted fw-bold d-block mb-1">صالة كاملة</label>
                                 <select asp-for="HallId" id="hallSelect" class="form-select form-select-sm shadow-sm" asp-items="ViewBag.HallId">
@@ -57,7 +54,6 @@
                                 <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">(رئيس صالة / دكتور / ممرض)</small>
                             </div>
 
-                            @* قائمة البلوكات - تابعة للصالة *@
                             <div class="col-md-4 mb-2">
                                 <label class="small text-muted fw-bold d-block mb-1">بلوك محدد</label>
                                 <select asp-for="BlockId" id="blockSelect" class="form-select form-select-sm shadow-sm" asp-items="ViewBag.BlockId">

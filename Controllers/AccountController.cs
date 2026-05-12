@@ -16,24 +16,27 @@ namespace projectweb.Controllers
             UserManager = userManager;
             SignInManager = signInManager;
         }
+        //================================================
+        // 1. Register
+        // ================================================
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
         [HttpPost]
-        public async Task< IActionResult> Register(RegisterViewModel Aaccount)
+        public async Task< IActionResult> Register(RegisterViewModel Account)
         {
             if (ModelState.IsValid == true)
             {
-                IdentityUser user=new IdentityUser();
+                IdentityUser user= new IdentityUser();
 
-                user.UserName = Aaccount.FullName;
-                user.Email = Aaccount.Email;
-                user.PhoneNumber = Aaccount.PhoneNumber;
+                user.UserName = Account.FullName;
+                user.Email = Account.Email;
+                user.PhoneNumber = Account.PhoneNumber;
                 
 
-              var resalt=  await UserManager.CreateAsync(user, Aaccount.Password);
+              var resalt=  await UserManager.CreateAsync(user, Account.Password);
                 if (resalt.Succeeded)
                 {
                     await SignInManager.SignInAsync(user, false);
@@ -47,8 +50,11 @@ namespace projectweb.Controllers
                     }
                 }
             }
-            return View(Aaccount);
+            return View(Account);
         }
+        //================================================
+        // 2. Login
+        // ================================================
         [HttpGet]
         public IActionResult Login()
         {
@@ -82,11 +88,17 @@ namespace projectweb.Controllers
             }
             return View(login);
         }
+        //================================================
+        // 3. Logout
+        // ================================================
         public async Task<IActionResult> Logout()
         {
             await SignInManager.SignOutAsync();
             return RedirectToAction("Login","Account");
         }
+        //================================================
+        // 4. Register to Admin
+        // ================================================
         [HttpGet]
         public IActionResult AddAdmin()
         {

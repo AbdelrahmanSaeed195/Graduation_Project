@@ -93,10 +93,12 @@
         </div>
 
         <div class="card-footer bg-light border-0 d-flex justify-content-center gap-3 py-4" style="border-radius: 0 0 15px 15px;">
-            <a asp-action="Edit" asp-route-id="@Model.AssignmentID" class="btn btn-primary px-5 shadow-sm btn-hover-effect">
+            @if (User.IsInRole("Admin"))
+           {
+                <a asp-action="Edit" asp-route-id="@Model.AssignmentID" class="btn btn-primary px-5 shadow-sm btn-hover-effect">
                 <i class="bi bi-pencil-square me-1"></i> تعديل التكليف
-            </a>
-
+                 </a>
+           }
             <a asp-action="Index" asp-route-examId="@Model.ExamSchedule?.ExamId" class="btn btn-outline-dark px-5 shadow-sm bg-white btn-hover-effect-outline">
                 <i class="bi bi-arrow-right-circle me-1"></i> العودة للجدول
             </a>

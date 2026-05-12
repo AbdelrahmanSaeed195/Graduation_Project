@@ -32,7 +32,7 @@
 
                 <div class="p-4">
                     <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3">
-                        <i class="bi bi-collection-fill me-2"></i> البلوكات (الأجزاء) التابعة
+                        <i class="bi bi-collection-fill me-2"></i> البلوكات التابعة
                     </h5>
 
                     @if (Model.Blocks != null && Model.Blocks.Any())
@@ -73,9 +73,12 @@
 
 
                 <div class="card-footer bg-light p-3 d-flex justify-content-end gap-2">
-                    <a asp-action="Edit" asp-route-id="@Model.HallId" class="btn btn-academic-primary px-4 fw-bold">
-                        <i class="bi bi-pencil-square me-1"></i> تعديل
-                    </a>
+                    @if(User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.HallId" class="btn btn-academic-primary px-4 fw-bold">
+                            <i class="bi bi-pencil-square me-1"></i> تعديل
+                        </a>
+                    }
                     <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
                 </div>
             </div>

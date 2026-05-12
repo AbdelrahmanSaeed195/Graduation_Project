@@ -36,7 +36,6 @@
                 </h5>
 
                 <div class="row g-4 mb-4">
-                    @* الموقع: القاعة والبلوك *@
                     <div class="col-md-4">
                         <div class="data-panel h-100 p-3 rounded border shadow-sm" style="background-color: #f8f9fa;">
                             <div class="panel-label text-muted small fw-bold mb-1">الموقع (القاعة / البلوك)</div>
@@ -47,7 +46,6 @@
                         </div>
                     </div>
 
-                    @* السعة الطلابية *@
                     <div class="col-md-4">
                         <div class="data-panel h-100 p-3 rounded border shadow-sm" style="background-color: #f8f9fa;">
                             <div class="panel-label text-muted small fw-bold mb-1">السعة الطلابية القصوى</div>
@@ -56,8 +54,6 @@
                             </div>
                         </div>
                     </div>
-
-                    @* عدد الطلاب الفعلي *@
                     <div class="col-md-4">
                         <div class="data-panel h-100 p-3 rounded border shadow-sm" style="background-color: #f8f9fa;">
                             <div class="panel-label text-muted small fw-bold mb-1">الطلاب الموزعين حالياً</div>
@@ -106,13 +102,14 @@
                             }
                         </div>
                     </div>
-                </div>
-
-                @* أزرار التحكم *@
+                </div>            
                 <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
-                    <a asp-action="Edit" asp-route-id="@Model.CommitteeID" class="btn px-4 fw-bold text-white shadow-sm" style="background-color: #1a2c4e; border-radius: 8px;">
-                        <i class="bi bi-pencil-square me-1"></i> تعديل البيانات
-                    </a>
+                    @if (User.IsInRole("Admin"))
+                      {
+                             <a asp-action="Edit" asp-route-id="@Model.CommitteeID" class="btn px-4 fw-bold text-white shadow-sm" style="background-color: #1a2c4e; border-radius: 8px;">
+                             <i class="bi bi-pencil-square me-1"></i> تعديل البيانات
+                            </a>
+                       }
                     <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-bold shadow-sm" style="border-radius: 8px;">
                         العودة للقائمة
                     </a>

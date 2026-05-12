@@ -1,4 +1,6 @@
 ﻿@model IEnumerable<projectweb.Models.CommitteesAssignment>
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
 
 <div class="container-fluid mt-4 px-4 text-end" dir="rtl">
 
@@ -9,7 +11,6 @@
         </div>
 
         <div class="d-flex gap-2 align-items-end">
-            @* نظام الفلترة والبحث بالامتحان والمستوى *@
             <form asp-action="Index" method="get" class="d-flex gap-2 align-items-end border p-2 rounded bg-light shadow-sm">
                 <div>
                     <label class="small fw-bold d-block mb-1 text-muted">البحث بالامتحان:</label>
@@ -26,19 +27,18 @@
                     </select>
                 </div>
             </form>
-
-            @* التعديل هنا: الزر يوجه لصفحة الاختيار اليدوي (صالة + امتحان) *@
-            <a asp-action="ConfirmAutoAssign" class="btn btn-success shadow-sm fw-bold">
-                <i class="bi bi-robot me-1"></i> تشغيل التوزيع التلقائي
-            </a>
-
-            <a asp-action="Create" class="btn text-white shadow-sm fw-bold" style="background-color: #1a3a5a;">
-                <i class="bi bi-plus-circle me-1"></i> إضافة تكليف يدوي
-            </a>
+             @if (User.IsInRole("Admin"))
+            {
+                    <a asp-action="ConfirmAutoAssign" class="btn btn-success shadow-sm fw-bold">
+                    <i class="bi bi-robot me-1"></i> تشغيل التوزيع التلقائي
+                     </a>
+                    <a asp-action="Create" class="btn text-white shadow-sm fw-bold" style="background-color: #1a3a5a;">
+                     <i class="bi bi-plus-circle me-1"></i> إضافة تكليف يدوي
+                    </a>
+             }
         </div>
     </div>
 
-    @* رسائل النجاح أو التنبيه بالخطأ *@
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success shadow-sm border-0 alert-dismissible fade show text-end" style="border-radius: 10px;">
@@ -72,7 +72,18 @@
                     <tr>
                         <td class="fw-bold py-3">
                             <div class="text-dark">@item.Person.FullName</div>
-                            <div class="small text-muted fw-normal">@item.Person.JobRole</div>
+                            @* --- الجزء المضاف لعرض المسمى الوظيفي بالعربي --- *@
+                            <div class="small text-primary fw-bold" style="font-size: 0.75rem;">
+                                @{
+                                    var jobEnum = item.Person.JobRole;
+                                    var arabicName = jobEnum.GetType()
+                                        .GetMember(jobEnum.ToString())
+                                        .FirstOrDefault()?
+                                        .GetCustomAttribute<DisplayAttribute>()?
+                                        .GetName() ?? jobEnum.ToString();
+                                }
+                                <i class="bi bi-briefcase me-1"></i> @arabicName
+                            </div>
                         </td>
 
                         <td>
@@ -138,9 +149,13 @@
 
                         <td>
                             <div class="d-flex justify-content-center gap-1">
-                                <a asp-action="Edit" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-secondary border shadow-sm" title="تعديل"><i class="bi bi-pencil"></i></a>
                                 <a asp-action="Details" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-info border shadow-sm" title="تفاصيل"><i class="bi bi-eye"></i></a>
-                              <a asp-action="Delete" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-danger border shadow-sm" title="حذف"><i class="bi bi-trash"></i></a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                   <a asp-action="Edit" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-secondary border shadow-sm" title="تعديل"><i class="bi bi-pencil"></i></a>
+                                   <a asp-action="Delete" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-danger border shadow-sm" title="حذف"><i class="bi bi-trash"></i></a>
+
+                                }
                             </div>
                         </td>
                     </tr>

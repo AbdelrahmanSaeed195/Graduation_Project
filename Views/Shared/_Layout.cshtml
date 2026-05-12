@@ -8,7 +8,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - إدارة لجان الامتحانات</title>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
@@ -52,12 +51,19 @@
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button">
-                                إعداد الامتحانات
+                                 اماكن الامتحانات
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" asp-controller="Halls" asp-action="Index"> القاعات</a></li>
                                 <li><a class="dropdown-item" asp-controller="Blocks" asp-action="Index"> الأقسام</a></li>
                                 <li><a class="dropdown-item" asp-controller="Committees" asp-action="Index"> اللجان</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button">
+                                إعداد الامتحانات
+                            </a>
+                            <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" asp-controller="Exams" asp-action="Index"> الامتحانات</a></li>
                                 <li><a class="dropdown-item" asp-controller="ExamSchedules" asp-action="Index"> جدول توزيع اللجان </a></li>
                                 <li><a class="dropdown-item" asp-controller="Subjects" asp-action="Index"> المواد الدراسية</a></li>
