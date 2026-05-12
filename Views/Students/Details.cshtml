@@ -56,7 +56,13 @@
                                 <ul class="mb-0 mt-2 text-dark">
                                     @foreach(var rel in Model.Relatives)
                                     {
-                                        <li>@(rel.Person != null ? rel.Person.FullName : "غير معروف")</li>
+                                        <li>
+                                            @(rel.Person != null ? rel.Person.FullName : "غير معروف")
+                                            @if (!string.IsNullOrEmpty(rel.RelationType))
+                                            {
+                                                <span class="badge bg-secondary ms-1">@rel.RelationType</span>
+                                            }
+                                        </li>
                                     }
                                 </ul>
                             </div>
@@ -70,7 +76,7 @@
                         <a asp-action="Edit" asp-route-id="@Model.StudentId" class="btn btn-academic-primary px-4 fw-bold">
                             <i class="bi bi-pencil-square"></i> تعديل
                         </a>
-                        <a asp-action="Delete" asp-route-id="@Model.StudentId" class="btn btn-danger px-4" onclick="return confirm('تأكيد مسح بيانات الطالب؟');">
+                        <a asp-action="Delete" asp-route-id="@Model.StudentId" class="btn btn-danger px-4">
                             <i class="bi bi-trash"></i> حذف
                         </a>
                     }

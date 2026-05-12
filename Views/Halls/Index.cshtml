@@ -41,6 +41,7 @@
                         <th>اسم الصالة / القاعة</th>
                         <th class="text-center">الدور</th>
                         <th class="text-center">السعة (أقصى بلوكات)</th>
+                        <th class="text-center">رئيس اللجنة</th>
                         <th class="text-center">البلوكات الحالية</th>
                         <th class="text-center pe-4">الإجراءات</th>
                     </tr>
@@ -60,6 +61,18 @@
                                 </td>
                                 <td class="text-center fw-bold">
                                     @item.MaxBlocks
+                                </td>
+                                <td class="text-center">
+                                    @if (item.HallSupervisor != null)
+                                    {
+                                        <span class="fw-bold" style="color: var(--primary-navy);">
+                                            <i class="bi bi-person-fill me-1"></i> @item.HallSupervisor.FullName
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">لم يتم التعيين بعد</span>
+                                    }
                                 </td>
                                 <td class="text-center">
                                     <span class="badge @(item.Blocks != null && item.Blocks.Any() ? "bg-success" : "bg-secondary") px-3 py-2">

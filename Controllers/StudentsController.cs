@@ -223,24 +223,23 @@ namespace projectweb.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (id == null)
-            {
-                return BadRequest();
-            }
-
-           
-            var student = await _context.Students
-                .Include(s => s.Relatives)
-                .Include(s => s.ExamSchedule)
-                    .ThenInclude(e => e.Committee)
-                .FirstOrDefaultAsync(m => m.StudentId == id);
-
+            var student = await _context.Students.FindAsync(id);
             if (student == null)
             {
                 return NotFound();
             }
 
-            return View(student);
+            try
+            {
+                _context.Students.Remove(student);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "حدث خطأ أثناء حذف الطالب. قد يكون مرتبطاً ببيانات أخرى.");
+                return View("Delete", student);
+            }
         }
         // =====================================
         // DISTRIBUTE STUDENTS
