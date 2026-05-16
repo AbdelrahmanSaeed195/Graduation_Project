@@ -5,11 +5,7 @@
     Layout = null;
     var personName = Model.PersonFullName ?? ".............................";
     int counter = 1;
-}
-
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
+}<!DOCTYPE html><html lang="ar" dir="rtl"><head>
     <meta charset="utf-8" />
     <title>طباعة تكليف - @Model.AcademicYear</title>
     <style>
@@ -79,13 +75,11 @@
 
         .no-print-zone { padding: 15px; background: #f8f9fa; border: 1px solid #ddd; margin-bottom: 20px; border-radius: 6px; }
         .btn-print { background: #28a745; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
-    </style>
-</head>
-<body>
+    </style></head><body>
 
     <div class="no-print-zone">
         <button class="btn-print" onclick="window.print()">🖨️ طباعة التكليف الحالي</button>
-        <button asp-controller="Persons" asp-action="Index" style="padding: 10px 15px; cursor:pointer; margin-right:10px;">العودة للقائمة</button>
+        <a asp-controller="Persons" asp-action="Index" style="display: inline-block; padding: 10px 15px; cursor:pointer; margin-right:10px; background-color: #e2e6ea; color: black; text-decoration: none; border: 1px solid #ccc; border-radius: 4px; font-size: 13.3333px; font-family: Arial;">العودة للقائمة</a>
         <span style="margin-right:20px; color:#666; font-size: 0.9rem;">* المواعيد تظهر تلقائياً في رأس الجدول بناءً على ترم الامتحانات.</span>
     </div>
 
@@ -107,7 +101,7 @@
         </div>
 
         <div class="report-title">
-            <h2>السيد الأستاذ الدكتور / @personName</h2>
+            <h2>السيد الأستاذ  / @personName</h2>
             <p style="font-weight:bold; margin-top:10px; font-size:14pt;">تحية طيبة وبعد،،،</p>
         </div>
 
@@ -133,10 +127,7 @@
                         <th colspan="4">الفرق الدراسية</th>
                     </tr>
                     <tr>
-                        <th>الفرقة الأولى @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("1"))) { <span class="time-header">@Model.YearTimes["1"]</span> }</th>
-<th>الفرقة الثانية @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("2"))) { <span class="time-header">@Model.YearTimes["2"]</span> }</th>
-<th>الفرقة الثالثة @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("3"))) { <span class="time-header">@Model.YearTimes["3"]</span> }</th>
-<th>الفرقة الرابعة @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("4"))) { <span class="time-header">@Model.YearTimes["4"]</span> }</th>
+                        <th>الفرقة الأولى @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("1"))) { <span class="time-header">@Model.YearTimes["1"]</span> }</th><th>الفرقة الثانية @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("2"))) { <span class="time-header">@Model.YearTimes["2"]</span> }</th><th>الفرقة الثالثة @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("3"))) { <span class="time-header">@Model.YearTimes["3"]</span> }</th><th>الفرقة الرابعة @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("4"))) { <span class="time-header">@Model.YearTimes["4"]</span> }</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -185,6 +176,4 @@
         <div style="margin-top: 30px; border-top: 1px solid black; font-size: 9pt; padding-top: 5px; text-align: center;">
             داخلي : 5 / 4267 / 4298 / 4268 &nbsp;&nbsp; | &nbsp;&nbsp; مباشر : 088232168 &nbsp;&nbsp; | &nbsp;&nbsp; فاكس : 088/2334517
         </div>
-    </div>
-</body>
-</html>
+    </div></body></html>
