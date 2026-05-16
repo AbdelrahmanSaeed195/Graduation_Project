@@ -3,8 +3,7 @@
 
 @{
     Layout = null;
-    
-    var personName = Model.Rows?.FirstOrDefault()?.DailyItems?.FirstOrDefault()?.PersonFullName ?? ".............................";
+    var personName = Model.PersonFullName ?? ".............................";
     int counter = 1;
 }
 
@@ -56,15 +55,13 @@
         
         
         .time-header {
-            display: block;
-            font-size: 9pt;
-            font-weight: normal;
-            color: #444;
-            margin-top: 4px;
-            border-top: 1px solid #ddd;
-            padding-top: 2px;
-        }
-
+    display: block;
+    font-size: 9pt;
+    font-weight: normal;
+    color: #444;
+    margin-top: 4px;
+    padding-top: 2px;
+}
         .subject-box {
             font-weight: bold;
             font-size: 11pt;
@@ -136,10 +133,10 @@
                         <th colspan="4">الفرق الدراسية</th>
                     </tr>
                     <tr>
-                        <th>الفرقة الأولى <span class="time-header">@(Model.YearTimes.ContainsKey("1") ? Model.YearTimes["1"] : "")</span></th>
-                        <th>الفرقة الثانية <span class="time-header">@(Model.YearTimes.ContainsKey("2") ? Model.YearTimes["2"] : "")</span></th>
-                        <th>الفرقة الثالثة <span class="time-header">@(Model.YearTimes.ContainsKey("3") ? Model.YearTimes["3"] : "")</span></th>
-                        <th>الفرقة الرابعة <span class="time-header">@(Model.YearTimes.ContainsKey("4") ? Model.YearTimes["4"] : "")</span></th>
+                        <th>الفرقة الأولى @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("1"))) { <span class="time-header">@Model.YearTimes["1"]</span> }</th>
+<th>الفرقة الثانية @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("2"))) { <span class="time-header">@Model.YearTimes["2"]</span> }</th>
+<th>الفرقة الثالثة @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("3"))) { <span class="time-header">@Model.YearTimes["3"]</span> }</th>
+<th>الفرقة الرابعة @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("4"))) { <span class="time-header">@Model.YearTimes["4"]</span> }</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -164,7 +161,7 @@
                                     }
                                     else
                                     {
-                                        <span style="color: #ddd;">---</span>
+                                        <span style="color: #ddd;"></span>
                                     }
                                 </td>
                             }

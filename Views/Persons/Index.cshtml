@@ -1,10 +1,12 @@
 @model IEnumerable<projectweb.Models.Person>
+
 @{
     ViewData["Title"] = "إدارة الموظفين";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="content-body" dir="rtl">
+    @* الرأس (Header) *@
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <h1 class="h3 mb-0 fw-bold academic-heading">
             <i class="bi bi-people-fill me-2"></i> إدارة الأشخاص والموظفين
@@ -17,33 +19,37 @@
                     <i class="bi bi-person-plus-fill me-1"></i> إضافة شخص
                 </a>
 
-              @*   <a asp-action="ImportExcel" class="btn btn-outline-success shadow-sm">
+                <a asp-action="ImportExcel" class="btn btn-outline-success shadow-sm">
                     <i class="bi bi-file-earmark-excel-fill me-1"></i> استيراد
-                </a> *@
+                </a> 
 
-                @* <a asp-action="ExportToExcel" class="btn btn-outline-primary shadow-sm">
+                <a asp-action="ExportToExcel" class="btn btn-outline-primary shadow-sm">
                     <i class="bi bi-file-earmark-arrow-down-fill me-1"></i> تصدير
-                </a> *@
+                </a>
             }
         </div>
     </div>
 
+    @* قسم البحث اللحظي *@
     <div class="card academic-card mb-4 shadow-sm border-0">
         <div class="card-body p-3 bg-white rounded">
-            <form method="get" class="row g-2 align-items-center">
-                <div class="col-md-8">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-10">
                     <div class="input-group">
-                        <span class="input-group-text bg-light border-start-0"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" name="search" class="form-control academic-input border-end-0" placeholder="ابحث بالاسم، الرقم القومي، أو رقم الهاتف..." value="@ViewBag.Search">
+                        <span class="input-group-text bg-light border-start-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        @* تم إضافة id="searchInput" لإمساكه في الجافا سكريبت *@
+                        <input type="text" id="searchInput" class="form-control academic-input border-end-0" 
+                               placeholder="ابدأ بالكتابة للبحث بالاسم، الرقم القومي، أو رقم الهاتف..." 
+                               value="@ViewBag.Search" autocomplete="off">
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-academic-primary w-100 fw-bold">بحث</button>
-                </div>
-                <div class="col-md-2">
+                    @* زر إعادة التعيين يقوم بتصفير البحث *@
                     <a asp-action="Index" class="btn btn-outline-secondary w-100">إعادة تعيين</a>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -55,79 +61,67 @@
         </div>
     }
 
-    <div class="card academic-card overflow-hidden shadow-sm border-0">
-        <div class="table-responsive">
-            <table class="table academic-table table-hover align-middle mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="ps-4 text-end">الاسم الكامل</th>
-                        <th>الرقم القومي</th>
-                        <th>رقم المحمول</th>
-                        <th>الدور/الوظيفة</th>
-                        <th class="text-center">الحالة</th>
-                        <th class="text-center pe-4">العمليات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var p in Model)
-                        {
-                            <tr>
-                                <td class="ps-4 fw-bold text-end" style="color: var(--text-main);">@p.FullName</td>
-                                <td class="text-secondary">@p.NationalId</td>
-                                <td><span style="color: var(--accent-blue);" class="fw-medium">@p.Phone</span></td>
-                                <td>
-                                    @{
-                                        string badgeClass = "bg-light text-dark border";
-                                        if ((int)p.JobRole <= 4) badgeClass = "bg-primary text-white";
-                                        else if ((int)p.JobRole <= 6) badgeClass = "bg-info text-dark";
-                                        else if ((int)p.JobRole == 7) badgeClass = "bg-warning text-dark";
-                                        else if ((int)p.JobRole >= 9) badgeClass = "bg-secondary text-white";
-                                    }
-                                    <span class="badge @badgeClass px-3 py-2" style="min-width: 100px;">
-                                        @Html.DisplayFor(modelItem => p.JobRole)
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge @(p.IsActiveForAssignment ? "bg-success" : "bg-danger") rounded-pill px-3">
-                                        @(p.IsActiveForAssignment ? "نشط" : "متوقف")
-                                    </span>
-                                </td>
-                                <td class="text-center pe-4">
-                                    <div class="btn-group shadow-sm" role="group">
-                                        <a asp-action="PrintAssignments" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-success" title="تكليف">
-                                            <i class="bi bi-printer"></i>
-                                        </a>
-                                        @if (User.IsInRole("Admin"))
-                                        {
-                                            <a asp-action="Edit" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-dark" title="تعديل">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <a asp-action="Delete" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-danger" title="حذف">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
-                                        }
-                                        <a asp-action="Details" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-info" title="تفاصيل">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                       
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
-                                <i class="bi bi-person-x fs-1 d-block mb-3"></i>
-                                لم يتم العثور على أي بيانات.
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+    @* حاوية الجدول التي سيتم تحديثها بالـ AJAX *@
+    <div id="tableContainer" class="card academic-card overflow-hidden shadow-sm border-0">
+        <partial name="_PersonTablePartial" model="Model" />
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let timeout = null;
+
+            // الاستماع لكل حرف يتم كتابته في مربع البحث
+            $('#searchInput').on('input', function () {
+                clearTimeout(timeout);
+                let searchValue = $(this).val();
+
+                // خاصية الـ Debounce: ننتظر 300 مللي ثانية حتى ينتهي المستخدم من الكتابة
+                timeout = setTimeout(function () {
+                    $.ajax({
+                        url: '@Url.Action("Index", "Persons")',
+                        type: 'GET',
+                        data: { search: searchValue },
+                        beforeSend: function () {
+                            // تعتيم الجدول قليلاً لإعطاء إيحاء بالتحميل
+                            $('#tableContainer').css('opacity', '0.6');
+                        },
+                        success: function (data) {
+                            // استبدال محتوى حاوية الجدول بالبيانات المفلترة القادمة من السيرفر
+                            $('#tableContainer').html(data);
+                            $('#tableContainer').css('opacity', '1');
+                        },
+                        error: function () {
+                            console.error("حدث خطأ أثناء محاولة جلب البيانات.");
+                            $('#tableContainer').css('opacity', '1');
+                        }
+                    });
+                }, 300); 
+            });
+        });
+    </script>
+
+    <style>
+        /* تحسينات بسيطة للمظهر */
+        .academic-input:focus {
+            border-color: #1a3a5a;
+            box-shadow: 0 0 0 0.25rem rgba(26, 58, 90, 0.1);
+        }
+        .btn-academic-primary {
+            background-color: #1a3a5a;
+            color: white;
+            transition: all 0.3s;
+            border: none;
+        }
+        .btn-academic-primary:hover {
+            background-color: #2e5a88;
+            color: white;
+            transform: translateY(-1px);
+        }
+        #tableContainer {
+            transition: opacity 0.2s ease-in-out;
+        }
+    </style>
+}

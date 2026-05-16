@@ -1,0 +1,94 @@
+﻿@model IEnumerable<projectweb.Models.Person>
+
+@{
+    string GetArabicJobTitle(JobTitle job)
+    {
+        return job switch
+        {
+            JobTitle.ProfessorEmeritus => "أستاذ متفرغ",
+            JobTitle.AssistantProfessor => "أستاذ مساعد",
+            JobTitle.Professor => "أستاذ",
+            JobTitle.Dean => "عميد الكلية",
+            JobTitle.StaffObserver => "مدرس",
+            JobTitle.AssistantStaff => "مدرس مساعد",
+            JobTitle.Assistant => "معيد",
+            JobTitle.Employee => "موظف",
+            JobTitle.Doctor => "دكتور",
+            JobTitle.Nurse => "ممرض",
+            _ => "عضو هيئة تدريس"
+        };
+    }
+}
+
+<div class="table-responsive">
+    <table class="table academic-table table-hover align-middle mb-0">
+        <thead class="bg-light">
+            <tr>
+                <th class="ps-4 text-end">الاسم الكامل</th>
+                <th>الرقم القومي</th>
+                <th>رقم المحمول</th>
+                <th>الدور/الوظيفة</th>
+                <th class="text-center">الحالة</th>
+                <th class="text-center pe-4">العمليات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var p in Model)
+                {
+                    <tr>
+                        <td class="ps-4 fw-bold text-end" style="color: #1a3a5a;">@p.FullName</td>
+                        <td class="text-secondary">@p.NationalId</td>
+                        <td><span style="color: #2e5a88;" class="fw-medium">@p.Phone</span></td>
+                        <td>
+                            @{
+                                string badgeClass = "bg-light text-dark border";
+                                if ((int)p.JobRole <= 4) badgeClass = "bg-primary text-white";
+                                else if ((int)p.JobRole <= 6) badgeClass = "bg-info text-dark";
+                                else if ((int)p.JobRole == 7) badgeClass = "bg-warning text-dark";
+                                else if ((int)p.JobRole >= 9) badgeClass = "bg-secondary text-white";
+                            }
+                            <span class="badge @badgeClass px-3 py-2" style="min-width: 100px;">
+                                @GetArabicJobTitle(p.JobRole)
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge @(p.IsActiveForAssignment ? "bg-success" : "bg-danger") rounded-pill px-3">
+                                @(p.IsActiveForAssignment ? "نشط" : "متوقف")
+                            </span>
+                        </td>
+                        <td class="text-center pe-4">
+                            <div class="btn-group shadow-sm" role="group">
+                                <a asp-action="PrintAssignments" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-success" title="تكليف">
+                                    <i class="bi bi-printer"></i>
+                                </a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-dark" title="تعديل">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-danger" title="حذف">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                }
+                                <a asp-action="Details" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-info" title="تفاصيل">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="bi bi-person-x fs-1 d-block mb-3"></i>
+                        لم يتم العثور على أي بيانات.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

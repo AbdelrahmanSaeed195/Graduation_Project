@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using projectweb.Models;
 using projectweb.Models.ViewModels;
 using System;
@@ -46,6 +48,13 @@ namespace projectweb.Controllers
                                      .ToList();
 
             ViewBag.Search = search;
+
+            // إذا كان الطلب AJAX أرسل الجدول فقط
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_PersonTablePartial", uniqueResult);
+            }
+
             return View(uniqueResult);
         }
 
@@ -74,6 +83,7 @@ namespace projectweb.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Person person)
         {
+
             if (_context.Persons.Any(p => p.NationalId == person.NationalId))
             {
                 ModelState.AddModelError("NationalId", "عفواً، هذا الرقم القومي مسجل مسبقاً.");
@@ -192,14 +202,34 @@ namespace projectweb.Controllers
                 .Where(a => a.PersonId == id)
                 .ToListAsync();
 
-            var yearTimesMap = new Dictionary<string, string> {
-                { "1", "---" }, { "2", "---" }, { "3", "---" }, { "4", "---" }
-            };
+            // ✅ تهيئة الأوقات فارغة
+            var yearTimesMap = new Dictionary<string, string>
+    {
+        { "1", "" }, { "2", "" }, { "3", "" }, { "4", "" }
+    };
 
             var groupedRows = new List<AssignmentRowGroup>();
 
             if (rawAssignments != null && rawAssignments.Any())
             {
+                // ✅ أول خطوة: ملء الأوقات من البيانات
+                foreach (var assignment in rawAssignments.Where(a => a.ExamSchedule?.Exam != null))
+                {
+                    var exam = assignment.ExamSchedule.Exam;
+                    string yearText = exam.Subject?.AcademicYear ?? "";
+                    string yearNum = yearText.Contains("الأولى") ? "1" :
+                                     yearText.Contains("الثانية") ? "2" :
+                                     yearText.Contains("الثالثة") ? "3" :
+                                     yearText.Contains("الرابعة") ? "4" : "";
+
+                    // ✅ إذا لم يتم تعيين الوقت بعد، عيّنه الآن
+                    if (!string.IsNullOrEmpty(yearNum) && string.IsNullOrEmpty(yearTimesMap[yearNum]))
+                    {
+                        yearTimesMap[yearNum] = $"{DateTime.Today.Add(exam.StartTime):hh:mm tt} - {DateTime.Today.Add(exam.EndTime):hh:mm tt}";
+                    }
+                }
+
+                // ✅ ثاني خطوة: تجميع البيانات حسب التاريخ
                 groupedRows = rawAssignments
                     .Where(a => a.ExamSchedule?.Exam != null)
                     .GroupBy(a => a.ExamSchedule.Exam.ExamDate.Date)
@@ -207,18 +237,14 @@ namespace projectweb.Controllers
                     {
                         Date = g.Key,
                         Day = g.Key.ToString("dddd", new System.Globalization.CultureInfo("ar-EG")),
-                        DailyItems = g.Select(a => {
+                        DailyItems = g.Select(a =>
+                        {
                             var exam = a.ExamSchedule.Exam;
                             string yearText = exam.Subject?.AcademicYear ?? "";
                             string yearNum = yearText.Contains("الأولى") ? "1" :
                                              yearText.Contains("الثانية") ? "2" :
                                              yearText.Contains("الثالثة") ? "3" :
                                              yearText.Contains("الرابعة") ? "4" : "";
-
-                            if (yearNum != "" && yearTimesMap[yearNum] == "---")
-                            {
-                                yearTimesMap[yearNum] = $"{DateTime.Today.Add(exam.StartTime):hh:mm tt} - {DateTime.Today.Add(exam.EndTime):hh:mm tt}";
-                            }
 
                             return new AssignmentReportItem
                             {
@@ -237,7 +263,7 @@ namespace projectweb.Controllers
                 PersonFullName = person.FullName,
                 PersonRoleInReport = GetArabicJobTitle(person.JobRole),
                 Rows = groupedRows,
-                YearTimes = yearTimesMap,
+                YearTimes = yearTimesMap,  // ✅ بتحتوي على الأوقات الصحيحة
                 AcademicYear = "2025/2026",
                 CollegeName = "كلية علوم الرياضة"
             };
@@ -245,7 +271,7 @@ namespace projectweb.Controllers
             return View(model);
         }
 
-        private string GetArabicJobTitle(JobTitle job)
+        public string GetArabicJobTitle(JobTitle job)
         {
             return job switch
             {
@@ -264,5 +290,145 @@ namespace projectweb.Controllers
         }
 
         private bool PersonExists(int id) => _context.Persons.Any(e => e.PersonId == id);
+
+        // =====================================
+        // EXPORT TO EXCEL
+        // =====================================
+        public async Task<IActionResult> ExportToExcel()
+        {
+            var persons = await _context.Persons
+                .OrderBy(p => p.JobRole)
+                .ThenBy(p => p.FullName)
+                .ToListAsync();
+
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+
+            using var package = new ExcelPackage();
+            var sheet = package.Workbook.Worksheets.Add("الموظفين");
+
+            // الهيدر
+            sheet.Cells[1, 1].Value = "الاسم الكامل";
+            sheet.Cells[1, 2].Value = "الرقم القومي";
+            sheet.Cells[1, 3].Value = "رقم الهاتف";
+            sheet.Cells[1, 4].Value = "البريد الإلكتروني";
+            sheet.Cells[1, 5].Value = "الوظيفة";
+            sheet.Cells[1, 6].Value = "الحالة";
+
+            // تنسيق الهيدر
+            using (var range = sheet.Cells[1, 1, 1, 6])
+            {
+                range.Style.Font.Bold = true;
+                range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
+            }
+
+            // البيانات
+            int row = 2;
+            foreach (var p in persons)
+            {
+                sheet.Cells[row, 1].Value = p.FullName;
+                sheet.Cells[row, 2].Value = p.NationalId;
+                sheet.Cells[row, 3].Value = p.Phone;
+                sheet.Cells[row, 4].Value = p.Email;
+                sheet.Cells[row, 5].Value = GetArabicJobTitle(p.JobRole);
+                sheet.Cells[row, 6].Value = p.IsActiveForAssignment ? "نشط" : "متوقف";
+                row++;
+            }
+
+            sheet.Cells.AutoFitColumns();
+
+            var fileBytes = package.GetAsByteArray();
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Persons_{DateTime.Now:yyyyMMdd}.xlsx");
+        }
+
+        // =====================================
+        // IMPORT EXCEL - GET
+        // =====================================
+        [Authorize(Roles = "Admin")]
+        public IActionResult ImportExcel()
+        {
+            return View();
+        }
+
+        // =====================================
+        // IMPORT EXCEL - POST
+        // =====================================
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ImportExcel(IFormFile excelfile)
+        {
+            if (excelfile == null || excelfile.Length == 0)
+            {
+                TempData["Error"] = "برجاء اختيار ملف Excel أولاً.";
+                return View();
+            }
+
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+
+            int added = 0, skipped = 0;
+
+            using var stream = new MemoryStream();
+            await excelfile.CopyToAsync(stream);
+
+            using var package = new ExcelPackage(stream);
+            var sheet = package.Workbook.Worksheets[0];
+            int rowCount = sheet.Dimension?.Rows ?? 0;
+
+            for (int i = 2; i <= rowCount; i++)
+            {
+                var fullName = sheet.Cells[i, 1].Text?.Trim();
+                var nationalId = sheet.Cells[i, 2].Text?.Trim();
+                var phone = sheet.Cells[i, 3].Text?.Trim();
+                var email = sheet.Cells[i, 4].Text?.Trim();
+                var jobText = sheet.Cells[i, 5].Text?.Trim();
+
+                if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(nationalId))
+                {
+                    skipped++;
+                    continue;
+                }
+
+                // تجاهل الرقم القومي المكرر
+                if (_context.Persons.Any(p => p.NationalId == nationalId))
+                {
+                    skipped++;
+                    continue;
+                }
+
+                var jobRole = jobText switch
+                {
+                    "أستاذ متفرغ" => JobTitle.ProfessorEmeritus,
+                    "أستاذ مساعد" => JobTitle.AssistantProfessor,
+                    "أستاذ" => JobTitle.Professor,
+                    "عميد الكلية" => JobTitle.Dean,
+                    "مدرس" => JobTitle.StaffObserver,
+                    "مدرس مساعد" => JobTitle.AssistantStaff,
+                    "معيد" => JobTitle.Assistant,
+                    "موظف" => JobTitle.Employee,
+                    "دكتور" => JobTitle.Doctor,
+                    "ممرض" => JobTitle.Nurse,
+                    _ => JobTitle.StaffObserver
+                };
+
+                _context.Persons.Add(new Person
+                {
+                    FullName = fullName,
+                    NationalId = nationalId,
+                    Phone = phone ?? "",
+                    Email = email ?? "",
+                    JobRole = jobRole,
+                    RoleId = 1,
+                    IsActiveForAssignment = true
+                });
+
+                added++;
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = $"تم الاستيراد بنجاح! تمت إضافة {added} شخص، وتم تجاهل {skipped} مكرر/فارغ.";
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }
