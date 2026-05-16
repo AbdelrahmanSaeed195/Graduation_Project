@@ -28,7 +28,7 @@ namespace projectweb.Models
     {
         [Key]
         [Display(Name = "كود المحضر")]
-        public int ReportID { get; set; }
+        public int ReportId { get; set; }
 
         [Required]
         [Display(Name = "تاريخ تحرير المحضر")]
@@ -44,9 +44,9 @@ namespace projectweb.Models
 
         [Required(ErrorMessage = "يجب ربط المحضر بجلسة امتحان")]
         [Display(Name = "جلسة الامتحان")]
-        public int ScheduleID { get; set; }
+        public int ScheduleId { get; set; }
         [ValidateNever]
-        [ForeignKey("ScheduleID")]
+        [ForeignKey("ScheduleId")]
         [Display(Name = "بيانات جلسة الامتحان")]
         public virtual ExamSchedule ExamSchedule { get; set; }
         [ValidateNever]

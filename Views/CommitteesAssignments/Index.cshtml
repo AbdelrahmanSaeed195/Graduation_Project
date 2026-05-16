@@ -12,20 +12,30 @@
 
         <div class="d-flex gap-2 align-items-end">
             <form asp-action="Index" method="get" class="d-flex gap-2 align-items-end border p-2 rounded bg-light shadow-sm">
-                <div>
-                    <label class="small fw-bold d-block mb-1 text-muted">البحث بالامتحان:</label>
-                    <select name="examId" class="form-select form-select-sm shadow-sm" style="min-width: 250px;"
-                            asp-items="ViewBag.Exams" onchange="this.form.submit()">
-                        <option value="">-- اختر الامتحان للبحث --</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="small fw-bold d-block mb-1 text-muted">المستوى:</label>
-                    <select name="academicYear" class="form-select form-select-sm shadow-sm" 
-                            asp-items="ViewBag.AcademicYears" onchange="this.form.submit()">
-                        <option value="">-- كل المستويات --</option>
-                    </select>
-                </div>
+              <div class="flex-grow-1">
+        <label class="small fw-bold d-block mb-1 text-muted">البحث بالامتحان:</label>
+        <select name="examId" class="form-select form-select-sm shadow-sm" style="min-width: 250px;"
+                asp-items="ViewBag.Exams" onchange="this.form.submit()">
+            <option value="">-- اختر الامتحان للبحث  --</option>
+        </select>
+    </div>
+
+    <div class="flex-grow-1">
+        <label class="small fw-bold d-block mb-1 text-muted">المستوى:</label>
+        <select name="academicYear" class="form-select form-select-sm shadow-sm" style="min-width: 180px;"
+                asp-items="ViewBag.AcademicYears" onchange="this.form.submit()">
+            <option value="">-- كل المستويات --</option>
+        </select>
+    </div>
+
+    @if (ViewBag.SelectedExamId != null || !string.IsNullOrEmpty(Context.Request.Query["academicYear"]))
+    {
+        <div>
+            <a asp-action="Index" class="btn btn-sm btn-outline-danger shadow-sm fw-bold">
+                <i class="bi bi-x-circle me-1"></i> إعادة ضبط
+            </a>
+        </div>
+    }
             </form>
              @if (User.IsInRole("Admin"))
             {
@@ -35,7 +45,7 @@
                     <a asp-action="Create" class="btn text-white shadow-sm fw-bold" style="background-color: #1a3a5a;">
                      <i class="bi bi-plus-circle me-1"></i> إضافة تكليف يدوي
                     </a>
-             }
+            }
         </div>
     </div>
 
@@ -69,11 +79,34 @@
             <tbody>
                 @foreach (var item in Model)
                 {
+                    // منطق تحديد الألوان برمجياً بناءً على مسميات الأدوار والاحتياطيين التابعين لهم لربطهم بصرياً
+                    string rowBadgeStyle = "background-color: #0d6efd; color: #fff;"; // الافتراضي أزرق للملاحظين
+                    
+                    if (item.RoleType.Contains("رئيس صالة أساسي (القطاع الأول)") || item.RoleType.Contains("تبع رئيس 1"))
+                    {
+                        rowBadgeStyle = "background-color: #6f42c1; color: #fff;"; // القطاع الأول والاحتياطي تبعه (بنفسجي متميز)
+                    }
+                    else if (item.RoleType.Contains("رئيس صالة أساسي (القطاع الثاني)") || item.RoleType.Contains("تبع رئيس 2"))
+                    {
+                        rowBadgeStyle = "background-color: #e83e8c; color: #fff;"; // القطاع الثاني والاحتياطي تبعه (وردي غامق متميز)
+                    }
+                    else if (item.RoleType.Contains("رئيس صالة احتياطي"))
+                    {
+                        rowBadgeStyle = "background-color: #fd7e14; color: #fff;"; // رئيس صالة احتياطي عام (برتقالي موجه)
+                    }
+                    else if (item.RoleType == "مراقب")
+                    {
+                        rowBadgeStyle = "background-color: #198754; color: #fff;"; // معيد مراقب بلوك (أخضر أكاديمي صريح)
+                    }
+                    else if (item.RoleType.Contains("الطاقم الطبي") || item.RoleType.Contains("الصالة"))
+                    {
+                        rowBadgeStyle = "background-color: #adb5bd; color: #000;"; // طبي وممرض (رمادي محايد)
+                    }
+
                     <tr>
                         <td class="fw-bold py-3">
                             <div class="text-dark">@item.Person.FullName</div>
-                            @* --- الجزء المضاف لعرض المسمى الوظيفي بالعربي --- *@
-                            <div class="small text-primary fw-bold" style="font-size: 0.75rem;">
+                            <div class="small text-muted fw-bold" style="font-size: 0.75rem;">
                                 @{
                                     var jobEnum = item.Person.JobRole;
                                     var arabicName = jobEnum.GetType()
@@ -87,16 +120,16 @@
                         </td>
 
                         <td>
-                            @if (item.Hall != null && item.BlockId == null && item.CommitteeID == null)
+                            @if (item.Hall != null && item.BlockId == null && item.CommitteeId == null)
                             {
-                                <span class="badge px-3 py-2" style="background-color: #ffc107; color: #000; border-radius: 8px;">
+                                <span class="badge px-3 py-2 text-dark" style="background-color: #ffc107; border-radius: 8px;">
                                     <i class="bi bi-building me-1"></i> نطاق الصالة: @item.Hall.HallName
                                 </span>
                             }
-                            else if (item.Block != null && item.CommitteeID == null)
+                            else if (item.Block != null && item.CommitteeId == null)
                             {
                                 <div class="small text-muted mb-1">@item.Block.Hall?.HallName</div>
-                                <span class="badge px-3 py-2" style="background-color: #0dcaf0; color: #000; border-radius: 8px;">
+                                <span class="badge px-3 py-2 text-dark" style="background-color: #0dcaf0; border-radius: 8px;">
                                     <i class="bi bi-grid-3x3 me-1"></i> بلوك: @item.Block.BlockName
                                 </span>
                             }
@@ -105,14 +138,16 @@
                                 <div class="small text-muted mb-1">
                                     @item.Committee.Block?.Hall?.HallName <i class="bi bi-chevron-left small"></i> @item.Committee.Block?.BlockName
                                 </div>
-                                <span class="badge px-3 py-2" style="background-color: #0d6efd; color: #fff; border-radius: 8px;">
+                                <span class="badge px-3 py-2" style="background-color: #20c997; color: #fff; border-radius: 8px;">
                                     <i class="bi bi-person-workspace me-1"></i> لجنة: @item.Committee.CommitteeNumber
                                 </span>
                             }
                         </td>
 
                         <td>
-                            <span class="badge rounded-pill bg-light text-dark border px-3 py-2">@item.RoleType</span>
+                            <span class="badge rounded-pill px-3 py-2 border shadow-sm" style="@rowBadgeStyle">
+                                @item.RoleType
+                            </span>
                         </td>
 
                         <td>
@@ -149,12 +184,11 @@
 
                         <td>
                             <div class="d-flex justify-content-center gap-1">
-                                <a asp-action="Details" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-info border shadow-sm" title="تفاصيل"><i class="bi bi-eye"></i></a>
+                                <a asp-action="Details" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-info border shadow-sm" title="تفاصيل"><i class="bi bi-eye"></i></a>
                                 @if (User.IsInRole("Admin"))
                                 {
-                                   <a asp-action="Edit" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-secondary border shadow-sm" title="تعديل"><i class="bi bi-pencil"></i></a>
-                                   <a asp-action="Delete" asp-route-id="@item.AssignmentID" class="btn btn-sm btn-outline-danger border shadow-sm" title="حذف"><i class="bi bi-trash"></i></a>
-
+                                   <a asp-action="Edit" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-secondary border shadow-sm" title="تعديل"><i class="bi bi-pencil"></i></a>
+                                   <a asp-action="Delete" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-danger border shadow-sm" title="حذف"><i class="bi bi-trash"></i></a>
                                 }
                             </div>
                         </td>

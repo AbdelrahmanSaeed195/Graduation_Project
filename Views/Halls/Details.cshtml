@@ -6,107 +6,109 @@
 }
 
 <div class="row justify-content-center" dir="rtl">
-    <div class="col-xl-9">
-        <div class="card academic-card shadow-sm">
-            <div class="card-header academic-card-header text-white p-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold text-white"><i class="bi bi-info-circle-fill me-2"></i> بيانات الصالة: @Model.HallName</h5>
-                <span class="badge bg-white text-navy px-3">كود الصالة: #@Model.HallId</span>
+    <div class="col-xl-10">
+        <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+
+            <div class="card-header p-3 d-flex justify-content-between align-items-center" style="background-color: #1a3a5a;">
+                <h5 class="mb-0 fw-bold text-white">
+                    <i class="bi bi-building me-2"></i> بيانات ونطاق الصالة: @Model.HallName
+                </h5>
+                <span class="badge bg-white text-dark fw-bold px-3 py-2" style="font-size: 0.85rem; border-radius: 8px;">
+                    كود الصالة: #@Model.HallId
+                </span>
             </div>
 
-            <div class="card-body p-0">
-       
-                <table class="table table-bordered mb-0">
-                    <tbody>
-                        <tr>
-                            <th class="bg-light" style="width: 25%;">اسم الصالة / القاعة</th>
-                            <td style="width: 25%;">@Model.HallName</td>
-                            <th class="bg-light" style="width: 25%;">الدور</th>
-                            <td style="width: 25%;">الدور @Model.Floor</td>
-                        </tr>
-                        <tr>
-                            <th class="bg-light">السعة المتاحة</th>
-                            <td>@Model.MaxBlocks بلوكات</td>
-                            <th class="bg-light">رئيس اللجنة</th>
-                            <td>
-                                @if (Model.HallSupervisor != null)
-                                {
-                                    <span class="fw-bold text-primary">@Model.HallSupervisor.FullName</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">لم يتم التعيين بعد</span>
-                                }
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="card-body p-4 bg-light">
 
-                <div class="p-4">
-                    <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3">
-                        <i class="bi bi-collection-fill me-2"></i> البلوكات التابعة
-                    </h5>
-
-                    @if (Model.Blocks != null && Model.Blocks.Any())
-                    {
-                        <div class="table-responsive">
-                            <table class="table academic-table align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>كود البلوك</th>
-                                        <th>اسم البلوك</th>
-                                        <th class="text-center">عدد اللجان المرتبطة</th>
-                                        <th class="text-center"> المراقب</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var block in Model.Blocks)
-                                    {
-                                        <tr>
-                                            <td class="fw-bold">#@block.BlockID</td>
-                                            <td>@block.BlockName</td>
-                                            <td class="text-center">
-                                                <span class="badge @(block.Committees?.Count > 0 ? "bg-success" : "bg-secondary")">
-                                                    @(block.Committees?.Count ?? 0) لجان
-                                                </span>
-                                            </td>
-                                            <td>
-                                                @{
-                                                    var proctor = block.Committees?.SelectMany(c => c.CommitteesAssignments ?? Enumerable.Empty<CommitteesAssignment>())
-                                                    .FirstOrDefault(a => a.BlockId == block.BlockID && a.RoleID == 2)?.Person?.FullName;
-                                                }
-                                                @if (!string.IsNullOrEmpty(proctor))
-                                                {
-                                                    <span class="fw-bold" style="color: #1a3a5a;"><i class="bi bi-person-badge me-1"></i> @proctor</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-muted small">لم يتم التعيين بعد</span>
-                                                }
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="p-3 bg-white rounded shadow-sm border-start border-primary border-4">
+                            <div class="small text-muted mb-1">اسم الصالة / القاعة</div>
+                            <div class="fw-bold text-dark fs-5">@Model.HallName</div>
                         </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-light border text-center text-muted mb-0">
-                            لا توجد بلوكات مسجلة حالياً لهذه الصالة.
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-white rounded shadow-sm border-start border-info border-4">
+                            <div class="small text-muted mb-1">موقع الصالة</div>
+                            <div class="fw-bold text-dark fs-5">الدور @Model.Floor</div>
                         </div>
-                    }
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-white rounded shadow-sm border-start border-warning border-4">
+                            <div class="small text-muted mb-1">السعة القصوى المتاحة</div>
+                            <div class="fw-bold text-dark fs-5">@Model.MaxBlocks بلوكات رئيسية</div>
+                        </div>
+                    </div>
                 </div>
 
+                <h5 class="fw-bold pb-2 mb-3 border-bottom text-secondary" style="font-size: 1.1rem;">
+                    <i class="bi bi-grid-3x3-gap-fill me-2 text-primary"></i> البلوكات والأجزاء التابعة ونطاق لجانها
+                </h5>
 
-                <div class="card-footer bg-light p-3 d-flex justify-content-start gap-2">
-                    @if(User.IsInRole("Admin"))
-                    {
-                        <a asp-action="Edit" asp-route-id="@Model.HallId" class="btn btn-academic-primary px-4 fw-bold">
-                            <i class="bi bi-pencil-square me-1"></i> تعديل
-                        </a>
-                    }
-                    <a asp-action="Index" class="btn btn-outline-secondary px-4">العودة للقائمة</a>
-                </div>
+                @if (Model.Blocks != null && Model.Blocks.Any())
+                {
+                    <div class="row g-3">
+                        @foreach (var block in Model.Blocks.OrderBy(b => b.BlockName))
+                        {
+                            <div class="col-md-6">
+                                <div class="card h-100 border-0 shadow-sm" style="border-radius: 10px;">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2pb-2 border-bottom">
+                                            <div class="fw-bold text-dark">
+                                                <i class="bi bi-box-seam me-1 text-info"></i> بلوك: @block.BlockName
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-2">
+                                            <div class="small text-muted mb-2">اللجان الامتحانية النشطة داخل هذا الجزء:</div>
+                                            @if (block.Committees != null && block.Committees.Any())
+                                            {
+                                                <div class="d-flex flex-wrap gap-1">
+                                                    @foreach (var com in block.Committees.OrderBy(c => c.CommitteeNumber))
+                                                    {
+                                                        <span class="badge px-2 py-2" style="background-color: #20c997; color: #fff; border-radius: 6px; font-size: 0.8rem;">
+                                                            <i class="bi bi-person-workspace me-1"></i> لجنة @com.CommitteeNumber
+                                                        </span>
+                                                    }
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small italic"><i class="bi bi-info-circle me-1"></i> لا توجد لجان مضافة لهذا البلوك بعد.</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-white border-0 text-start pt-0">
+                                        <span class="badge bg-light text-dark fw-bold">
+                                            إجمالي: @(block.Committees?.Count ?? 0) لجنة موصلة
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-white border text-center text-muted p-4 mb-0" style="border-radius: 10px; background-color: #fff;">
+                        <i class="bi bi-folder-x fs-2 d-block mb-2 text-warning"></i>
+                        لا توجد بلوكات أو أجزاء تنظيمية مسجلة حالياً لهذه الصالة.
+                    </div>
+                }
             </div>
+
+            <div class="card-footer bg-white p-3 d-flex justify-content-start gap-2 border-top">
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.HallId" class="btn text-white px-4 fw-bold shadow-sm" style="background-color: #1a3a5a;">
+                        <i class="bi bi-pencil-square me-1"></i> تعديل بيانات الصالة
+                    </a>
+                }
+                <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-bold shadow-sm">
+                    <i class="bi bi-arrow-right-circle me-1"></i> العودة للقائمة الرئيسية
+                </a>
+            </div>
+
         </div>
     </div>
 </div>

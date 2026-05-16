@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -27,9 +28,7 @@ namespace projectweb.Models
         [Display(Name = "وقت الانتهاء")]
         public TimeSpan EndTime { get; set; }
 
-        [Required(ErrorMessage = "السنة الدراسية مطلوبة")]
-        [Display(Name = "السنة الدراسية المستهدفة")]
-        public string TargetAcademicYear { get; set; }
+       
 
         [Required(ErrorMessage = "يجب اختيار المادة")]
         [Display(Name = "المادة الدراسية")]
@@ -38,7 +37,11 @@ namespace projectweb.Models
         [ValidateNever]
         [ForeignKey("SubjectID")]
         [Display(Name = "بيانات المادة")]
-        public virtual Subject Subject { get; set; }
+        public virtual Subject? Subject { get; set; }
+        [BindNever]
+        [NotMapped]
+        [Display(Name = "السنة الدراسية")]
+        public string? AcademicYear => Subject?.AcademicYear;
 
         [ValidateNever]
         [Display(Name = "جدول توزيع اللجان")]

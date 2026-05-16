@@ -46,11 +46,13 @@
                         foreach (var item in Model)
                         {
                             <tr>
-                                <td class="ps-4 fw-bold" style="color: #1a2c4e;">
-                                    <i class="bi bi-book me-2" style="color: #00a8ff;"></i>
-                                    @(item.Exam?.Subject?.SubjectName ?? "غير محدد")
-                                    <small class="text-muted d-block ms-4 fw-normal">(@item.Exam?.TargetAcademicYear)</small>
-                                </td>
+                               <td class="ps-4 fw-bold" style="color: #1a2c4e;">
+    <i class="bi bi-book me-2" style="color: #00a8ff;"></i>
+    @(item.Exam?.Subject?.SubjectName ?? "غير محدد")
+    <small class="text-muted d-block ms-4 fw-normal">
+        (@(item.Exam?.AcademicYear ?? "—"))
+    </small>
+</td>
                                 <td class="text-center">
                                     <span class="badge bg-light border px-3 py-2 text-dark" style="border-radius: 8px;">
                                         لجنة @item.Committee?.CommitteeNumber

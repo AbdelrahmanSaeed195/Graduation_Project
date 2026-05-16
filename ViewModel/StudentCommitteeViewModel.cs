@@ -4,7 +4,7 @@
     {
         public int StudentId { get; set; }
         public string FullName { get; set; }
-        public int AcademicYear { get; set; }
+        public string AcademicYear { get; set; }
         public int? SeatNumber { get; set; }
 
         public int CommitteeId { get; set; }

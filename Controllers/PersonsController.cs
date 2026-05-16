@@ -5,8 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
 using projectweb.Models.ViewModels;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+
 
 namespace projectweb.Controllers
 {
@@ -18,14 +21,14 @@ namespace projectweb.Controllers
         {
             _context = context;
         }
+
         // =====================================
         // INDEX
-        //  =====================================
+        // =====================================
         public async Task<IActionResult> Index(string search)
         {
             var query = _context.Persons.AsQueryable();
 
-         
             if (!string.IsNullOrEmpty(search))
             {
                 search = search.ToLower();
@@ -45,9 +48,10 @@ namespace projectweb.Controllers
             ViewBag.Search = search;
             return View(uniqueResult);
         }
-        //  =====================================
+
+        // =====================================
         // DETAILS
-        //  =====================================
+        // =====================================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -55,9 +59,10 @@ namespace projectweb.Controllers
             if (person == null) return NotFound();
             return View(person);
         }
-        //  =====================================
+
+        // =====================================
         // CREATE
-        //  =====================================
+        // =====================================
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
@@ -69,7 +74,6 @@ namespace projectweb.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Person person)
         {
-          
             if (_context.Persons.Any(p => p.NationalId == person.NationalId))
             {
                 ModelState.AddModelError("NationalId", "عفواً، هذا الرقم القومي مسجل مسبقاً.");
@@ -79,7 +83,7 @@ namespace projectweb.Controllers
             {
                 try
                 {
-                    if (person.RoleID == 0) person.RoleID = 1;
+                    if (person.RoleId == 0) person.RoleId = 1;
 
                     _context.Add(person);
                     await _context.SaveChangesAsync();
@@ -93,9 +97,10 @@ namespace projectweb.Controllers
             }
             return View(person);
         }
-        //  =====================================
+
+        // =====================================
         // EDIT
-        //  =====================================
+        // =====================================
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -140,9 +145,10 @@ namespace projectweb.Controllers
 
             return View(person);
         }
-        //  =====================================
+
+        // =====================================
         // DELETE
-        //  =====================================
+        // =====================================
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -167,33 +173,29 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // PRINT ASSIGNMENTS (توزيع المراقبين)
+        // PRINT ASSIGNMENTS
         // =====================================
         public async Task<IActionResult> PrintAssignments(int id)
         {
-            // 1. جلب بيانات الشخص (للتأكد من وجوده وللحصول على اسمه الكامل والوظيفة)
             var person = await _context.Persons
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.PersonId == id);
 
             if (person == null) return Content($"خطأ: لم يتم العثور على الموظف رقم {id}");
 
-            // 2. جلب جميع التكليفات المتعلقة بهذا الشخص مع التفاصيل اللازمة (المادة، السنة المستهدفة، المواعيد)
             var rawAssignments = await _context.CommitteesAssignments
                 .AsNoTracking()
                 .Include(a => a.Role)
                 .Include(a => a.ExamSchedule)
                     .ThenInclude(es => es.Exam)
                         .ThenInclude(e => e.Subject)
-                .Where(a => a.PersonID == id)
+                .Where(a => a.PersonId == id)
                 .ToListAsync();
 
-            // 3. إعداد خريطة لتخزين مواعيد كل سنة دراسية (للهيدر)
             var yearTimesMap = new Dictionary<string, string> {
-            { "1", "---" }, { "2", "---" }, { "3", "---" }, { "4", "---" }
-        };
+                { "1", "---" }, { "2", "---" }, { "3", "---" }, { "4", "---" }
+            };
 
-            // 4. تجميع التكليفات حسب التاريخ لعرضها في التقرير
             var groupedRows = new List<AssignmentRowGroup>();
 
             if (rawAssignments != null && rawAssignments.Any())
@@ -207,13 +209,12 @@ namespace projectweb.Controllers
                         Day = g.Key.ToString("dddd", new System.Globalization.CultureInfo("ar-EG")),
                         DailyItems = g.Select(a => {
                             var exam = a.ExamSchedule.Exam;
-                            string yearText = exam.TargetAcademicYear ?? "";
+                            string yearText = exam.Subject?.AcademicYear ?? "";
                             string yearNum = yearText.Contains("الأولى") ? "1" :
                                              yearText.Contains("الثانية") ? "2" :
                                              yearText.Contains("الثالثة") ? "3" :
                                              yearText.Contains("الرابعة") ? "4" : "";
 
-                            // تحديث خريطة مواعيد السنوات إذا كانت السنة موجودة ولم يتم تعيين موعد لها بعد
                             if (yearNum != "" && yearTimesMap[yearNum] == "---")
                             {
                                 yearTimesMap[yearNum] = $"{DateTime.Today.Add(exam.StartTime):hh:mm tt} - {DateTime.Today.Add(exam.EndTime):hh:mm tt}";
@@ -231,12 +232,11 @@ namespace projectweb.Controllers
                     .ToList();
             }
 
-            // 5. إعداد الـ ViewModel لتمريره إلى العرض
             var model = new PrintReportViewModel
             {
                 PersonFullName = person.FullName,
                 PersonRoleInReport = GetArabicJobTitle(person.JobRole),
-                Rows = groupedRows, 
+                Rows = groupedRows,
                 YearTimes = yearTimesMap,
                 AcademicYear = "2025/2026",
                 CollegeName = "كلية علوم الرياضة"
@@ -245,7 +245,6 @@ namespace projectweb.Controllers
             return View(model);
         }
 
-        // دالة مساعدة لتحويل الوظيفة إلى نص عربي لعرضه في التقرير
         private string GetArabicJobTitle(JobTitle job)
         {
             return job switch
@@ -263,6 +262,7 @@ namespace projectweb.Controllers
                 _ => "عضو هيئة تدريس"
             };
         }
+
         private bool PersonExists(int id) => _context.Persons.Any(e => e.PersonId == id);
     }
 }

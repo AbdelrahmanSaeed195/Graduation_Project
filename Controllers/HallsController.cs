@@ -21,9 +21,10 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Index()
         {
             var halls = await db.Halls
-                .Include(h => h.HallSupervisor)
-                .Include(h => h.Blocks)
-                .ToListAsync();
+            .Include(h => h.HallSupervisor)
+            .Include(h => h.Blocks)
+            .AsNoTracking()
+            .ToListAsync();
 
             return View(halls);
         }
@@ -33,17 +34,13 @@ namespace projectweb.Controllers
         // =========================
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-                return BadRequest();
+            if (id == null) return BadRequest();
 
             var hall = await db.Halls
-                .Include(h => h.HallSupervisor)
-                .Include(h => h.Blocks)
-                    .ThenInclude(b => b.Committees)
+                .Include(h => h.Blocks).ThenInclude(b => b.Committees)
                 .FirstOrDefaultAsync(h => h.HallId == id);
 
-            if (hall == null)
-                return NotFound();
+            if (hall == null) return NotFound();
 
             return View(hall);
         }
@@ -75,7 +72,7 @@ namespace projectweb.Controllers
 
             if (!ModelState.IsValid)
             {
-                await LoadSupervisors(hall.HallSupervisorID);
+                await LoadSupervisors(hall.HallSupervisorId);
                 return View(hall);
             }
 
@@ -89,7 +86,7 @@ namespace projectweb.Controllers
             catch
             {
                 TempData["ErrorMessage"] = "حدث خطأ أثناء إضافة الصالة.";
-                await LoadSupervisors(hall.HallSupervisorID);
+                await LoadSupervisors(hall.HallSupervisorId);
                 return View(hall);
             }
         }
@@ -108,7 +105,7 @@ namespace projectweb.Controllers
             if (hall == null)
                 return NotFound();
 
-            await LoadSupervisors(hall.HallSupervisorID);
+            await LoadSupervisors(hall.HallSupervisorId);
             return View(hall);
         }
 
@@ -128,7 +125,7 @@ namespace projectweb.Controllers
 
             if (!ModelState.IsValid)
             {
-                await LoadSupervisors(hall.HallSupervisorID);
+                await LoadSupervisors(hall.HallSupervisorId);
                 return View(hall);
             }
 
@@ -142,7 +139,7 @@ namespace projectweb.Controllers
             catch
             {
                 TempData["ErrorMessage"] = "حدث خطأ أثناء تعديل الصالة.";
-                await LoadSupervisors(hall.HallSupervisorID);
+                await LoadSupervisors(hall.HallSupervisorId);
                 return View(hall);
             }
         }

@@ -48,7 +48,10 @@
                     <div class="col-md-4">
                         <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm text-center">
                             <div class="small text-muted mb-1 fw-bold">السنة الدراسية</div>
-                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fs-6 mt-1" style="border: 1px solid rgba(13, 110, 253, 0.2); border-radius: 8px;">@Model.TargetAcademicYear</span>
+                            @* التعديل هنا: استخدام الخاصية الجديدة AcademicYear *@
+                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fs-6 mt-1" style="border: 1px solid rgba(13, 110, 253, 0.2); border-radius: 8px;">
+                                @(Model.AcademicYear ?? "غير محدد")
+                            </span>
                         </div>
                     </div>
 

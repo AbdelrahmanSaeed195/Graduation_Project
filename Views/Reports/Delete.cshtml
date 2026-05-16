@@ -14,7 +14,7 @@
             <div class="card-header bg-danger text-white p-4 border-0 text-center">
                 <i class="bi bi-exclamation-octagon-fill fs-1 d-block mb-2"></i>
                 <h4 class="mb-0 fw-bold">تأكيد عملية الحذف النهائية</h4>
-                <p class="mb-0 small opacity-75">يرجى مراجعة بيانات المحضر رقم (#@Model.ReportID) قبل التأكيد</p>
+                <p class="mb-0 small opacity-75">يرجى مراجعة بيانات المحضر رقم (#@Model.ReportId) قبل التأكيد</p>
             </div>
 
             <div class="card-body p-4 p-md-5 bg-white">
@@ -94,7 +94,7 @@
                 @* أزرار التحكم *@
                 <form asp-action="Delete" method="post">
                     @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="ReportID" />
+                    <input type="hidden" asp-for="ReportId" />
 
                     <div class="d-flex justify-content-center gap-3 mt-4 pt-3 border-top">
                         @if (Model.ReportPersons == null || !Model.ReportPersons.Any())

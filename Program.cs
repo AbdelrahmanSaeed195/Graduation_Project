@@ -3,24 +3,19 @@ using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
 using projectweb.Services;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
-// MVC
+// 1. إعدادات الـ MVC والـ DB
 builder.Services.AddControllersWithViews();
 
-// DB
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    )
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-// Session
-builder.Services.AddSession(c =>
-    c.IdleTimeout = TimeSpan.FromMinutes(10)
-);
+// 2. إعدادات الـ Session والـ Identity
+builder.Services.AddSession(c => c.IdleTimeout = TimeSpan.FromMinutes(10));
 
-// Identity
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
     options.User.AllowedUserNameCharacters =
@@ -30,11 +25,17 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// Email Service (صح)
+// 3. تسجيل الخدمات (Services)
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<ICommitteesAssignmentsService, _CommitteesAssignmentsService>();
 
+
+
+
+// 4. بناء التطبيق
 var app = builder.Build();
 
+// 5. إعدادات الـ Middleware
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -42,9 +43,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
-
 app.UseSession();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -53,11 +52,9 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}"
 );
 
-// Seed
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-
     var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
@@ -68,25 +65,15 @@ using (var scope = app.Services.CreateScope())
 
     string adminEmail = "admin@example.com";
     string adminPassword = "Admin@123";
-
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
     if (adminUser == null)
     {
-        var newAdmin = new IdentityUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            EmailConfirmed = true
-        };
-
+        var newAdmin = new IdentityUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
         var result = await userManager.CreateAsync(newAdmin, adminPassword);
-
-        if (result.Succeeded)
-        {
-            await userManager.AddToRoleAsync(newAdmin, "Admin");
-        }
+        if (result.Succeeded) await userManager.AddToRoleAsync(newAdmin, "Admin");
     }
 }
 
+// 7. تشغيل التطبيق
 app.Run();

@@ -15,7 +15,7 @@
         }
 
         <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
-            <div class="card-header academic-card-header text-white p-4" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
+            <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
                 <div class="d-flex align-items-center">
                     <div class="bg-white bg-opacity-25 rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
                         <i class="bi bi-file-earmark-plus-fill text-white fs-4"></i>
@@ -32,7 +32,7 @@
                     @Html.AntiForgeryToken()
 
                     <div class="row g-4">
-                        @* 1. اختيار المادة *@
+                        @* 1. اختيار المادة والامتحان (تم تصحيح الـ Key ليكون ExamID مطابقاً لتمرير الكنترولر) *@
                         <div class="col-md-6">
                             <label class="form-label academic-label required fw-bold mb-2">اختر المادة / الامتحان</label>
                             <div class="input-group">
@@ -44,19 +44,19 @@
                             </div>
                         </div>
 
-                        @* 2. اختيار اللجنة *@
+                        @* 2. اختيار اللجنة التابعة للامتحان *@
                         <div class="col-md-6">
-                            <label asp-for="ScheduleID" class="form-label academic-label required fw-bold mb-2">اللجنة المختصة</label>
+                            <label asp-for="ScheduleId" class="form-label academic-label required fw-bold mb-2">اللجنة المختصة</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-door-open"></i></span>
-                                <select asp-for="ScheduleID" id="committeeSelect" class="form-select academic-input border-start-0" disabled>
+                                <select asp-for="ScheduleId" id="committeeSelect" class="form-select academic-input border-start-0" disabled>
                                     <option value="">-- اختر المادة أولاً --</option>
                                 </select>
                             </div>
-                            <span asp-validation-for="ScheduleID" class="text-danger small fw-bold"></span>
+                            <span asp-validation-for="ScheduleId" class="text-danger small fw-bold"></span>
                         </div>
 
-                        @* 3. نوع المحضر *@
+                        @* 3. نوع وحالة المحضر *@
                         <div class="col-md-12">
                             <label asp-for="Status" class="form-label academic-label required fw-bold mb-2">نوع / حالة المحضر</label>
                             <div class="input-group">
@@ -68,7 +68,7 @@
                             </div>
                         </div>
 
-                        @* 4. اختيار الطالب المعني *@
+                        @* 4. اختيار الطالب المعني بالواقعة *@
                         <div class="col-md-6 party-section" style="display:none;">
                             <label class="form-label academic-label fw-bold mb-2">الطالب المعني (إن وجد)</label>
                             <div class="input-group">
@@ -79,7 +79,7 @@
                             </div>
                         </div>
 
-                        @* 5. الموظفون (الملاحظون) *@
+                        @* 5. اختيار الموظفين والملاحظين المشتركين *@
                         <div class="col-md-6 party-section" style="display:none;">
                             <label class="form-label academic-label required fw-bold mb-2">المكلفون الذين رصدوا الواقعة</label>
                             <div class="input-group">
@@ -90,7 +90,7 @@
                             <small class="text-muted" style="font-size: 0.75rem;">استخدم Ctrl لاختيار أكثر من موظف</small>
                         </div>
 
-                        @* 6. الملاحظات *@
+                        @* 6. تفاصيل ووقائع المحضر *@
                         <div class="col-12 mt-4">
                             <label asp-for="Notes" class="form-label academic-label fw-bold mb-2">تفاصيل ووقائع المحضر</label>
                             <div class="input-group">
@@ -122,10 +122,12 @@
 
     <script>
         $(document).ready(function () {
-            // 1. جلب اللجان عند تغيير المادة
+
+            // 1. جلب اللجان الامتحانية الموزعة عند تغيير المادة
             $('#examSelect').change(function () {
                 var examId = $(this).val();
                 var committeeSelect = $('#committeeSelect');
+
                 $('.party-section').hide();
                 committeeSelect.empty().append('<option value="">-- جاري التحميل... --</option>');
 
@@ -142,27 +144,31 @@
                 }
             });
 
-            // 2. جلب الطلاب والموظفين عند تغيير اللجنة
+            // 2. جلب الطلاب والموظفين المعينين داخل اللجنة المختارة عبر الـ AJAX المصحح في الذاكرة
             $('#committeeSelect').change(function () {
                 var scheduleId = $(this).val();
                 if (scheduleId) {
                     $.getJSON('@Url.Action("GetCommitteeParties")', { scheduleId: scheduleId }, function (data) {
-                        // تعبئة الطلاب
+
+                        // تعبئة قائمة الطلاب الموزعين
                         var studentSelect = $('#studentSelect');
                         studentSelect.empty().append('<option value="">-- اختر الطالب --</option>');
                         $.each(data.students, function (i, s) {
                             studentSelect.append($('<option>', { value: s.id, text: s.name }));
                         });
 
-                        // تعبئة الموظفين
+                        // تعبئة قائمة الموظفين (الملاحظين)
                         var staffSelect = $('#staffSelect');
                         staffSelect.empty();
                         $.each(data.staff, function (i, s) {
                             staffSelect.append($('<option>', { value: s.id, text: s.name }));
                         });
 
+                        // إظهار حقول الاختيار بحركة ناعمة
                         $('.party-section').fadeIn();
                     });
+                } else {
+                    $('.party-section').hide();
                 }
             });
         });

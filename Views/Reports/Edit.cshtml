@@ -18,13 +18,13 @@
 
         <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
             @* رأس البطاقة *@
-            <div class="card-header academic-card-header text-white p-4" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
+            <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
                 <div class="d-flex align-items-center">
                     <div class="bg-white bg-opacity-25 rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
                         <i class="bi bi-pencil-square text-white fs-4"></i>
                     </div>
                     <div>
-                        <h4 class="mb-0 fw-bold text-white">تعديل المحضر رقم (#@Model.ReportID)</h4>
+                        <h4 class="mb-0 fw-bold text-white">تعديل المحضر رقم (#@Model.ReportId)</h4>
                         <p class="mb-0 small text-white-50">تحديث البيانات المسجلة بتاريخ @Model.CreatedDate.ToString("yyyy/MM/dd")</p>
                     </div>
                 </div>
@@ -33,7 +33,7 @@
             <div class="card-body p-4 p-md-5" style="background-color: #ffffff;">
                 <form asp-action="Edit" method="post" id="editReportForm">
                     @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="ReportID" />
+                    <input type="hidden" asp-for="ReportId" />
                     <input type="hidden" asp-for="CreatedDate" />
 
                     <div class="row g-4">
@@ -51,14 +51,14 @@
 
                         @* 2. اختيار اللجنة *@
                         <div class="col-md-6">
-                            <label asp-for="ScheduleID" class="form-label academic-label required fw-bold mb-2">اللجنة المختصة</label>
+                            <label asp-for="ScheduleId" class="form-label academic-label required fw-bold mb-2">اللجنة المختصة</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-door-open"></i></span>
-                                <select asp-for="ScheduleID" id="committeeSelect" class="form-select academic-input border-start-0">
+                                <select asp-for="ScheduleId" id="committeeSelect" class="form-select academic-input border-start-0">
                                     <option value="">-- اختر اللجنة --</option>
                                 </select>
                             </div>
-                            <span asp-validation-for="ScheduleID" class="text-danger small fw-bold"></span>
+                            <span asp-validation-for="ScheduleId" class="text-danger small fw-bold"></span>
                         </div>
 
                         @* 3. نوع / حالة المحضر *@
@@ -128,13 +128,13 @@
 
     <script>
         $(document).ready(function () {
-            // استلام البيانات من الكنترولر
+            // استلام البيانات من الكنترولر مع تصحيح حالة الأحرف للمتغيرات (Id سمول)
             var initialExamId = $('#examSelect').val();
-            var initialScheduleId = '@(ViewBag.SelectedScheduleId ?? Model.ScheduleID)';
+            var initialScheduleId = '@(ViewBag.SelectedScheduleId ?? Model.ScheduleId)';
             var currentStaffIds = @Html.Raw(Json.Serialize(ViewBag.CurrentStaffIds));
             var selectedStudentId = '@(ViewBag.SelectedStudentId ?? "")';
 
-            // 1. عند فتح الصفحة: إذا كان هناك مادة مختارة، حمل اللجان
+            // 1. عند فتح الصفحة: إذا كان هناك مادة مختارة سابقاً، حمل اللجان فوراً
             if (initialExamId) {
                 loadCommittees(initialExamId, initialScheduleId);
             }
@@ -158,11 +158,13 @@
                         committeeSelect.empty().append('<option value="">-- اختر اللجنة --</option>');
                         $.each(data, function (index, item) {
                             var option = $('<option>', { value: item.id, text: item.name });
-                            if (item.id == selectedId) option.attr('selected', 'selected');
+                            if (item.id == selectedId) {
+                                option.attr('selected', 'selected');
+                            }
                             committeeSelect.append(option);
                         });
 
-                        // تحميل الأطراف فوراً بعد تحميل اللجان إذا كانت هناك لجنة محددة
+                        // تحميل الأطراف والموقعين فوراً بعد استقرار قائمة اللجان
                         var currentId = selectedId || committeeSelect.val();
                         if (currentId) {
                             loadParties(currentId);
@@ -175,21 +177,23 @@
                 if(!scheduleId) return;
 
                 $.getJSON('@Url.Action("GetCommitteeParties")', { scheduleId: scheduleId }, function (data) {
-                    // تعبئة الطلاب
+
+                    // تعبئة قائمة الطلاب وتحديد الطالب المسجل سابقاً (تم تصحيح الـ Case-Sensitivity هنا)
                     var studentSelect = $('#studentSelect');
                     studentSelect.empty().append('<option value="">-- اختر الطالب --</option>');
                     $.each(data.students, function (i, s) {
                         var option = $('<option>', { value: s.id, text: s.name });
-                        if (s.id == selectedStudentId) option.attr('selected', 'selected');
+                        if (s.id == selectedStudentId) {
+                            option.attr('selected', 'selected');
+                        }
                         studentSelect.append(option);
                     });
 
-                    // تعبئة الموظفين
+                    // تعبئة قائمة الموظفين وتحديد الملاحظين المسجلين سابقاً في المحضر
                     var staffSelect = $('#staffSelect');
                     staffSelect.empty();
                     $.each(data.staff, function (i, s) {
                         var option = $('<option>', { value: s.id, text: s.name });
-                        // التحقق من الموظفين المختارين سابقاً
                         if (currentStaffIds && currentStaffIds.indexOf(s.id) !== -1) {
                             option.attr('selected', 'selected');
                         }

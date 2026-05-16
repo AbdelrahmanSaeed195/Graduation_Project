@@ -32,7 +32,7 @@
                             <div class="col-md-12 mb-3">
                                 <label asp-for="CommitteeId" class="form-label fw-bold" style="color: #4a5568;">اللجنة المختصة <span class="text-danger">*</span></label>
                                 <select asp-for="CommitteeId" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.CommitteeId" style="font-size: 0.95rem; border-radius: 8px;">
-                                    <option value="">-- اختر اللجنة --</option>
+                                    <option value="">-- اختر الامتحان أولاً لعرض اللجان المتاحة --</option>
                                 </select>
                                 <span asp-validation-for="CommitteeId" class="text-danger small mt-1 d-block"></span>
                             </div>
@@ -65,6 +65,40 @@
             if ($('.validation-summary-errors ul li').length > 0) {
                 $('.alert-danger').removeClass('d-none');
             }
+
+            $('#ExamId').change(function () {
+                var examId = $(this).val();
+                var committeeSelect = $('#CommitteeId');
+
+                committeeSelect.empty();
+
+                if (examId) {
+                    committeeSelect.append('<option value="">-- جاري تحميل اللجان المتاحة... --</option>');
+
+                    $.ajax({
+                        url: '@Url.Action("GetAvailableCommittees")', 
+                        type: 'GET',
+                        data: { examId: examId },
+                        success: function (data) {
+                            committeeSelect.empty();
+                            committeeSelect.append('<option value="">-- اختر اللجنة المختصة --</option>');
+
+                            $.each(data, function (index, item) {
+                                committeeSelect.append($('<option>', {
+                                    value: item.id,
+                                    text: item.number
+                                }));
+                            });
+                        },
+                        error: function () {
+                            committeeSelect.empty();
+                            committeeSelect.append('<option value="">-- خطأ في تحميل البيانات، أعد المحاولة --</option>');
+                        }
+                    });
+                } else {
+                    committeeSelect.append('<option value="">-- اختر الامتحان أولاً لعرض اللجان المتاحة --</option>');
+                }
+            });
         });
     </script>
 }

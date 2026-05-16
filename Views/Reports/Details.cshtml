@@ -14,10 +14,10 @@
             <div class="card-header academic-card-header text-white p-4 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
                 <div>
                     <h4 class="mb-0 fw-bold text-white"><i class="bi bi-file-earmark-text-fill me-2"></i> تفاصيل المحضر الرسمي</h4>
-                    <small class="text-white-50">توثيق وقائع الجلسة الامتحانية رقم #@Model.ReportID</small>
+                    <small class="text-white-50">توثيق وقائع الجلسة الامتحانية رقم #@Model.ReportId</small>
                 </div>
                 <div class="text-start">
-                    <span class="badge bg-white text-dark shadow-sm px-3 py-2 fs-6">سجل رقم: @Model.ReportID</span>
+                    <span class="badge bg-white text-dark shadow-sm px-3 py-2 fs-6">سجل رقم: @Model.ReportId</span>
                 </div>
             </div>
 
@@ -177,7 +177,7 @@
                 <div class="d-flex flex-wrap gap-2 mt-5 pt-4 border-top no-print">
                     @if (User.IsInRole("Admin"))
                     {
-                        <a asp-action="Edit" asp-route-id="@Model.ReportID" class="btn btn-academic-primary px-5 fw-bold shadow-sm py-2">
+                        <a asp-action="Edit" asp-route-id="@Model.ReportId" class="btn btn-academic-primary px-5 fw-bold shadow-sm py-2">
                             <i class="bi bi-pencil-square me-1"></i> تعديل المحضر
                         </a>
                     }

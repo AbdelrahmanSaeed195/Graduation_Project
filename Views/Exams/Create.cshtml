@@ -20,6 +20,7 @@
 
                 <form asp-action="Create" method="post" id="examForm">
                     @Html.AntiForgeryToken()
+
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3 border-0 shadow-sm" style="border-radius: 8px;"></div>
 
                     <div class="row g-4 mb-4">
@@ -32,9 +33,15 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="TargetAcademicYear" class="form-label fw-bold" style="color: #4a5568;">السنة الدراسية <span class="text-muted small">(تُجلب تلقائياً)</span></label>
-                            <input asp-for="TargetAcademicYear" id="AcademicYearField" class="form-control bg-light shadow-sm fw-bold text-navy" readonly style="border-radius: 8px;" placeholder="بانتظار اختيار المادة..." />
-                        </div>                        
+                            <label class="form-label fw-bold">السنة الدراسية <span class="text-muted small">(تُجلب تلقائياً)</span></label>
+                            <input type="text"
+                                   id="AcademicYearField"
+                                   class="form-control bg-light shadow-sm fw-bold text-navy"
+                                   readonly
+                                   style="border-radius: 8px;"
+                                   placeholder="بانتظار اختيار المادة..."
+                                   value="@Model?.AcademicYear" />
+                        </div>
 
                         <div class="col-md-4">
                             <label asp-for="ExamDate" class="form-label fw-bold" style="color: #4a5568;">تاريخ الامتحان <span class="text-danger">*</span></label>
@@ -72,21 +79,28 @@
 
     <script>
         $(document).ready(function () {
-            $('#SubjectSelect').change(function () {
+            $('#SubjectSelect').on('change', function () {
                 var subjectId = $(this).val();
+                var $yearField = $('#AcademicYearField');
+
                 if (subjectId) {
                     $.ajax({
-                        url: '/Exams/GetSubjectYear', 
+                        url: '@Url.Action("GetSubjectYear", "Exams")',
                         type: 'GET',
                         data: { subjectId: subjectId },
                         success: function (data) {
-                            if (data) {
-                                $('#AcademicYearField').val(data.academicYear);
+                            if (data && data.academicYear) {
+                                $yearField.val(data.academicYear);
+                            } else {
+                                $yearField.val('غير محددة');
                             }
+                        },
+                        error: function() {
+                            $yearField.val('خطأ في الاتصال');
                         }
                     });
                 } else {
-                    $('#AcademicYearField').val('');
+                    $yearField.val('');
                 }
             });
 
@@ -99,51 +113,50 @@
                 var submitBtn = $('#submitBtn');
 
                 if (date && start && end) {
-                    var startTime = new Date("1970-01-01 " + start);
-                    var endTime = new Date("1970-01-01 " + end);
+                    var startTime = new Date("1970-01-01T" + start);
+                    var endTime = new Date("1970-01-01T" + end);
                     var diffMinutes = (endTime - startTime) / (1000 * 60);
 
                     if (diffMinutes <= 0) {
                         errorMessage.text("خطأ: يجب أن يكون وقت انتهاء الامتحان بعد وقت البدء.");
-                        errorDiv.fadeIn();
-                        submitBtn.attr('disabled', 'disabled');
+                        errorDiv.show();
+                        submitBtn.prop('disabled', true);
                         return;
                     }
 
                     if (diffMinutes > 180) {
-                        errorMessage.text("عفواً، لا يمكن أن تتجاوز مدة الامتحان 3 ساعات كحد أقصى. (المدة الحالية: " + (diffMinutes/60).toFixed(1) + " ساعة)");
-                        errorDiv.fadeIn();
-                        submitBtn.attr('disabled', 'disabled');
+                        errorMessage.text("عفواً، لا يمكن أن تتجاوز مدة الامتحان 3 ساعات.");
+                        errorDiv.show();
+                        submitBtn.prop('disabled', true);
                         return;
                     }
-                    $.get('/Exams/CheckConstraints', { date: date, start: start, end: end }, function (data) {
+
+                    $.get('@Url.Action("CheckConstraints", "Exams")', { date: date, start: start, end: end }, function (data) {
                         if (data.isOverlapping) {
                             errorMessage.text("تنبيه: يوجد امتحان آخر مسجل في نفس هذا الموعد والتاريخ.");
-                            errorDiv.fadeIn();
-                            submitBtn.attr('disabled', 'disabled');
+                            errorDiv.show();
+                            submitBtn.prop('disabled', true);
                         } else {
-                            errorDiv.fadeOut();
-                            submitBtn.removeAttr('disabled');
+                            errorDiv.hide();
+                            submitBtn.prop('disabled', false);
                         }
                     });
                 }
             }
 
-            $('#ExamDate, #StartTime, #EndTime').on('change', function () {
-                checkConstraints();
-            });
+            $('#ExamDate, #StartTime, #EndTime').on('change', checkConstraints);
 
-            $('#examForm').submit(function (e) {
+            // منع الإرسال إذا كانت البيانات غير منطقية
+            $('#examForm').on('submit', function (e) {
                 var start = $('#StartTime').val();
                 var end = $('#EndTime').val();
                 if (start && end) {
-                    var st = new Date("1970-01-01 " + start);
-                    var et = new Date("1970-01-01 " + end);
+                    var st = new Date("1970-01-01T" + start);
+                    var et = new Date("1970-01-01T" + end);
                     var duration = (et - st) / (1000 * 60);
                     if (duration > 180 || duration <= 0) {
                         e.preventDefault();
-                        alert("لا يمكن الحفظ: يرجى التأكد من أن المدة لا تتجاوز 3 ساعات وأن وقت النهاية بعد وقت البدء.");
-                        return false;
+                        alert("يرجى تصحيح الوقت قبل الحفظ.");
                     }
                 }
             });
@@ -169,8 +182,13 @@
 
             .btn-academic-primary:hover {
                 background-color: #2e5a88;
-                color: white;
                 transform: translateY(-2px);
+            }
+
+            .btn-academic-primary:disabled {
+                background-color: #6c757d;
+                cursor: not-allowed;
+                transform: none;
             }
     </style>
 }

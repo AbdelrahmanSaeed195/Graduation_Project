@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace projectweb.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -198,15 +198,15 @@ namespace projectweb.Migrations
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NationalId = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     JobRole = table.Column<int>(type: "int", nullable: false),
-                    RoleID = table.Column<int>(type: "int", nullable: false),
+                    RoleId = table.Column<int>(type: "int", nullable: false),
                     IsActiveForAssignment = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Persons", x => x.PersonId);
                     table.ForeignKey(
-                        name: "FK_Persons_Roles_RoleID",
-                        column: x => x.RoleID,
+                        name: "FK_Persons_Roles_RoleId",
+                        column: x => x.RoleId,
                         principalTable: "Roles",
                         principalColumn: "RoleID",
                         onDelete: ReferentialAction.Cascade);
@@ -221,7 +221,6 @@ namespace projectweb.Migrations
                     ExamDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     StartTime = table.Column<TimeSpan>(type: "time", nullable: false),
                     EndTime = table.Column<TimeSpan>(type: "time", nullable: false),
-                    TargetAcademicYear = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SubjectID = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -232,7 +231,7 @@ namespace projectweb.Migrations
                         column: x => x.SubjectID,
                         principalTable: "Subjects",
                         principalColumn: "SubjectId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -244,14 +243,14 @@ namespace projectweb.Migrations
                     HallName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Floor = table.Column<int>(type: "int", nullable: false),
                     MaxBlocks = table.Column<int>(type: "int", nullable: false),
-                    HallSupervisorID = table.Column<int>(type: "int", nullable: true)
+                    HallSupervisorId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Halls", x => x.HallId);
                     table.ForeignKey(
-                        name: "FK_Halls_Persons_HallSupervisorID",
-                        column: x => x.HallSupervisorID,
+                        name: "FK_Halls_Persons_HallSupervisorId",
+                        column: x => x.HallSupervisorId,
                         principalTable: "Persons",
                         principalColumn: "PersonId",
                         onDelete: ReferentialAction.Restrict);
@@ -261,15 +260,15 @@ namespace projectweb.Migrations
                 name: "Blocks",
                 columns: table => new
                 {
-                    BlockID = table.Column<int>(type: "int", nullable: false)
+                    BlockId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    BlockName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BlockName = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     MaxCommittees = table.Column<int>(type: "int", nullable: false),
                     HallId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Blocks", x => x.BlockID);
+                    table.PrimaryKey("PK_Blocks", x => x.BlockId);
                     table.ForeignKey(
                         name: "FK_Blocks_Halls_HallId",
                         column: x => x.HallId,
@@ -282,24 +281,24 @@ namespace projectweb.Migrations
                 name: "Committees",
                 columns: table => new
                 {
-                    CommitteeID = table.Column<int>(type: "int", nullable: false)
+                    CommitteeId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CommitteeNumber = table.Column<int>(type: "int", nullable: false),
                     RequiredObservers = table.Column<int>(type: "int", nullable: false),
                     RequiredMentors = table.Column<int>(type: "int", nullable: false),
                     RequiredHeads = table.Column<int>(type: "int", nullable: false),
                     NumberOfStudent = table.Column<int>(type: "int", nullable: false),
-                    StatusOfCommittee = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BlockID = table.Column<int>(type: "int", nullable: false)
+                    StatusOfCommittee = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BlockId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Committees", x => x.CommitteeID);
+                    table.PrimaryKey("PK_Committees", x => x.CommitteeId);
                     table.ForeignKey(
-                        name: "FK_Committees_Blocks_BlockID",
-                        column: x => x.BlockID,
+                        name: "FK_Committees_Blocks_BlockId",
+                        column: x => x.BlockId,
                         principalTable: "Blocks",
-                        principalColumn: "BlockID",
+                        principalColumn: "BlockId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -320,7 +319,7 @@ namespace projectweb.Migrations
                         name: "FK_ExamSchedules_Committees_CommitteeId",
                         column: x => x.CommitteeId,
                         principalTable: "Committees",
-                        principalColumn: "CommitteeID",
+                        principalColumn: "CommitteeId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_ExamSchedules_Exams_ExamId",
@@ -334,31 +333,37 @@ namespace projectweb.Migrations
                 name: "CommitteesAssignments",
                 columns: table => new
                 {
-                    AssignmentID = table.Column<int>(type: "int", nullable: false)
+                    AssignmentId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    PersonID = table.Column<int>(type: "int", nullable: false),
+                    PersonId = table.Column<int>(type: "int", nullable: false),
                     HallId = table.Column<int>(type: "int", nullable: true),
                     BlockId = table.Column<int>(type: "int", nullable: true),
-                    CommitteeID = table.Column<int>(type: "int", nullable: false),
-                    RoleID = table.Column<int>(type: "int", nullable: false),
+                    CommitteeId = table.Column<int>(type: "int", nullable: true),
+                    RoleId = table.Column<int>(type: "int", nullable: false),
                     ExamScheduleId = table.Column<int>(type: "int", nullable: false),
                     AssignmentType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RoleType = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    RoleType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BlockId1 = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CommitteesAssignments", x => x.AssignmentID);
+                    table.PrimaryKey("PK_CommitteesAssignments", x => x.AssignmentId);
                     table.ForeignKey(
                         name: "FK_CommitteesAssignments_Blocks_BlockId",
                         column: x => x.BlockId,
                         principalTable: "Blocks",
-                        principalColumn: "BlockID",
+                        principalColumn: "BlockId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_CommitteesAssignments_Committees_CommitteeID",
-                        column: x => x.CommitteeID,
+                        name: "FK_CommitteesAssignments_Blocks_BlockId1",
+                        column: x => x.BlockId1,
+                        principalTable: "Blocks",
+                        principalColumn: "BlockId");
+                    table.ForeignKey(
+                        name: "FK_CommitteesAssignments_Committees_CommitteeId",
+                        column: x => x.CommitteeId,
                         principalTable: "Committees",
-                        principalColumn: "CommitteeID",
+                        principalColumn: "CommitteeId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_CommitteesAssignments_ExamSchedules_ExamScheduleId",
@@ -373,14 +378,14 @@ namespace projectweb.Migrations
                         principalColumn: "HallId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_CommitteesAssignments_Persons_PersonID",
-                        column: x => x.PersonID,
+                        name: "FK_CommitteesAssignments_Persons_PersonId",
+                        column: x => x.PersonId,
                         principalTable: "Persons",
                         principalColumn: "PersonId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_CommitteesAssignments_Roles_RoleID",
-                        column: x => x.RoleID,
+                        name: "FK_CommitteesAssignments_Roles_RoleId",
+                        column: x => x.RoleId,
                         principalTable: "Roles",
                         principalColumn: "RoleID",
                         onDelete: ReferentialAction.Restrict);
@@ -416,57 +421,24 @@ namespace projectweb.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FullName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     NationalId = table.Column<string>(type: "nvarchar(14)", maxLength: 14, nullable: false),
-                    AcademicYear = table.Column<int>(type: "int", nullable: false),
+                    AcademicYear = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SeatNumber = table.Column<int>(type: "int", nullable: false),
                     ExamScheduleId = table.Column<int>(type: "int", nullable: true),
-                    CommitteeID = table.Column<int>(type: "int", nullable: true)
+                    CommitteeId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Students", x => x.StudentId);
                     table.ForeignKey(
-                        name: "FK_Students_Committees_CommitteeID",
-                        column: x => x.CommitteeID,
+                        name: "FK_Students_Committees_CommitteeId",
+                        column: x => x.CommitteeId,
                         principalTable: "Committees",
-                        principalColumn: "CommitteeID");
+                        principalColumn: "CommitteeId");
                     table.ForeignKey(
                         name: "FK_Students_ExamSchedules_ExamScheduleId",
                         column: x => x.ExamScheduleId,
                         principalTable: "ExamSchedules",
                         principalColumn: "ExamScheduleId");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ReportPersons",
-                columns: table => new
-                {
-                    ReportID = table.Column<int>(type: "int", nullable: false),
-                    PersonID = table.Column<int>(type: "int", nullable: false),
-                    RoleID = table.Column<int>(type: "int", nullable: false),
-                    Signature = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SignedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ReportPersons", x => new { x.ReportID, x.PersonID });
-                    table.ForeignKey(
-                        name: "FK_ReportPersons_Persons_PersonID",
-                        column: x => x.PersonID,
-                        principalTable: "Persons",
-                        principalColumn: "PersonId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ReportPersons_Reports_ReportID",
-                        column: x => x.ReportID,
-                        principalTable: "Reports",
-                        principalColumn: "ReportID",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ReportPersons_Roles_RoleID",
-                        column: x => x.RoleID,
-                        principalTable: "Roles",
-                        principalColumn: "RoleID",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -495,6 +467,45 @@ namespace projectweb.Migrations
                         principalTable: "Students",
                         principalColumn: "StudentId",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReportPersons",
+                columns: table => new
+                {
+                    ReportID = table.Column<int>(type: "int", nullable: false),
+                    PersonID = table.Column<int>(type: "int", nullable: false),
+                    StudentId = table.Column<int>(type: "int", nullable: true),
+                    RoleID = table.Column<int>(type: "int", nullable: false),
+                    Signature = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SignedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReportPersons", x => new { x.ReportID, x.PersonID });
+                    table.ForeignKey(
+                        name: "FK_ReportPersons_Persons_PersonID",
+                        column: x => x.PersonID,
+                        principalTable: "Persons",
+                        principalColumn: "PersonId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ReportPersons_Reports_ReportID",
+                        column: x => x.ReportID,
+                        principalTable: "Reports",
+                        principalColumn: "ReportID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ReportPersons_Roles_RoleID",
+                        column: x => x.RoleID,
+                        principalTable: "Roles",
+                        principalColumn: "RoleID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ReportPersons_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
+                        principalColumn: "StudentId");
                 });
 
             migrationBuilder.InsertData(
@@ -549,14 +560,26 @@ namespace projectweb.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Blocks_BlockName",
+                table: "Blocks",
+                column: "BlockName",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Blocks_HallId",
                 table: "Blocks",
                 column: "HallId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Committees_BlockID",
+                name: "IX_Committees_BlockId",
                 table: "Committees",
-                column: "BlockID");
+                column: "BlockId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Committees_CommitteeNumber",
+                table: "Committees",
+                column: "CommitteeNumber",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_CommitteesAssignments_BlockId",
@@ -564,9 +587,14 @@ namespace projectweb.Migrations
                 column: "BlockId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CommitteesAssignments_CommitteeID",
+                name: "IX_CommitteesAssignments_BlockId1",
                 table: "CommitteesAssignments",
-                column: "CommitteeID");
+                column: "BlockId1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CommitteesAssignments_CommitteeId",
+                table: "CommitteesAssignments",
+                column: "CommitteeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CommitteesAssignments_ExamScheduleId",
@@ -579,15 +607,15 @@ namespace projectweb.Migrations
                 column: "HallId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CommitteesAssignments_PersonID_ExamScheduleId",
+                name: "IX_CommitteesAssignments_PersonId_ExamScheduleId",
                 table: "CommitteesAssignments",
-                columns: new[] { "PersonID", "ExamScheduleId" },
+                columns: new[] { "PersonId", "ExamScheduleId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CommitteesAssignments_RoleID",
+                name: "IX_CommitteesAssignments_RoleId",
                 table: "CommitteesAssignments",
-                column: "RoleID");
+                column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Exams_SubjectID",
@@ -611,9 +639,15 @@ namespace projectweb.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Halls_HallSupervisorID",
+                name: "IX_Halls_HallName",
                 table: "Halls",
-                column: "HallSupervisorID");
+                column: "HallName",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Halls_HallSupervisorId",
+                table: "Halls",
+                column: "HallSupervisorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Persons_NationalId",
@@ -622,9 +656,9 @@ namespace projectweb.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Persons_RoleID",
+                name: "IX_Persons_RoleId",
                 table: "Persons",
-                column: "RoleID");
+                column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Relatives_PersonId",
@@ -647,14 +681,19 @@ namespace projectweb.Migrations
                 column: "RoleID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ReportPersons_StudentId",
+                table: "ReportPersons",
+                column: "StudentId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Reports_ScheduleID",
                 table: "Reports",
                 column: "ScheduleID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Students_CommitteeID",
+                name: "IX_Students_CommitteeId",
                 table: "Students",
-                column: "CommitteeID");
+                column: "CommitteeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Students_ExamScheduleId",
@@ -702,10 +741,10 @@ namespace projectweb.Migrations
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "Students");
+                name: "Reports");
 
             migrationBuilder.DropTable(
-                name: "Reports");
+                name: "Students");
 
             migrationBuilder.DropTable(
                 name: "ExamSchedules");

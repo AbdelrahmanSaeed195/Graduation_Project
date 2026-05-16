@@ -9,17 +9,17 @@ namespace projectweb.Models
     {
         [Key, Column(Order = 0)]
         [Display(Name = "كود المحضر")]
-        public int ReportID { get; set; }
+        public int ReportId { get; set; }
         [ValidateNever]
-        [ForeignKey("ReportID")]
+        [ForeignKey("ReportId")]
         [Display(Name = "بيانات المحضر")]
         public virtual Report Report { get; set; }
 
         [Key, Column(Order = 1)]
         [Display(Name = "كود الشخص")]
-        public int PersonID { get; set; }
+        public int PersonId { get; set; }
         [ValidateNever]
-        [ForeignKey("PersonID")]
+        [ForeignKey("PersonId")]
         [Display(Name = "بيانات الموقع")]
         public virtual Person Person { get; set; }
 
@@ -32,9 +32,9 @@ namespace projectweb.Models
 
         [Required(ErrorMessage = "يجب تحديد صفة الموقع")]
         [Display(Name = "الصفة في المحضر")]
-        public int RoleID { get; set; }
+        public int RoleId { get; set; }
         [ValidateNever]
-        [ForeignKey("RoleID")]
+        [ForeignKey("RoleId")]
         [Display(Name = "بيانات الصفة")]
         public virtual Role Role { get; set; }
 

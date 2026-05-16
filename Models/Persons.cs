@@ -63,9 +63,9 @@ namespace projectweb.Models
 
         [Required(ErrorMessage = "يجب تحديد التخصص/الوظيفة")]
         [Display(Name = "الوظيفة")]
-        public int RoleID { get; set; } = 1;
+        public int RoleId { get; set; } = 1;
         [ValidateNever]
-        [ForeignKey("RoleID")]
+        [ForeignKey("RoleId")]
         [Display(Name = "بيانات الوظيفة")]
         public virtual Role Role { get; set; }
 

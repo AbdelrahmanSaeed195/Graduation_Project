@@ -95,7 +95,7 @@
         <div class="card-footer bg-light border-0 d-flex justify-content-center gap-3 py-4" style="border-radius: 0 0 15px 15px;">
             @if (User.IsInRole("Admin"))
            {
-                <a asp-action="Edit" asp-route-id="@Model.AssignmentID" class="btn btn-primary px-5 shadow-sm btn-hover-effect">
+                <a asp-action="Edit" asp-route-id="@Model.AssignmentId" class="btn btn-primary px-5 shadow-sm btn-hover-effect">
                 <i class="bi bi-pencil-square me-1"></i> تعديل التكليف
                  </a>
            }

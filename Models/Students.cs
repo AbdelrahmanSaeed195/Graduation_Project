@@ -26,7 +26,7 @@ namespace projectweb.Models
 
         [Required(ErrorMessage = "السنة الدراسية مطلوبة")]
         [Display(Name = "السنة الدراسية")]
-        public int AcademicYear { get; set; }
+        public string AcademicYear { get; set; }
 
         [Display(Name = "رقم الجلوس")]
         public int SeatNumber { get; set; } = 0;

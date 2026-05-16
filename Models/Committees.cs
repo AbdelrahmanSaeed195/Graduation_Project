@@ -7,12 +7,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace projectweb.Models
 {
     [Index(nameof(CommitteeNumber), IsUnique = true)]
-
     public class Committee
     {
         [Key]
         [Display(Name = "كود اللجنة")]
-        public int CommitteeID { get; set; }
+        public int CommitteeId { get; set; }
 
         [Required(ErrorMessage = "رقم اللجنة مطلوب")]
         [Display(Name = "رقم اللجنة")]
@@ -32,25 +31,27 @@ namespace projectweb.Models
         public int NumberOfStudent { get; set; }
 
         [Display(Name = "حالة اللجنة")]
-        public string StatusOfCommittee { get; set; }
+        public string? StatusOfCommittee { get; set; }
 
         [Required(ErrorMessage = "يجب تحديد البلوك التابع له")]
         [Display(Name = "البلوك (الجزء)")]
-        public int BlockID { get; set; }
+        public int BlockId { get; set; }
+
         [ValidateNever]
-        [ForeignKey("BlockID")]
+        [ForeignKey("BlockId")] 
         [Display(Name = "بيانات البلوك")]
         public virtual Block Block { get; set; }
+
         [ValidateNever]
         [Display(Name = "قائمة الطلاب")]
         public virtual ICollection<Student> Students { get; set; }
+
         [ValidateNever]
         [Display(Name = "توزيعات المراقبين")]
         public virtual ICollection<CommitteesAssignment> CommitteesAssignments { get; set; }
+
         [ValidateNever]
         [Display(Name = "جدول الامتحانات")]
         public virtual ICollection<ExamSchedule> ExamSchedules { get; set; }
-
-       
     }
 }

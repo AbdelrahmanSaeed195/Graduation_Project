@@ -27,7 +27,7 @@
                         <div class="card-body py-3 px-4">
                             <h5 class="fw-bold text-primary border-bottom pb-2 mb-3">
                                 @(Model.Exam?.Subject?.SubjectName ?? "مادة غير محددة")
-                                <small class="text-muted fw-normal fs-6">(@Model.Exam?.TargetAcademicYear)</small>
+                                <small class="text-muted fw-normal fs-6">(@Model.Exam?.Subject?.AcademicYear ?? "-")</small>
                             </h5>
                             <p class="mb-2"><strong>اللجنة:</strong> لجنة @Model.Committee?.CommitteeNumber</p>
                             <p class="mb-2"><strong>التاريخ المقرر:</strong> @Model.Exam?.ExamDate.ToString("dd / MM / yyyy")</p>

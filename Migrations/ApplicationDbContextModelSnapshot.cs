@@ -222,11 +222,11 @@ namespace projectweb.Migrations
 
             modelBuilder.Entity("projectweb.Models.Block", b =>
                 {
-                    b.Property<int>("BlockID")
+                    b.Property<int>("BlockId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BlockID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BlockId"));
 
                     b.Property<string>("BlockName")
                         .IsRequired()
@@ -238,7 +238,7 @@ namespace projectweb.Migrations
                     b.Property<int>("MaxCommittees")
                         .HasColumnType("int");
 
-                    b.HasKey("BlockID");
+                    b.HasKey("BlockId");
 
                     b.HasIndex("BlockName")
                         .IsUnique();
@@ -250,13 +250,13 @@ namespace projectweb.Migrations
 
             modelBuilder.Entity("projectweb.Models.Committee", b =>
                 {
-                    b.Property<int>("CommitteeID")
+                    b.Property<int>("CommitteeId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommitteeID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommitteeId"));
 
-                    b.Property<int>("BlockID")
+                    b.Property<int>("BlockId")
                         .HasColumnType("int");
 
                     b.Property<int>("CommitteeNumber")
@@ -275,12 +275,11 @@ namespace projectweb.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("StatusOfCommittee")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("CommitteeID");
+                    b.HasKey("CommitteeId");
 
-                    b.HasIndex("BlockID");
+                    b.HasIndex("BlockId");
 
                     b.HasIndex("CommitteeNumber")
                         .IsUnique();
@@ -290,11 +289,11 @@ namespace projectweb.Migrations
 
             modelBuilder.Entity("projectweb.Models.CommitteesAssignment", b =>
                 {
-                    b.Property<int>("AssignmentID")
+                    b.Property<int>("AssignmentId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AssignmentID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AssignmentId"));
 
                     b.Property<string>("AssignmentType")
                         .HasColumnType("nvarchar(max)");
@@ -302,7 +301,10 @@ namespace projectweb.Migrations
                     b.Property<int?>("BlockId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CommitteeID")
+                    b.Property<int?>("BlockId1")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CommitteeId")
                         .HasColumnType("int");
 
                     b.Property<int>("ExamScheduleId")
@@ -311,28 +313,30 @@ namespace projectweb.Migrations
                     b.Property<int?>("HallId")
                         .HasColumnType("int");
 
-                    b.Property<int>("PersonID")
+                    b.Property<int>("PersonId")
                         .HasColumnType("int");
 
-                    b.Property<int>("RoleID")
+                    b.Property<int>("RoleId")
                         .HasColumnType("int");
 
                     b.Property<string>("RoleType")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("AssignmentID");
+                    b.HasKey("AssignmentId");
 
                     b.HasIndex("BlockId");
 
-                    b.HasIndex("CommitteeID");
+                    b.HasIndex("BlockId1");
+
+                    b.HasIndex("CommitteeId");
 
                     b.HasIndex("ExamScheduleId");
 
                     b.HasIndex("HallId");
 
-                    b.HasIndex("RoleID");
+                    b.HasIndex("RoleId");
 
-                    b.HasIndex("PersonID", "ExamScheduleId")
+                    b.HasIndex("PersonId", "ExamScheduleId")
                         .IsUnique();
 
                     b.ToTable("CommitteesAssignments");
@@ -357,10 +361,6 @@ namespace projectweb.Migrations
 
                     b.Property<int>("SubjectID")
                         .HasColumnType("int");
-
-                    b.Property<string>("TargetAcademicYear")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ExamId");
 
@@ -390,9 +390,7 @@ namespace projectweb.Migrations
 
                     b.HasIndex("CommitteeId");
 
-                    b.HasIndex("ExamId");
-
-                    b.HasIndex("ScheduledDate", "CommitteeId")
+                    b.HasIndex("ExamId", "CommitteeId")
                         .IsUnique();
 
                     b.ToTable("ExamSchedules");
@@ -414,7 +412,7 @@ namespace projectweb.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int?>("HallSupervisorID")
+                    b.Property<int?>("HallSupervisorId")
                         .HasColumnType("int");
 
                     b.Property<int>("MaxBlocks")
@@ -425,7 +423,7 @@ namespace projectweb.Migrations
                     b.HasIndex("HallName")
                         .IsUnique();
 
-                    b.HasIndex("HallSupervisorID");
+                    b.HasIndex("HallSupervisorId");
 
                     b.ToTable("Halls");
                 });
@@ -463,7 +461,7 @@ namespace projectweb.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<int>("RoleID")
+                    b.Property<int>("RoleId")
                         .HasColumnType("int");
 
                     b.HasKey("PersonId");
@@ -471,7 +469,7 @@ namespace projectweb.Migrations
                     b.HasIndex("NationalId")
                         .IsUnique();
 
-                    b.HasIndex("RoleID");
+                    b.HasIndex("RoleId");
 
                     b.ToTable("Persons");
                 });
@@ -509,11 +507,11 @@ namespace projectweb.Migrations
 
             modelBuilder.Entity("projectweb.Models.Report", b =>
                 {
-                    b.Property<int>("ReportID")
+                    b.Property<int>("ReportId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReportID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReportId"));
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -521,30 +519,30 @@ namespace projectweb.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ScheduleID")
+                    b.Property<int>("ScheduleId")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.HasKey("ReportID");
+                    b.HasKey("ReportId");
 
-                    b.HasIndex("ScheduleID");
+                    b.HasIndex("ScheduleId");
 
                     b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("projectweb.Models.ReportPerson", b =>
                 {
-                    b.Property<int>("ReportID")
+                    b.Property<int>("ReportId")
                         .HasColumnType("int")
                         .HasColumnOrder(0);
 
-                    b.Property<int>("PersonID")
+                    b.Property<int>("PersonId")
                         .HasColumnType("int")
                         .HasColumnOrder(1);
 
-                    b.Property<int>("RoleID")
+                    b.Property<int>("RoleId")
                         .HasColumnType("int");
 
                     b.Property<string>("Signature")
@@ -557,11 +555,11 @@ namespace projectweb.Migrations
                     b.Property<int?>("StudentId")
                         .HasColumnType("int");
 
-                    b.HasKey("ReportID", "PersonID");
+                    b.HasKey("ReportId", "PersonId");
 
-                    b.HasIndex("PersonID");
+                    b.HasIndex("PersonId");
 
-                    b.HasIndex("RoleID");
+                    b.HasIndex("RoleId");
 
                     b.HasIndex("StudentId");
 
@@ -629,10 +627,11 @@ namespace projectweb.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StudentId"));
 
-                    b.Property<int>("AcademicYear")
-                        .HasColumnType("int");
+                    b.Property<string>("AcademicYear")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("CommitteeID")
+                    b.Property<int?>("CommitteeId")
                         .HasColumnType("int");
 
                     b.Property<int?>("ExamScheduleId")
@@ -653,7 +652,7 @@ namespace projectweb.Migrations
 
                     b.HasKey("StudentId");
 
-                    b.HasIndex("CommitteeID");
+                    b.HasIndex("CommitteeId");
 
                     b.HasIndex("ExamScheduleId");
 
@@ -755,7 +754,7 @@ namespace projectweb.Migrations
                 {
                     b.HasOne("projectweb.Models.Block", "Block")
                         .WithMany("Committees")
-                        .HasForeignKey("BlockID")
+                        .HasForeignKey("BlockId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -769,9 +768,13 @@ namespace projectweb.Migrations
                         .HasForeignKey("BlockId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("projectweb.Models.Block", null)
+                        .WithMany("CommitteesAssignments")
+                        .HasForeignKey("BlockId1");
+
                     b.HasOne("projectweb.Models.Committee", "Committee")
                         .WithMany("CommitteesAssignments")
-                        .HasForeignKey("CommitteeID")
+                        .HasForeignKey("CommitteeId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("projectweb.Models.ExamSchedule", "ExamSchedule")
@@ -787,13 +790,13 @@ namespace projectweb.Migrations
 
                     b.HasOne("projectweb.Models.Person", "Person")
                         .WithMany("CommitteesAssignments")
-                        .HasForeignKey("PersonID")
+                        .HasForeignKey("PersonId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("projectweb.Models.Role", "Role")
                         .WithMany("CommitteesAssignments")
-                        .HasForeignKey("RoleID")
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -815,7 +818,7 @@ namespace projectweb.Migrations
                     b.HasOne("projectweb.Models.Subject", "Subject")
                         .WithMany("Exams")
                         .HasForeignKey("SubjectID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Subject");
@@ -844,7 +847,7 @@ namespace projectweb.Migrations
                 {
                     b.HasOne("projectweb.Models.Person", "HallSupervisor")
                         .WithMany()
-                        .HasForeignKey("HallSupervisorID")
+                        .HasForeignKey("HallSupervisorId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("HallSupervisor");
@@ -854,7 +857,7 @@ namespace projectweb.Migrations
                 {
                     b.HasOne("projectweb.Models.Role", "Role")
                         .WithMany("Persons")
-                        .HasForeignKey("RoleID")
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -884,7 +887,7 @@ namespace projectweb.Migrations
                 {
                     b.HasOne("projectweb.Models.ExamSchedule", "ExamSchedule")
                         .WithMany("Reports")
-                        .HasForeignKey("ScheduleID")
+                        .HasForeignKey("ScheduleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -895,19 +898,19 @@ namespace projectweb.Migrations
                 {
                     b.HasOne("projectweb.Models.Person", "Person")
                         .WithMany("ReportPersons")
-                        .HasForeignKey("PersonID")
+                        .HasForeignKey("PersonId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("projectweb.Models.Report", "Report")
                         .WithMany("ReportPersons")
-                        .HasForeignKey("ReportID")
+                        .HasForeignKey("ReportId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("projectweb.Models.Role", "Role")
                         .WithMany("ReportPersons")
-                        .HasForeignKey("RoleID")
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -928,7 +931,7 @@ namespace projectweb.Migrations
                 {
                     b.HasOne("projectweb.Models.Committee", null)
                         .WithMany("Students")
-                        .HasForeignKey("CommitteeID");
+                        .HasForeignKey("CommitteeId");
 
                     b.HasOne("projectweb.Models.ExamSchedule", "ExamSchedule")
                         .WithMany("Students")
@@ -940,6 +943,8 @@ namespace projectweb.Migrations
             modelBuilder.Entity("projectweb.Models.Block", b =>
                 {
                     b.Navigation("Committees");
+
+                    b.Navigation("CommitteesAssignments");
                 });
 
             modelBuilder.Entity("projectweb.Models.Committee", b =>

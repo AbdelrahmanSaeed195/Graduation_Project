@@ -43,8 +43,8 @@ namespace projectweb.Controllers
             var committee = await db.Committees
                 .Include(c => c.Block).ThenInclude(b => b.Hall)
                 .Include(c => c.Students)
-                .Include(c => c.CommitteesAssignments).ThenInclude(a => a.Person)
-                .FirstOrDefaultAsync(c => c.CommitteeID == id);
+                .Include(c => c.ExamSchedules).ThenInclude(es => es.Exam).ThenInclude(e => e.Subject)
+                .FirstOrDefaultAsync(c => c.CommitteeId == id);
 
             if (committee == null) return NotFound();
 
@@ -78,10 +78,10 @@ namespace projectweb.Controllers
                     ModelState.AddModelError("CommitteeNumber", "رقم اللجنة هذا موجود بالفعل.");
                 }
 
-                var targetBlock = await db.Blocks.Include(b => b.Committees).FirstOrDefaultAsync(b => b.BlockID == committee.BlockID);
+                var targetBlock = await db.Blocks.Include(b => b.Committees).FirstOrDefaultAsync(b => b.BlockId == committee.BlockId);
                 if (targetBlock != null && targetBlock.Committees.Count >= targetBlock.MaxCommittees)
                 {
-                    ModelState.AddModelError("BlockID", $"عفواً، هذا البلوك اكتمل بسعة {targetBlock.MaxCommittees} لجان ولا يمكن إضافة المزيد.");
+                    ModelState.AddModelError("BlockId", $"عفواً، هذا البلوك اكتمل بسعة {targetBlock.MaxCommittees} لجان ولا يمكن إضافة المزيد.");
                 }
 
                 if (ModelState.IsValid)
@@ -93,7 +93,7 @@ namespace projectweb.Controllers
                 }
             }
 
-            ViewBag.BlockID = GetBlockSelectList(committee.BlockID);
+            ViewBag.BlockID = GetBlockSelectList(committee.BlockId);
             ViewBag.StatusList = GetStatusList(committee.StatusOfCommittee);
             return View(committee);
         }
@@ -108,7 +108,7 @@ namespace projectweb.Controllers
             var committee = await db.Committees.FindAsync(id);
             if (committee == null) return NotFound();
 
-            ViewBag.BlockID = GetBlockSelectList(committee.BlockID);
+            ViewBag.BlockID = GetBlockSelectList(committee.BlockId);
             ViewBag.StatusList = GetStatusList(committee.StatusOfCommittee);
             return View(committee);
         }
@@ -121,20 +121,20 @@ namespace projectweb.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, Committee committee)
         {
-            if (id != committee.CommitteeID) return NotFound();
+            if (id != committee.CommitteeId) return NotFound();
 
             if (ModelState.IsValid)
             {
-                bool exists = await db.Committees.AnyAsync(c => c.CommitteeNumber == committee.CommitteeNumber && c.CommitteeID != id);
+                bool exists = await db.Committees.AnyAsync(c => c.CommitteeNumber == committee.CommitteeNumber && c.CommitteeId != id);
                 if (exists)
                 {
                     ModelState.AddModelError("CommitteeNumber", "رقم اللجنة هذا مسجل للجنة أخرى.");
                 }
 
-                var targetBlock = await db.Blocks.Include(b => b.Committees).FirstOrDefaultAsync(b => b.BlockID == committee.BlockID);
+                var targetBlock = await db.Blocks.Include(b => b.Committees).FirstOrDefaultAsync(b => b.BlockId == committee.BlockId);
                 if (targetBlock != null)
                 {
-                    int currentCount = targetBlock.Committees.Count(c => c.CommitteeID != id);
+                    int currentCount = targetBlock.Committees.Count(c => c.CommitteeId != id);
                     if (currentCount >= targetBlock.MaxCommittees)
                     {
                         ModelState.AddModelError("BlockID", "لا يمكن نقل اللجنة لهذا البلوك لأنه مكتمل.");
@@ -150,11 +150,46 @@ namespace projectweb.Controllers
                 }
             }
 
-            ViewBag.BlockID = GetBlockSelectList(committee.BlockID);
+            ViewBag.BlockID = GetBlockSelectList(committee.BlockId);
             ViewBag.StatusList = GetStatusList(committee.StatusOfCommittee);
             return View(committee);
         }
+        // =====================================
+        // Delete Get
+        // =====================================
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
+            var committee = await db.Committees
+                .Include(c => c.Block)
+                    .ThenInclude(b => b.Hall)
+                .FirstOrDefaultAsync(m => m.CommitteeId == id);
+
+            if (committee == null)
+            {
+                return NotFound();
+            }
+
+             bool hasStudents = await db.Students.AnyAsync(s => s.ExamSchedule.CommitteeId == id);
+            bool hasAssignments = await db.CommitteesAssignments.AnyAsync(a => a.CommitteeId == id);
+
+            if (hasStudents || hasAssignments)
+            {
+                ViewBag.CanDelete = false;
+                ViewBag.Message = "تنبيه: هذه اللجنة مرتبطة بطلاب موزعين أو تكليفات ملاحظين. يجب إلغاء التوزيعات أولاً لتتمكن من حذفها.";
+            }
+            else
+            {
+                ViewBag.CanDelete = true;
+            }
+
+            return View(committee);
+        }
         // =====================================
         // حذف لجنة - POST
         // =====================================
@@ -166,8 +201,8 @@ namespace projectweb.Controllers
             var committee = await db.Committees.FindAsync(id);
             if (committee == null) return NotFound();
 
-            bool hasDependencies = await db.Students.AnyAsync(s => s.ExamSchedule.Committee.CommitteeID == id) ||
-                                   await db.CommitteesAssignments.AnyAsync(a => a.CommitteeID == id);
+            bool hasDependencies = await db.Students.AnyAsync(s => s.ExamSchedule.Committee.CommitteeId == id) ||
+                                   await db.CommitteesAssignments.AnyAsync(a => a.CommitteeId == id);
 
             if (hasDependencies)
             {
@@ -190,13 +225,13 @@ namespace projectweb.Controllers
                 .Include(b => b.Hall)
                 .Select(b => new
                 {
-                    b.BlockID,
+                    b.BlockId,
                     DisplayName = "قاعة " + (b.Hall != null ? b.Hall.HallName : "---") + " / بلوك " + b.BlockName
                 })
                 .OrderBy(b => b.DisplayName)
                 .ToList();
 
-            return new SelectList(blocks, "BlockID", "DisplayName", selected);
+            return new SelectList(blocks, "BlockId", "DisplayName", selected);
         }
 
         private SelectList GetStatusList(string selected = null)

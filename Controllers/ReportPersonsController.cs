@@ -28,11 +28,8 @@ namespace projectweb.Controllers
         {
             var reportPersons = await _context.ReportPersons
                 .Include(r => r.Person)
-                .Include(r => r.Report)
-                    .ThenInclude(rep => rep.ExamSchedule)
-                        .ThenInclude(s => s.Exam)
-                            .ThenInclude(e => e.Subject)
                 .Include(r => r.Role)
+                .Include(r => r.Report).ThenInclude(rep => rep.ExamSchedule).ThenInclude(s => s.Exam).ThenInclude(e => e.Subject)
                 .OrderByDescending(rp => rp.SignedAt)
                 .ToListAsync();
 
@@ -49,11 +46,8 @@ namespace projectweb.Controllers
             var reportPerson = await _context.ReportPersons
                 .Include(r => r.Person)
                 .Include(r => r.Role)
-                .Include(r => r.Report)
-                    .ThenInclude(rep => rep.ExamSchedule)
-                        .ThenInclude(s => s.Exam)
-                            .ThenInclude(e => e.Subject)
-                .FirstOrDefaultAsync(m => m.ReportID == reportId && m.PersonID == personId);
+                .Include(r => r.Report).ThenInclude(rep => rep.ExamSchedule).ThenInclude(s => s.Exam).ThenInclude(e => e.Subject)
+                .FirstOrDefaultAsync(m => m.ReportId == reportId && m.PersonId == personId);
 
             if (reportPerson == null) return NotFound();
 
@@ -73,11 +67,11 @@ namespace projectweb.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([Bind("ReportID,PersonID,RoleID,Signature,SignedAt")] ReportPerson reportPerson)
+        public async Task<IActionResult> Create([Bind("ReportId,PersonId,RoleId,Signature,SignedAt")] ReportPerson reportPerson)
         {
             if (ModelState.IsValid)
             {
-                bool exists = await _context.ReportPersons.AnyAsync(rp => rp.ReportID == reportPerson.ReportID && rp.PersonID == reportPerson.PersonID);
+                bool exists = await _context.ReportPersons.AnyAsync(rp => rp.ReportId == reportPerson.ReportId && rp.PersonId == reportPerson.PersonId);
                 if (exists)
                 {
                     ModelState.AddModelError("", "هذا الشخص مرتبط بالفعل بهذا المحضر");
@@ -112,9 +106,9 @@ namespace projectweb.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int reportId, int personId, [Bind("ReportID,PersonID,RoleID,Signature,SignedAt")] ReportPerson reportPerson)
+        public async Task<IActionResult> Edit(int reportId, int personId, [Bind("ReportId,PersonId,RoleId,Signature,SignedAt")] ReportPerson reportPerson)
         {
-            if (reportId != reportPerson.ReportID || personId != reportPerson.PersonID) return NotFound();
+            if (reportId != reportPerson.ReportId || personId != reportPerson.PersonId) return NotFound();
 
             if (ModelState.IsValid)
             {
@@ -126,7 +120,7 @@ namespace projectweb.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ReportPersonExists(reportPerson.ReportID, reportPerson.PersonID)) return NotFound();
+                    if (!ReportPersonExists(reportPerson.ReportId, reportPerson.PersonId)) return NotFound();
                     else throw;
                 }
                 return RedirectToAction(nameof(Index));
@@ -146,7 +140,7 @@ namespace projectweb.Controllers
             var reportPerson = await _context.ReportPersons
                 .Include(r => r.Person)
                 .Include(r => r.Report)
-                .FirstOrDefaultAsync(m => m.ReportID == reportId && m.PersonID == personId);
+                .FirstOrDefaultAsync(m => m.ReportId == reportId && m.PersonId == personId);
 
             if (reportPerson == null) return NotFound();
 
@@ -171,7 +165,6 @@ namespace projectweb.Controllers
         // ==================================================
         // HELPERS (دوال مساعدة لتحسين تجربة المستخدم)
         // ==================================================
-
         private void PopulateDropdowns(ReportPerson rp = null)
         {
             var persons = _context.Persons.AsNoTracking().ToList().Select(p => new
@@ -184,13 +177,13 @@ namespace projectweb.Controllers
                 .Include(r => r.ExamSchedule).ThenInclude(s => s.Exam).ThenInclude(e => e.Subject)
                 .AsNoTracking().ToList().Select(r => new
                 {
-                    ID = r.ReportID,
-                    Text = $"محضر #{r.ReportID} - {r.ExamSchedule?.Exam?.Subject?.SubjectName} ({r.CreatedDate:yyyy/MM/dd})"
+                    ID = r.ReportId,
+                    Text = $"محضر #{r.ReportId} - {r.ExamSchedule?.Exam?.Subject?.SubjectName} ({r.CreatedDate:yyyy/MM/dd})"
                 });
 
-            ViewData["PersonID"] = new SelectList(persons, "ID", "Name", rp?.PersonID);
-            ViewData["ReportID"] = new SelectList(reports, "ID", "Text", rp?.ReportID);
-            ViewData["RoleID"] = new SelectList(_context.Roles, "RoleID", "RoleName", rp?.RoleID);
+            ViewData["PersonId"] = new SelectList(persons, "ID", "Name", rp?.PersonId);
+            ViewData["ReportId"] = new SelectList(reports, "ID", "Text", rp?.ReportId);
+            ViewData["RoleId"] = new SelectList(_context.Roles, "RoleID", "RoleDescription", rp?.RoleId); // ربط الوصف أو مسمى الدور المناسب لجدول الأدوار
         }
 
         private string GetEnumDisplayName(Enum enumValue)
@@ -204,7 +197,7 @@ namespace projectweb.Controllers
 
         private bool ReportPersonExists(int reportId, int personId)
         {
-            return _context.ReportPersons.Any(e => e.ReportID == reportId && e.PersonID == personId);
+            return _context.ReportPersons.Any(e => e.ReportId == reportId && e.PersonId == personId);
         }
     }
 }

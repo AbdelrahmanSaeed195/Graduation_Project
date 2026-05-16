@@ -39,7 +39,6 @@
                     <tr>
                         <th class="ps-4">رقم اللجنة</th>
                         <th class="text-center">المكان (القاعة / البلوك)</th>
-                        <th class="text-center">الملاحظ المعين</th>
                         <th class="text-center">السعة الطلابية</th>
                         <th class="text-center">الحالة</th>
                         <th class="text-center pe-4">الإجراءات</th>
@@ -64,20 +63,7 @@
                                             <span class="text-muted">غير محدد</span>
                                         }
                                     </div>
-                                </td>
-                                <td class="text-center">
-                                    @{
-                                        var observer = item.CommitteesAssignments?.FirstOrDefault(a => a.RoleID == 3)?.Person?.FullName;
-                                    }
-                                    @if (!string.IsNullOrEmpty(observer))
-                                    {
-                                        <span class="fw-bold" style="color: var(--text-main);"><i class="bi bi-person-fill me-1"></i> @observer</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted small">لم يتم التعيين بعد</span>
-                                    }
-                                </td>
+                                </td>                               
                                 <td class="text-center">
                                     <span class="badge px-3 py-2" style="background-color: var(--bg-light); color: var(--text-main); border: 1px solid var(--border-color);">
                                         <i class="bi bi-people-fill me-1"></i> @item.NumberOfStudent طالب
@@ -100,15 +86,15 @@
                                 </td>
                                 <td class="text-center pe-4">
                                     <div class="d-flex justify-content-center gap-2">
-                                        <a asp-action="Details" asp-route-id="@item.CommitteeID" class="btn btn-sm btn-outline-info shadow-sm" title="التفاصيل">
+                                        <a asp-action="Details" asp-route-id="@item.CommitteeId" class="btn btn-sm btn-outline-info shadow-sm" title="التفاصيل">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                       @if(User.IsInRole("Admin"))
                                         {
-                                            <a asp-action="Edit" asp-route-id="@item.CommitteeID" class="btn btn-sm btn-outline-secondary shadow-sm" title="تعديل">
+                                            <a asp-action="Edit" asp-route-id="@item.CommitteeId" class="btn btn-sm btn-outline-secondary shadow-sm" title="تعديل">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
-                                            <a asp-action="Delete" asp-route-id="@item.CommitteeID" class="btn btn-sm btn-outline-danger shadow-sm" title="حذف">
+                                            <a asp-action="Delete" asp-route-id="@item.CommitteeId" class="btn btn-sm btn-outline-danger shadow-sm" title="حذف">
                                                 <i class="bi bi-trash"></i>
                                             </a>
                                         }

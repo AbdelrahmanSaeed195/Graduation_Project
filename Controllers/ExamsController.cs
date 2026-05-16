@@ -26,7 +26,7 @@ namespace projectweb.Controllers
         {
             var exams = _context.Exams
                 .AsNoTracking()
-                .Include(e => e.Subject)
+                .Include(e => e.Subject) // ضروري لعرض السنة الدراسية من المادة
                 .Include(e => e.ExamSchedules)
                     .ThenInclude(es => es.Committee)
                 .OrderByDescending(e => e.ExamDate);
@@ -35,13 +35,12 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // 2. التفاصيل - DETAILS (تم حذف جزء الموظفين المكلفين)
+        // 2. التفاصيل - DETAILS
         // =====================================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
 
-            // جلب الامتحان مع اللجان فقط
             var exam = await _context.Exams
                 .AsNoTracking()
                 .Include(e => e.Subject)
@@ -71,12 +70,7 @@ namespace projectweb.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("ExamId,ExamDate,StartTime,EndTime,SubjectID")] Exam exam)
         {
-            var selectedSubject = await _context.Subjects.AsNoTracking().FirstOrDefaultAsync(s => s.SubjectId == exam.SubjectID);
-            if (selectedSubject != null)
-            {
-                exam.TargetAcademicYear = selectedSubject.AcademicYear;
-            }
-
+            // التحقق من المدة والتداخل
             var durationMinutes = (exam.EndTime - exam.StartTime).TotalMinutes;
             if (durationMinutes > 180)
             {
@@ -87,7 +81,7 @@ namespace projectweb.Controllers
                 ModelState.AddModelError("EndTime", "يجب أن يكون وقت الانتهاء بعد وقت البدء.");
             }
 
-            bool isOverlapping = await _context.Exams.AnyAsync(e =>
+            bool isOverlapping = await _context.Exams.AsNoTracking().AnyAsync(e =>
                 e.ExamDate.Date == exam.ExamDate.Date &&
                 ((exam.StartTime >= e.StartTime && exam.StartTime < e.EndTime) ||
                  (exam.EndTime > e.StartTime && exam.EndTime <= e.EndTime)));
@@ -117,7 +111,7 @@ namespace projectweb.Controllers
         {
             if (id == null) return NotFound();
 
-            var exam = await _context.Exams.Include(e => e.Subject).FirstOrDefaultAsync(x => x.ExamId == id);
+            var exam = await _context.Exams.AsNoTracking().Include(e => e.Subject).FirstOrDefaultAsync(x => x.ExamId == id);
             if (exam == null) return NotFound();
 
             PopulateSubjects(exam.SubjectID);
@@ -131,23 +125,17 @@ namespace projectweb.Controllers
         {
             if (id != exam.ExamId) return NotFound();
 
-            var selectedSubject = await _context.Subjects.AsNoTracking().FirstOrDefaultAsync(s => s.SubjectId == exam.SubjectID);
-            if (selectedSubject != null)
-            {
-                exam.TargetAcademicYear = selectedSubject.AcademicYear;
-            }
-
             var durationMinutes = (exam.EndTime - exam.StartTime).TotalMinutes;
             if (durationMinutes > 180)
             {
-                ModelState.AddModelError("EndTime", "عفواً، لا يمكن أن تتجاوز مدة الامتحان 3 ساعات عند التعديل.");
+                ModelState.AddModelError("EndTime", "عفواً، لا يمكن أن تتجاوز مدة الامتحان 3 ساعات.");
             }
             if (exam.EndTime <= exam.StartTime)
             {
                 ModelState.AddModelError("EndTime", "يجب أن يكون وقت الانتهاء بعد وقت البدء.");
             }
 
-            bool isOverlapping = await _context.Exams.AnyAsync(e =>
+            bool isOverlapping = await _context.Exams.AsNoTracking().AnyAsync(e =>
                 e.ExamId != exam.ExamId &&
                 e.ExamDate.Date == exam.ExamDate.Date &&
                 ((exam.StartTime >= e.StartTime && exam.StartTime < e.EndTime) ||
@@ -187,6 +175,7 @@ namespace projectweb.Controllers
             if (id == null) return NotFound();
 
             var exam = await _context.Exams
+                .AsNoTracking()
                 .Include(e => e.Subject)
                 .Include(e => e.ExamSchedules)
                 .FirstOrDefaultAsync(m => m.ExamId == id);
@@ -208,11 +197,11 @@ namespace projectweb.Controllers
                 {
                     _context.Exams.Remove(exam);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "تم حذف الامتحان.";
+                    TempData["SuccessMessage"] = "تم حذف الامتحان بنجاح.";
                 }
                 catch (Exception)
                 {
-                    TempData["ErrorMessage"] = "لا يمكن حذف الامتحان لوجود لجان مرتبطة به.";
+                    TempData["ErrorMessage"] = "لا يمكن حذف الامتحان لوجود لجان أو بيانات مرتبطة به.";
                 }
             }
             return RedirectToAction(nameof(Index));
@@ -235,7 +224,7 @@ namespace projectweb.Controllers
             var durationMinutes = (end - start).TotalMinutes;
             var isValidDuration = durationMinutes > 0 && durationMinutes <= 180;
 
-            bool isOverlapping = await _context.Exams.AnyAsync(e =>
+            bool isOverlapping = await _context.Exams.AsNoTracking().AnyAsync(e =>
                 (excludeId == null || e.ExamId != excludeId) &&
                 e.ExamDate.Date == date.Date &&
                 ((start >= e.StartTime && start < e.EndTime) ||

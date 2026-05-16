@@ -37,11 +37,9 @@
             <table class="table academic-table table-hover align-middle mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4">كود الصالة</th>
                         <th>اسم الصالة / القاعة</th>
                         <th class="text-center">الدور</th>
                         <th class="text-center">السعة (أقصى بلوكات)</th>
-                        <th class="text-center">رئيس اللجنة</th>
                         <th class="text-center">البلوكات الحالية</th>
                         <th class="text-center pe-4">الإجراءات</th>
                     </tr>
@@ -52,7 +50,6 @@
                         foreach (var item in Model)
                         {
                             <tr>
-                                <td class="ps-4 fw-bold text-muted">#@item.HallId</td>
                                 <td class="fw-bold" style="color: var(--text-main);">@item.HallName</td>
                                 <td class="text-center">
                                     <span class="badge px-3 py-2" style="background-color: var(--bg-light); color: var(--primary-navy); border: 1px solid var(--border-color);">
@@ -61,18 +58,6 @@
                                 </td>
                                 <td class="text-center fw-bold">
                                     @item.MaxBlocks
-                                </td>
-                                <td class="text-center">
-                                    @if (item.HallSupervisor != null)
-                                    {
-                                        <span class="fw-bold" style="color: var(--primary-navy);">
-                                            <i class="bi bi-person-fill me-1"></i> @item.HallSupervisor.FullName
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted small">لم يتم التعيين بعد</span>
-                                    }
                                 </td>
                                 <td class="text-center">
                                     <span class="badge @(item.Blocks != null && item.Blocks.Any() ? "bg-success" : "bg-secondary") px-3 py-2">

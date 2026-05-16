@@ -19,10 +19,10 @@
                   
                     <div class="col-md-12 mb-3">
                         <label class="form-label fw-bold text-dark"><i class="bi bi-person-circle me-1"></i> اختيار الموظف</label>
-                        <select asp-for="PersonID" id="personSelect" class="form-select shadow-sm border-light-subtle" asp-items="ViewBag.PersonID">
+                        <select asp-for="PersonId" id="personSelect" class="form-select shadow-sm border-light-subtle" asp-items="ViewBag.PersonId">
                             <option value="">-- اختر الموظف (الاسم والوظيفة) --</option>
                         </select>
-                        <span asp-validation-for="PersonID" class="text-danger small"></span>
+                        <span asp-validation-for="PersonId" class="text-danger small"></span>
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -35,10 +35,10 @@
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold text-dark"><i class="bi bi-briefcase me-1"></i> الدور في اللجنة</label>
-                        <select asp-for="RoleID" id="roleSelect" class="form-select shadow-sm border-light-subtle" asp-items="ViewBag.RoleID">
+                        <select asp-for="RoleId" id="roleSelect" class="form-select shadow-sm border-light-subtle" asp-items="ViewBag.RoleId">
                             <option value="">-- اختر الدور المكلف به --</option>
                         </select>
-                        <span asp-validation-for="RoleID" class="text-danger small"></span>
+                        <span asp-validation-for="RoleId" class="text-danger small"></span>
                     </div>
 
                     <div class="col-md-12 my-3 p-4 rounded-4 border-0 shadow-sm" style="background-color: #f8faff;">
@@ -65,7 +65,7 @@
                           
                             <div class="col-md-4 mb-2">
                                 <label class="small text-muted fw-bold d-block mb-1">لجنة فرعية</label>
-                                <select asp-for="CommitteeID" id="committeeSelect" class="form-select form-select-sm shadow-sm" asp-items="ViewBag.CommitteeID">
+                                <select asp-for="CommitteeId" id="committeeSelect" class="form-select form-select-sm shadow-sm" asp-items="ViewBag.CommitteeID">
                                     <option value="">-- لا يوجد --</option>
                                 </select>
                                 <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">(لملاحظ اللجنة)</small>

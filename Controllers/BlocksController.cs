@@ -39,14 +39,14 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return BadRequest();
+
             var block = await db.Blocks
                 .Include(b => b.Hall)
                 .Include(b => b.Committees)
-                    .ThenInclude(c => c.CommitteesAssignments)
-                        .ThenInclude(a => a.Person)
-                .FirstOrDefaultAsync(b => b.BlockID == id);
+                .FirstOrDefaultAsync(b => b.BlockId == id);
 
             if (block == null) return NotFound();
+
             return View(block);
         }
 
@@ -129,7 +129,7 @@ namespace projectweb.Controllers
         {
             bool isNameExist = await db.Blocks.AnyAsync(b => b.BlockName == block.BlockName
                                                             && b.HallId == block.HallId
-                                                            && b.BlockID != block.BlockID);
+                                                            && b.BlockId != block.BlockId);
             if (isNameExist)
             {
                 ModelState.AddModelError("BlockName", "اسم البلوك مستخدم بالفعل في هذه الصالة.");
@@ -155,6 +155,39 @@ namespace projectweb.Controllers
                 return View(block);
             }
         }
+         // =====================================
+         // Delete
+         // =====================================
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var block = await db.Blocks
+                .Include(b => b.Hall)
+                .Include(b => b.Committees)
+                .FirstOrDefaultAsync(m => m.BlockId == id);
+
+            if (block == null)
+            {
+                return NotFound();
+            }
+
+            if (block.Committees.Any())
+            {
+                ViewBag.CanDelete = false;
+                ViewBag.Message = "تنبيه: هذا البلوك يحتوي على لجان مرتبطة به، لن تتمكن من حذفه حتى يتم نقل أو حذف اللجان أولاً.";
+            }
+            else
+            {
+                ViewBag.CanDelete = true;
+            }
+
+            return View(block);
+        }
 
         // =========================
         // DELETE - POST
@@ -164,7 +197,7 @@ namespace projectweb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var block = await db.Blocks.Include(b => b.Committees).FirstOrDefaultAsync(b => b.BlockID == id);
+            var block = await db.Blocks.Include(b => b.Committees).FirstOrDefaultAsync(b => b.BlockId == id);
             if (block == null) return NotFound();
 
             if (block.Committees.Any())
@@ -177,8 +210,6 @@ namespace projectweb.Controllers
             await db.SaveChangesAsync();
             TempData["SuccessMessage"] = "تم حذف البلوك بنجاح.";
             return RedirectToAction(nameof(Index));
-        }
-
-        
+        }      
     }
 }

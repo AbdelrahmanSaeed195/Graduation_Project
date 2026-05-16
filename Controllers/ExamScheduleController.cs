@@ -59,25 +59,74 @@ namespace projectweb.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
-            PopulateDropdowns();
+            var examsQuery = _context.Exams
+                .Include(e => e.Subject)
+                .Select(e => new
+                {
+                    Id = e.ExamId,
+                    Name = $"{e.Subject.SubjectName} - {e.ExamDate.ToShortDateString()} ({e.Subject.AcademicYear})"
+                }).ToList();
+
+            ViewData["ExamId"] = new SelectList(examsQuery, "Id", "Name");
+            ViewData["CommitteeId"] = new SelectList(Enumerable.Empty<SelectListItem>(), "Value", "Text");
+
             return View();
         }
+        [HttpGet]
+        public async Task<IActionResult> GetAvailableCommittees(int examId)
+        {
+            var selectedExam = await _context.Exams.FindAsync(examId);
+            if (selectedExam == null) return Json(new List<object>());
 
+            var busyCommitteeIds = await _context.ExamSchedules
+                .Include(es => es.Exam)
+                .Where(es => es.Exam.ExamDate.Date == selectedExam.ExamDate.Date
+                          && selectedExam.StartTime < es.Exam.EndTime
+                          && selectedExam.EndTime > es.Exam.StartTime)
+                .Select(es => es.CommitteeId)
+                .ToListAsync();
+
+            var availableCommittees = await _context.Committees
+                .Where(c => !busyCommitteeIds.Contains(c.CommitteeId))
+                .Select(c => new
+                {
+                    id = c.CommitteeId,
+                    number = "لجنة " + c.CommitteeNumber
+                })
+                .ToListAsync();
+
+            return Json(availableCommittees);
+        }
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("ExamScheduleId,ExamId,CommitteeId")] ExamSchedule examSchedule)
         {
-            
             if (ModelState.IsValid)
             {
-                _context.Add(examSchedule);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "تم تخصيص اللجنة للامتحان بنجاح.";
-                return RedirectToAction(nameof(Index));
+                var currentExam = await _context.Exams.FindAsync(examSchedule.ExamId);
+
+                bool isBusy = await _context.ExamSchedules
+                    .Include(es => es.Exam)
+                    .AnyAsync(es => es.CommitteeId == examSchedule.CommitteeId
+                                 && es.Exam.ExamDate.Date == currentExam.ExamDate.Date 
+                                 && (
+                                     (currentExam.StartTime < es.Exam.EndTime && currentExam.EndTime > es.Exam.StartTime)
+                                 ));
+
+                if (isBusy)
+                {
+                    ModelState.AddModelError("", "هذه اللجنة محجوزة بالفعل في هذا الوقت لامتحان آخر.");
+                }
+                else
+                {
+                    _context.Add(examSchedule);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "تم تخصيص اللجنة بنجاح.";
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
-            TempData["ErrorMessage"] = "حدث خطأ أثناء الإضافة، يرجى التحقق من البيانات.";
             PopulateDropdowns(examSchedule.ExamId, examSchedule.CommitteeId);
             return View(examSchedule);
         }
@@ -165,13 +214,13 @@ namespace projectweb.Controllers
                 .Select(e => new
                 {
                     Id = e.ExamId,
-                    Name = $"{e.Subject.SubjectName} - {e.ExamDate.ToShortDateString()} ({e.TargetAcademicYear})"
+                    Name = $"{e.Subject.SubjectName} - {e.ExamDate.ToShortDateString()} ({e.Subject.AcademicYear})"
                 }).ToList();
 
             var committeesQuery = _context.Committees
                 .Select(c => new
                 {
-                    Id = c.CommitteeID,
+                    Id = c.CommitteeId,
                     Number = "لجنة " + c.CommitteeNumber
                 }).ToList();
 

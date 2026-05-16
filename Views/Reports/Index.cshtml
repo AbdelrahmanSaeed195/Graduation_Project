@@ -75,7 +75,7 @@
                         foreach (var item in Model)
                         {
                             <tr class="text-center">
-                                <td class="ps-4 text-start fw-bold text-primary">#@item.ReportID</td>
+                                <td class="ps-4 text-start fw-bold text-primary">#@item.ReportId</td>
                                 <td class="text-start">
                                     @if (item.ExamSchedule?.Exam?.Subject != null)
                                     {
@@ -125,15 +125,15 @@
                                 </td>
                                 <td class="pe-4">
                                     <div class="btn-group shadow-sm" role="group" style="border-radius: 8px; overflow: hidden;">
-                                        <a asp-action="Details" asp-route-id="@item.ReportID" class="btn btn-sm btn-white text-info border" title="عرض التفاصيل">
+                                        <a asp-action="Details" asp-route-id="@item.ReportId" class="btn btn-sm btn-white text-info border" title="عرض التفاصيل">
                                             <i class="bi bi-eye-fill"></i>
                                         </a>
                                         @if (User.IsInRole("Admin"))
                                         {
-                                            <a asp-action="Edit" asp-route-id="@item.ReportID" class="btn btn-sm btn-white text-primary border" title="تعديل">
+                                            <a asp-action="Edit" asp-route-id="@item.ReportId" class="btn btn-sm btn-white text-primary border" title="تعديل">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
-                                            <a asp-action="Delete" asp-route-id="@item.ReportID" class="btn btn-sm btn-white text-danger border" title="حذف">
+                                            <a asp-action="Delete" asp-route-id="@item.ReportId" class="btn btn-sm btn-white text-danger border" title="حذف">
                                                 <i class="bi bi-trash-fill"></i>
                                             </a>
                                         }

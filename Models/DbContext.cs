@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using projectweb.Models;
 
 namespace projectweb.Models
 {
@@ -10,6 +11,7 @@ namespace projectweb.Models
         {
         }
 
+        // جداول النظام الأساسية
         public DbSet<Person> Persons { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Relative> Relatives { get; set; }
@@ -29,30 +31,46 @@ namespace projectweb.Models
             base.OnModelCreating(modelBuilder);
 
             /* =======================================================
-               1. Seed Data (ادوار )
+               1. Seed Data - تغذية الجداول بالبيانات الأساسية للأدوار
             ======================================================= */
             modelBuilder.Entity<Role>().HasData(
-                new Role { RoleID = 1, RoleName = StaffPosition.HallManager, RoleDescription = "رئيس صالة" },
-                new Role { RoleID = 2, RoleName = StaffPosition.BlockGroupLeader, RoleDescription = "مراقب" },
-                new Role { RoleID = 3, RoleName = StaffPosition.CommitteeObserver, RoleDescription = "ملاحظ" },
-                new Role { RoleID = 4, RoleName = StaffPosition.Doctor, RoleDescription = "طبيب" },
-                new Role { RoleID = 5, RoleName = StaffPosition.Nurse, RoleDescription = "ممرض" }
-            );
 
-            // CommitteesAssignment Configuration
-            modelBuilder.Entity<CommitteesAssignment>()
-                .HasKey(ca => ca.AssignmentID);
+                 new Role { RoleID = 1, RoleName = StaffPosition.HallManager, RoleDescription = "رئيس صالة" },
 
-          
+                 new Role { RoleID = 2, RoleName = StaffPosition.BlockGroupLeader, RoleDescription = "مراقب" },
+
+                 new Role { RoleID = 3, RoleName = StaffPosition.CommitteeObserver, RoleDescription = "ملاحظ" },
+
+                 new Role { RoleID = 4, RoleName = StaffPosition.Doctor, RoleDescription = "طبيب" },
+
+                 new Role { RoleID = 5, RoleName = StaffPosition.Nurse, RoleDescription = "ممرض" }
+
+             );
+
+            /* =======================================================
+               2. العلاقات المعقدة (Fluent API)
+            ======================================================= */
+
+            // علاقة المادة بالامتحانات
+            modelBuilder.Entity<Exam>()
+                .HasOne(e => e.Subject)
+                .WithMany(s => s.Exams)
+                .HasForeignKey(e => e.SubjectID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // إعدادات جدول التكليفات (CommitteesAssignment)
             modelBuilder.Entity<CommitteesAssignment>()
-                .HasIndex(ca => new { ca.PersonID, ca.ExamScheduleId })
+                .HasKey(ca => ca.AssignmentId);
+
+            // منع تكرار تكليف نفس الشخص في نفس الجلسة الامتحانية
+            modelBuilder.Entity<CommitteesAssignment>()
+                .HasIndex(ca => new { ca.PersonId, ca.ExamScheduleId })
                 .IsUnique();
 
-          
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasOne(ca => ca.Person)
                 .WithMany(p => p.CommitteesAssignments)
-                .HasForeignKey(ca => ca.PersonID)
+                .HasForeignKey(ca => ca.PersonId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<CommitteesAssignment>()
@@ -64,10 +82,10 @@ namespace projectweb.Models
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasOne(ca => ca.Role)
                 .WithMany(r => r.CommitteesAssignments)
-                .HasForeignKey(ca => ca.RoleID)
+                .HasForeignKey(ca => ca.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-          
+            // ربط التكليف بالصالة أو البلوك أو اللجنة (اختياري حسب نوع الدور)
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasOne(ca => ca.Hall)
                 .WithMany()
@@ -77,7 +95,7 @@ namespace projectweb.Models
 
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasOne(ca => ca.Block)
-                .WithMany()
+                .WithMany() // تم التعديل للسماح للبلوك برؤية تكليفاته مباشرة
                 .HasForeignKey(ca => ca.BlockId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -85,13 +103,11 @@ namespace projectweb.Models
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasOne(ca => ca.Committee)
                 .WithMany(c => c.CommitteesAssignments)
-                .HasForeignKey(ca => ca.CommitteeID)
+                .HasForeignKey(ca => ca.CommitteeId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 
-
-
-            // Relatives Configuration
+            // إعدادات الأقارب (Relatives)
             modelBuilder.Entity<Relative>()
                 .HasOne(r => r.Student)
                 .WithMany(s => s.Relatives)
@@ -104,11 +120,11 @@ namespace projectweb.Models
                 .HasForeignKey(r => r.PersonId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Hall & Block & Committee Configuration 
+            // إعدادات القاعات والبلوكات واللجان (Hall -> Block -> Committee)
             modelBuilder.Entity<Hall>()
                 .HasOne(h => h.HallSupervisor)
                 .WithMany()
-                .HasForeignKey(h => h.HallSupervisorID)
+                .HasForeignKey(h => h.HallSupervisorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Block>()
@@ -120,10 +136,10 @@ namespace projectweb.Models
             modelBuilder.Entity<Committee>()
                 .HasOne(c => c.Block)
                 .WithMany(b => b.Committees)
-                .HasForeignKey(c => c.BlockID)
+                .HasForeignKey(c => c.BlockId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Exam Schedule Configuration
+            // إعدادات جدول مواعيد الامتحانات (Exam Schedule)
             modelBuilder.Entity<ExamSchedule>()
                 .HasOne(es => es.Exam)
                 .WithMany(e => e.ExamSchedules)
@@ -136,38 +152,37 @@ namespace projectweb.Models
                 .HasForeignKey(es => es.CommitteeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            
             modelBuilder.Entity<ExamSchedule>()
-                .HasIndex(e => new { e.ScheduledDate, e.CommitteeId })
-                .IsUnique();
+            .HasIndex(es => new { es.ExamId, es.CommitteeId })
+            .IsUnique();
 
-            // Report Configuration
+            // التقارير (Reports)
             modelBuilder.Entity<Report>()
                 .HasOne(r => r.ExamSchedule)
                 .WithMany(es => es.Reports)
-                .HasForeignKey(r => r.ScheduleID)
+                .HasForeignKey(r => r.ScheduleId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ReportPerson Configuration
+            // الربط المتعدد للأشخاص في التقارير (ReportPerson)
             modelBuilder.Entity<ReportPerson>()
-                .HasKey(rp => new { rp.ReportID, rp.PersonID });
+                .HasKey(rp => new { rp.ReportId, rp.PersonId });
 
             modelBuilder.Entity<ReportPerson>()
                 .HasOne(rp => rp.Report)
                 .WithMany(r => r.ReportPersons)
-                .HasForeignKey(rp => rp.ReportID)
+                .HasForeignKey(rp => rp.ReportId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ReportPerson>()
                 .HasOne(rp => rp.Person)
                 .WithMany(p => p.ReportPersons)
-                .HasForeignKey(rp => rp.PersonID)
+                .HasForeignKey(rp => rp.PersonId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ReportPerson>()
                 .HasOne(rp => rp.Role)
                 .WithMany(r => r.ReportPersons)
-                .HasForeignKey(rp => rp.RoleID)
+                .HasForeignKey(rp => rp.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

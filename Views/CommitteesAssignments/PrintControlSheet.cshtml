@@ -1,58 +1,70 @@
 ﻿@model projectweb.Models.ViewModels.ExamControlSheetViewModel
 @{
-    Layout = null; int i = 1;
+    Layout = null;
+    int i = 1;
 }
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8" />
-    <title>كشف تحضير - @Model.MainHead</title>
+    <title>استمارة اللجنة - @(Model?.HallName ?? "غير محدد")</title>
     <style>
         body {
             font-family: 'Times New Roman', serif;
-            padding: 10px;
+            padding: 5px;
             direction: rtl;
             background: white;
             color: black;
+            margin: 0;
         }
 
         .outer-frame {
-            border: 2px solid black;
-            padding: 20px;
-            min-height: 96vh;
+            border: 3px double black;
+            padding: 15px;
+            min-height: 97vh;
+            position: relative;
         }
 
         .header-section {
             display: flex;
             justify-content: space-between;
+            align-items: flex-start;
             font-weight: bold;
-            font-size: 13pt;
+            font-size: 12pt;
+            line-height: 1.6;
+        }
+
+        .logo-placeholder {
+            width: 80px;
+            height: 80px;
+            text-align: center;
         }
 
         .main-title {
             text-align: center;
-            font-size: 17pt;
+            font-size: 18pt;
             font-weight: bold;
-            margin: 10px 0;
+            margin: 5px 0;
             text-decoration: underline;
         }
 
-        .info-container {
-            display: flex;
-            justify-content: space-between;
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
             margin: 15px 0;
             font-weight: bold;
             font-size: 12pt;
         }
 
         .info-line {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .line-draw {
             border-bottom: 1px dotted black;
             display: inline-block;
-            min-width: 160px;
+            min-width: 180px;
             text-align: center;
             padding: 0 5px;
         }
@@ -65,133 +77,211 @@
 
             .main-table th, .main-table td {
                 border: 1px solid black;
-                padding: 6px;
+                padding: 5px;
                 text-align: center;
                 font-size: 11pt;
             }
 
             .main-table thead th {
-                background-color: #f2f2f2;
+                background-color: #f0f0f0;
+                font-weight: bold;
             }
 
-        .bottom-area {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
+        .block-header {
+            background-color: #e9ecef !important;
+            text-align: right !important;
+            padding-right: 15px !important;
+            font-weight: bold;
+        }
+
+        .bottom-container {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .section-box {
+            border: 1px solid black;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .section-title {
+            text-align: center;
+            text-decoration: underline;
+            font-weight: bold;
+            margin-bottom: 10px;
             font-size: 11pt;
-        }
-
-        .reserve-section {
-            width: 60%;
-            font-weight: bold;
-            border: 1px solid black;
-            padding: 12px;
-            border-radius: 6px;
-        }
-
-        .medical-section {
-            width: 35%;
-            font-weight: bold;
-            border: 1px solid black;
-            padding: 12px;
-            border-radius: 6px;
         }
 
         .footer-sigs {
             display: flex;
-            justify-content: space-around;
-            margin-top: 40px;
+            justify-content: space-between;
+            margin-top: 35px;
             text-align: center;
             font-weight: bold;
+            font-size: 12pt;
         }
 
-        @@media print {
-            .no-print {
-                display: none !important;
-            }
+        .sig-item {
+            width: 30%;
+        }
 
-            .outer-frame {
-                border: 2px solid black;
-            }
+       @@media print {
+            .no-print
+
+        {
+            display: none !important;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        .outer-frame {
+            min-height: 98vh;
+        }
+
         }
     </style>
 </head>
 <body>
-    <div class="no-print" style="text-align:center; padding:10px;">
-        <button onclick="window.print()" style="background:#28a745; color:white; padding:10px 25px; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">🖨️ طباعة كشف التحضير</button>
-        <button onclick="window.history.back()" style="background:#6c757d; color:white; padding:10px 25px; border:none; border-radius:5px; cursor:pointer; margin-right:10px;">العودة</button>
+    <div class="no-print" style="text-align:center; padding:15px; background: #f8f9fa; border-bottom: 1px solid #ddd;">
+        <button onclick="window.print()" style="background:#1a3a5a; color:white; padding:12px 30px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:14px;">🖨️ طباعة استمارة اللجنة</button>
+        <button onclick="window.history.back()" style="background:#6c757d; color:white; padding:12px 30px; border:none; border-radius:8px; cursor:pointer; margin-right:10px;">العودة</button>
     </div>
 
-    <div class="outer-frame">
-        <div class="header-section">
-            <div>جامعة أسيوط<br>كلية علوم الرياضة<br>شئون الطلاب</div>
-            <div style="text-align: left;">AU-EX-02</div>
-        </div>
-
-        <div class="main-title">امتحانات @Model.Semester للعام الجامعي @Model.AcademicYear</div>
-
-        <div class="info-container">
-            <div>
-                <div class="info-line">اليوم: <span class="line-draw">@Model.ExamDay</span></div>
-                <div class="info-line">التاريخ: <span class="line-draw">@Model.ExamDate</span></div>
-                <div class="info-line">الفرقة: <span class="line-draw">@Model.TargetYear</span></div>
-                <div class="info-line">المادة: <span class="line-draw">@Model.SubjectName</span></div>
-                <div class="info-line">الزمن: <span class="line-draw">@Model.ExamTime</span></div>
+    @if (Model != null)
+    {
+        <div class="outer-frame">
+            <div class="header-section">
+                <div>
+                    جامعة أسيوط<br>
+                    كلية علوم الرياضة<br>
+                    شئون الطلاب
+                </div>
+                <div class="logo-placeholder">
+                    <img src="~/images/logo.png" style="width:70px; height:auto;" onerror="this.style.display='none'" />
+                </div>
+                <div style="text-align: left;">
+                    نموذج رقم: AU-EX-02<br>
+                    صالة: @Model.HallName
+                </div>
             </div>
-            <div style="text-align: left;">
-                <div class="info-line">رئيس اللجان الأساسي: <span class="line-draw" style="min-width:220px;">@Model.MainHead</span></div>
-                <div class="info-line">مراقب اللجان الأساسي: <span class="line-draw" style="min-width:220px;">@Model.MainObserver</span></div>
-            </div>
-        </div>
 
-        <table class="main-table">
-            <thead>
-                <tr>
-                    <th style="width:35px;">م</th>
-                    <th>اسم الملاحظ (الأساسي لكل لجنة)</th>
-                    <th style="width:70px;">اللجنة</th>
-                    <th style="width:90px;">عدد الكراسات</th>
-                    <th style="width:160px;">التوقيع بالاستلام</th>
-                    <th style="width:120px;">ملاحظات</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.ObserverRows)
-                {
+            <div class="main-title">امتحانات @Model.Semester للعام الجامعي @Model.AcademicYear</div>
+
+            <div class="info-grid">
+                <div class="right-info">
+                    <div class="info-line">اليوم: <span class="line-draw">@Model.ExamDay</span></div>
+                    <div class="info-line">التاريخ: <span class="line-draw">@Model.ExamDate</span></div>
+                    <div class="info-line">الفرقة: <span class="line-draw">@Model.TargetYear</span></div>
+                    <div class="info-line">المادة: <span class="line-draw">@Model.SubjectName</span></div>
+                    <div class="info-line">الزمن: <span class="line-draw">@Model.ExamTime</span></div>
+                </div>
+                <div class="left-info">
+                    <div class="info-line">رئيس اللجان (1): <span class="line-draw" style="min-width:220px;">@Model.MainHead1</span></div>
+                    <div class="info-line">رئيس اللجان (2): <span class="line-draw" style="min-width:220px;">@Model.MainHead2</span></div>
+                </div>
+            </div>
+
+            <table class="main-table">
+                <thead>
                     <tr>
-                        <td>@(i++)</td>
-                        <td style="text-align:right; padding-right:12px;">@item.ObserverName</td>
-                        <td>@item.CommitteeNumber</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <th style="width:30px;">م</th>
+                        <th>اسم الملاحظ (الأساسي)</th>
+                        <th style="width:60px;">اللجنة</th>
+                        <th style="width:80px;">الكراسات</th>
+                        <th style="width:180px;">توقيع الاستلام</th>
+                        <th style="width:120px;">ملاحظات</th>
                     </tr>
-                }
-                @for (int j = i; j <= 15; j++)
-                {
-                    <tr style="height:32px;"><td>@j</td><td></td><td></td><td></td><td></td><td></td></tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @if (Model.Blocks != null)
+                    {
+                        @foreach (var block in Model.Blocks)
+                        {
+                            <tr>
+                                <td colspan="6" class="block-header">
+                                    @block.BlockName
+                                    <span style="margin-right: 40px;">مراقب البلوك: <b>@block.BlockObserverName</b></span>
+                                </td>
+                            </tr>
 
-        <div class="bottom-area">
-            <div class="reserve-section">
-                <div class="info-line">احتياطي رئيس اللجان: <span class="line-draw" style="min-width:280px;">@Model.ReserveHead</span></div>
-                <div class="info-line">احتياطي مراقب اللجان: <span class="line-draw" style="min-width:280px;">@Model.ReserveObserver</span></div>
-                <div class="info-line">احتياطي ملاحظ لجان: <span class="line-draw" style="min-width:280px;">@(Model.ReserveObserversList.ElementAtOrDefault(0) ?? "................")</span></div>
-                <div class="info-line">احتياطي ملاحظ لجان: <span class="line-draw" style="min-width:280px;">@(Model.ReserveObserversList.ElementAtOrDefault(1) ?? "................")</span></div>
+                            if (block.CommitteeObservers != null)
+                            {
+                                @foreach (var obs in block.CommitteeObservers)
+                                {
+                                    <tr>
+                                        <td>@(i++)</td>
+                                        <td style="text-align:right; padding-right:15px;">@obs.ObserverName</td>
+                                        <td>@obs.CommitteeNumber</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    }
+
+                    @for (int j = i; j <= 12; j++)
+                    {
+                        <tr style="height:35px;"><td>@j</td><td></td><td></td><td></td><td></td><td></td></tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="bottom-container">
+                <div class="section-box">
+                    <div class="section-title">طاقم الاحتياطي</div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <div style="width: 48%;">
+                            <small><b>احتياطي طاقم (1):</b></small>
+                            <div class="info-line" style="font-size: 10pt;">رئيس احتياطي: <span class="line-draw" style="min-width:140px;">@Model.ReserveHead1</span></div>
+                            <div class="info-line" style="font-size: 10pt;">مراقب احتياطي: <span class="line-draw" style="min-width:140px;">@Model.ReserveObserver1</span></div>
+                            @if (Model.ReserveNotes1 != null)
+                            {
+                                @foreach (var note in Model.ReserveNotes1)
+                                {
+                                    <div class="info-line" style="font-size: 10pt;">ملاحظ احتياطي: <span class="line-draw" style="min-width:140px;">@note</span></div>
+                                }
+                            }
+                        </div>
+                        <div style="width: 48%; border-right: 1px dashed #ccc; padding-right: 10px;">
+                            <small><b>احتياطي طاقم (2):</b></small>
+                            <div class="info-line" style="font-size: 10pt;">رئيس احتياطي: <span class="line-draw" style="min-width:140px;">@Model.ReserveHead2</span></div>
+                            <div class="info-line" style="font-size: 10pt;">مراقب احتياطي: <span class="line-draw" style="min-width:140px;">@Model.ReserveObserver2</span></div>
+                            @if (Model.ReserveNotes2 != null)
+                            {
+                                @foreach (var note in Model.ReserveNotes2)
+                                {
+                                    <div class="info-line" style="font-size: 10pt;">ملاحظ احتياطي: <span class="line-draw" style="min-width:140px;">@note</span></div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-box">
+                    <div class="section-title">الطاقم الطبي</div>
+                    <div class="info-line">طبيب اللجان: <span class="line-draw" style="min-width:160px;">@Model.DoctorName</span></div>
+                    <div class="info-line">مساعد الطبيب: <span class="line-draw" style="min-width:160px;">@Model.NurseName</span></div>
+                    <div style="margin-top: 15px; font-size: 10pt; color: #555;">
+                        * يعتمد،،<br>
+                        اجمالي عدد الكراسات: ............
+                    </div>
+                </div>
             </div>
-            <div class="medical-section">
-                <div class="info-line">طبيب اللجان: <span class="line-draw" style="min-width:140px;">@Model.DoctorName</span></div>
-                <div class="info-line">مساعد الطبيب: <span class="line-draw" style="min-width:140px;">@Model.NurseName</span></div>
+
+            <div class="footer-sigs">
+                <div class="sig-item">شئون طلاب<br><br>....................</div>
+                <div class="sig-item">مراقب اللجنة الأساسي<br><br>....................</div>
+                <div class="sig-item">رئيس اللجنة الأساسي<br><br>....................</div>
             </div>
         </div>
-
-        <div class="footer-sigs">
-            <div>شئون طلاب</div>
-            <div>مراقب اللجنة الأساسي<br>( .................... )</div>
-            <div>رئيس اللجنة الأساسي<br>( .................... )</div>
-        </div>
-    </div>
+    }
 </body>
 </html>

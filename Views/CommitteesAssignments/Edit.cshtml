@@ -13,18 +13,18 @@
             <form asp-action="Edit">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm border-0 mb-4 py-2 small"></div>
 
-                <input type="hidden" asp-for="AssignmentID" />
+                <input type="hidden" asp-for="AssignmentId" />
                 <input type="hidden" asp-for="AssignmentType" />
                 <input type="hidden" asp-for="ExamScheduleId" />
-                <input type="hidden" asp-for="RoleID" id="roleInput" /> 
+                <input type="hidden" asp-for="RoleId" id="roleInput" /> 
                 <input type="hidden" asp-for="RoleType" id="roleTypeText" />
 
                 <div class="mb-4">
                     <label class="form-label fw-bold"><i class="bi bi-person-badge me-1"></i> الموظف المكلف</label>
-                    <select asp-for="PersonID" id="personSelect" class="form-select shadow-sm border-primary" asp-items="ViewBag.PersonID">
+                    <select asp-for="PersonId" id="personSelect" class="form-select shadow-sm border-primary" asp-items="ViewBag.PersonId">
                         <option value="">-- اختر الموظف --</option>
                     </select>
-                    <span asp-validation-for="PersonID" class="text-danger small"></span>
+                    <span asp-validation-for="PersonId" class="text-danger small"></span>
                 </div>
 
                 <div class="row bg-light p-3 rounded border mb-3 mx-0 shadow-sm">
@@ -50,7 +50,7 @@
 
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold small text-muted">اللجنة</label>
-                        <select asp-for="CommitteeID" id="committeeSelect" class="form-select shadow-sm" asp-items="ViewBag.CommitteeID">
+                        <select asp-for="CommitteeId" id="committeeSelect" class="form-select shadow-sm" asp-items="ViewBag.CommitteeID">
                             <option value="">-- بلا --</option>
                         </select>
                         <small class="text-muted" style="font-size: 0.65rem;">خاص بملاحظي اللجان</small>

@@ -31,9 +31,13 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="TargetAcademicYear" class="form-label fw-bold text-secondary">السنة الدراسية المستهدفة (تلقائي)</label>
-                            <input asp-for="TargetAcademicYear" id="AcademicYearDisplay" class="form-control bg-light shadow-sm border-0 fw-bold text-navy" readonly style="border-radius: 8px;" />
-                            <span asp-validation-for="TargetAcademicYear" class="text-danger small mt-1 d-block"></span>
+                            <label class="form-label fw-bold text-secondary">السنة الدراسية المستهدفة (تلقائي)</label>
+                            <input id="AcademicYearDisplay"
+                                   class="form-control bg-light shadow-sm border-0 fw-bold text-navy"
+                                   readonly
+                                   style="border-radius: 8px;"
+                                   placeholder="سيتم تحديدها آلياً..."
+                                   value="@Model?.AcademicYear" />
                         </div>
 
                         <div class="col-md-4">

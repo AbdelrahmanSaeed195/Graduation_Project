@@ -11,7 +11,7 @@ namespace projectweb.Models
     {
         [Key]
         [Display(Name = "كود البلوك")]
-        public int BlockID { get; set; }
+        public int BlockId { get; set; }
 
         [Required(ErrorMessage = "اسم البلوك أو الجزء مطلوب")]
         [Display(Name = "اسم البلوك (الجزء)")]
@@ -30,10 +30,13 @@ namespace projectweb.Models
         [ForeignKey("HallId")]
         [Display(Name = "بيانات الصالة")]
         public virtual Hall Hall { get; set; }
+
         [ValidateNever]
         [Display(Name = "اللجان التابعة")]
         public virtual ICollection<Committee> Committees { get; set; }
 
-        
+        [ValidateNever]
+        [Display(Name = "تكليفات البلوك")]
+        public virtual ICollection<CommitteesAssignment> CommitteesAssignments { get; set; }
     }
 }

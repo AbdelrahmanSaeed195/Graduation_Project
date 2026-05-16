@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
 using projectweb.ViewModel;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace projectweb.Controllers
 {
@@ -16,7 +20,7 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // INDEX
+        // 1. القائمة الرئيسية - INDEX
         // =====================================
         public async Task<IActionResult> Index()
         {
@@ -33,7 +37,7 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // SEARCH
+        // 2. البحث - SEARCH
         // =====================================
         [HttpGet]
         public async Task<IActionResult> Search(string searchTerm)
@@ -47,7 +51,7 @@ namespace projectweb.Controllers
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                searchTerm = searchTerm.ToLower();
+                searchTerm = searchTerm.ToLower().Trim();
                 query = query.Where(s => s.FullName.ToLower().Contains(searchTerm)
                                       || s.NationalId.Contains(searchTerm));
             }
@@ -62,7 +66,7 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // DETAILS
+        // 3. التفاصيل - DETAILS
         // =====================================
         public async Task<IActionResult> Details(int id)
         {
@@ -79,7 +83,7 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // CREATE
+        // 4. إضافة طالب - CREATE
         // =====================================
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
@@ -97,9 +101,7 @@ namespace projectweb.Controllers
 
             model.NationalId = model.NationalId?.Replace(" ", "").Trim();
 
-            bool exists = await _context.Students
-                .AnyAsync(s => s.NationalId == model.NationalId);
-
+            bool exists = await _context.Students.AnyAsync(s => s.NationalId == model.NationalId);
             if (exists)
             {
                 ModelState.AddModelError("NationalId", "هذا الرقم القومي مسجل بالفعل");
@@ -116,30 +118,19 @@ namespace projectweb.Controllers
             };
 
             _context.Students.Add(student);
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                ModelState.AddModelError("NationalId", "هذا الرقم القومي مسجل بالفعل");
-                return View(model);
-            }
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
         // =====================================
-        // EDIT
+        // 5. تعديل طالب - EDIT
         // =====================================
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var student = await _context.Students.FindAsync(id);
-
-            if (student == null)
-                return NotFound();
+            if (student == null) return NotFound();
 
             var model = new StudentCreateViewModel
             {
@@ -157,14 +148,10 @@ namespace projectweb.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, StudentCreateViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
+            if (!ModelState.IsValid) return View(model);
 
             var student = await _context.Students.FindAsync(id);
-            if (student == null)
-                return NotFound();
-
-            model.NationalId = model.NationalId?.Replace(" ", "").Trim();
+            if (student == null) return NotFound();
 
             bool exists = await _context.Students
                 .AnyAsync(s => s.NationalId == model.NationalId && s.StudentId != id);
@@ -176,24 +163,15 @@ namespace projectweb.Controllers
             }
 
             student.FullName = model.FullName;
-            student.NationalId = model.NationalId;
+            student.NationalId = model.NationalId?.Replace(" ", "").Trim();
             student.AcademicYear = model.AcademicYear;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                ModelState.AddModelError("NationalId", "هذا الرقم القومي مستخدم بالفعل");
-                return View(model);
-            }
-
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         // =====================================
-        // DELETE
+        // 6. الحذف - DELETE (بدون حذف أي سطر)
         // =====================================
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
@@ -232,129 +210,152 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // DISTRIBUTE STUDENTS
+        // 7. توزيع الطلاب تلقائياً - DISTRIBUTE
         // =====================================
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DistributeStudents()
         {
-            // جيب الطلاب الغير موزعين
+            // 1. جلب الطلاب غير الموزعين
             var students = await _context.Students
                 .Where(s => s.ExamScheduleId == null)
                 .OrderBy(s => s.AcademicYear)
                 .ThenBy(s => s.FullName)
                 .ToListAsync();
 
-            // جيب الجلسات مع اللجان والامتحانات
+            if (!students.Any())
+            {
+                TempData["InfoMessage"] = "لا يوجد طلاب بانتظار التوزيع.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // 2. جلب الجلسات مع اللجان والمواد
             var schedules = await _context.ExamSchedules
-                .Include(e => e.Committee)
-                .Include(e => e.Exam)
-                .OrderBy(e => e.Exam.ExamDate)
-                .ThenBy(e => e.Exam.StartTime)
-                .ThenBy(e => e.Committee.CommitteeNumber)
+                .Include(es => es.Committee)
+                .Include(es => es.Exam)
+                    .ThenInclude(ex => ex.Subject)
+                .OrderBy(es => es.Exam.ExamDate)
+                .ThenBy(es => es.Exam.StartTime)
                 .ToListAsync();
 
-            // جيب عدد الطلاب الحاليين في كل جلسة (query واحدة بدل N queries)
+            // 3. حساب عدد الطلاب الحاليين في كل لجنة
             var scheduleCounts = await _context.Students
                 .Where(s => s.ExamScheduleId != null)
                 .GroupBy(s => s.ExamScheduleId)
-                .Select(g => new { ExamScheduleId = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => x.ExamScheduleId!.Value, x => x.Count);
+                .Select(g => new { Id = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.Id!.Value, x => x.Count);
 
-            // قسّم الطلاب على حسب فرقتهم
-            var groupedStudents = students
-                .GroupBy(s => s.AcademicYear)
-                .ToList();
+            var yearMapping = new Dictionary<string, string>
+    {
+        { "1", "الأولى" },
+        { "2", "الثانية" },
+        { "3", "الثالثة" },
+        { "4", "الرابعة" }
+    };
+
+            int totalAssigned = 0;
+
+            // 5. عملية التوزيع
+            var groupedStudents = students.GroupBy(s => s.AcademicYear).ToList();
 
             foreach (var group in groupedStudents)
             {
-                string yearAsString = group.Key.ToString();
+                string rawYear = group.Key?.Trim() ?? "";
 
-                // الجلسات المخصصة لنفس الفرقة فقط
+                // محاولة تحويل الرقم إلى مسمى (مثلاً من "1" إلى "الأولى")
+                // إذا لم يجد تحويل، سيستخدم النص الأصلي كما هو
+                string studentYear = yearMapping.ContainsKey(rawYear) ? yearMapping[rawYear] : rawYear;
+
                 var relevantSchedules = schedules
-                    .Where(e => e.Exam.TargetAcademicYear == yearAsString)
+                    .Where(s => s.Exam?.Subject != null &&
+                                (s.Exam.Subject.AcademicYear.Trim() == studentYear ||
+                                 s.Exam.Subject.AcademicYear.Contains(studentYear)))
                     .ToList();
 
-                int scheduleIndex = 0;
+                if (!relevantSchedules.Any()) continue;
 
+                int scheduleIndex = 0;
                 foreach (var student in group)
                 {
-                    // دور على جلسة فيها مكان
+                    bool distributed = false;
                     while (scheduleIndex < relevantSchedules.Count)
                     {
-                        var schedule = relevantSchedules[scheduleIndex];
-                        var currentCount = scheduleCounts.GetValueOrDefault(schedule.ExamScheduleId, 0);
+                        var currentSchedule = relevantSchedules[scheduleIndex];
+                        var currentCount = scheduleCounts.GetValueOrDefault(currentSchedule.ExamScheduleId, 0);
 
-                        if (currentCount < schedule.Committee.NumberOfStudent)
+                        // التحقق من السعة
+                        if (currentCount < currentSchedule.Committee.NumberOfStudent)
+                        {
+                            student.ExamScheduleId = currentSchedule.ExamScheduleId;
+
+                            // تحديث العداد في الذاكرة
+                            scheduleCounts[currentSchedule.ExamScheduleId] = currentCount + 1;
+                            totalAssigned++;
+                            distributed = true;
                             break;
-
+                        }
                         scheduleIndex++;
                     }
-
-                    // مفيش جلسات كافية لهذه الفرقة
-                    if (scheduleIndex >= relevantSchedules.Count)
-                        break;
-
-                    var assignedSchedule = relevantSchedules[scheduleIndex];
-                    student.ExamScheduleId = assignedSchedule.ExamScheduleId;
-
-                    // حدّث العداد في الميموري
-                    if (scheduleCounts.ContainsKey(assignedSchedule.ExamScheduleId))
-                        scheduleCounts[assignedSchedule.ExamScheduleId]++;
-                    else
-                        scheduleCounts[assignedSchedule.ExamScheduleId] = 1;
+                    if (!distributed) break;
                 }
             }
 
-            await _context.SaveChangesAsync();
+            // 6. الحفظ وإعادة ترقيم الجلوس
+            if (totalAssigned > 0)
+            {
+                await _context.SaveChangesAsync();
 
-            // أعد حساب أرقام الجلوس للجلسات المتأثرة فقط
-            var affectedScheduleIds = students
-                .Where(s => s.ExamScheduleId != null)
-                .Select(s => s.ExamScheduleId!.Value)
-                .Distinct()
-                .ToList();
+                var affectedIds = students.Where(s => s.ExamScheduleId != null)
+                    .Select(s => s.ExamScheduleId!.Value).Distinct();
 
-            foreach (var scheduleId in affectedScheduleIds)
-                await RecalculateSeatNumbers(scheduleId);
+                foreach (var id in affectedIds)
+                    await RecalculateSeatNumbers(id);
+
+                TempData["SuccessMessage"] = $"تم توزيع {totalAssigned} طالب بنجاح.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "فشل التوزيع: لم يتم العثور على جلسات تطابق السنة الدراسية للطلاب. تأكد من كتابة السنة في المادة (الأولى، الثانية...) وفي الطالب (1، 2...).";
+            }
 
             return RedirectToAction(nameof(Index));
         }
 
         // =====================================
-        // STUDENT COMMITTEE
+        // عرض لجنة الطالب - COMMITTEE
         // =====================================
         public async Task<IActionResult> Committee(int id)
         {
             var student = await _context.Students
                 .Include(s => s.ExamSchedule)
                     .ThenInclude(e => e.Committee)
+                .Include(s => s.ExamSchedule)
+                    .ThenInclude(e => e.Exam)
                 .FirstOrDefaultAsync(s => s.StudentId == id);
 
-            if (student == null)
-                return NotFound();
+            if (student == null) return NotFound();
 
-            if (student.ExamSchedule == null)
+            if (student.ExamScheduleId == null || student.ExamSchedule == null)
             {
-                ViewBag.Message = "هذا الطالب لم يُعيَّن بعد";
+                ViewBag.Message = $"عفواً، الطالب ({student.FullName}) لم يتم توزيعه على أي لجنة امتحانية حتى الآن.";
                 return View("NoCommittee");
             }
 
+            // 3. إذا كان موزعاً، نقوم بملء الـ ViewModel
             var model = new StudentCommitteeViewModel
             {
                 StudentId = student.StudentId,
                 FullName = student.FullName,
                 AcademicYear = student.AcademicYear,
                 SeatNumber = student.SeatNumber,
-                CommitteeId = student.ExamSchedule.Committee.CommitteeID,
+                CommitteeId = student.ExamSchedule.Committee.CommitteeId,
                 CommitteeNumber = student.ExamSchedule.Committee.CommitteeNumber,
                 NumberOfStudent = student.ExamSchedule.Committee.NumberOfStudent
             };
 
             return View(model);
         }
-
         // =====================================
-        // RECALCULATE SEATS
+        // 9. مساعد: إعادة ترقيم الجلوس
         // =====================================
         private async Task RecalculateSeatNumbers(int examScheduleId)
         {

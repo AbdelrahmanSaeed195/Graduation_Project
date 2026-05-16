@@ -4,6 +4,6 @@
     {
         public string FullName { get; set; }
         public string NationalId { get; set; }
-        public int AcademicYear { get; set; }
+        public string AcademicYear { get; set; }
     }
 }
