@@ -28,6 +28,7 @@ namespace projectweb.Controllers
         {
             var reportPersons = await _context.ReportPersons
                 .Include(r => r.Person)
+                .Include(r => r.Student)
                 .Include(r => r.Role)
                 .Include(r => r.Report).ThenInclude(rep => rep.ExamSchedule).ThenInclude(s => s.Exam).ThenInclude(e => e.Subject)
                 .OrderByDescending(rp => rp.SignedAt)
@@ -45,6 +46,7 @@ namespace projectweb.Controllers
 
             var reportPerson = await _context.ReportPersons
                 .Include(r => r.Person)
+                .Include(r => r.Student)
                 .Include(r => r.Role)
                 .Include(r => r.Report).ThenInclude(rep => rep.ExamSchedule).ThenInclude(s => s.Exam).ThenInclude(e => e.Subject)
                 .FirstOrDefaultAsync(m => m.ReportId == reportId && m.PersonId == personId);
@@ -57,56 +59,58 @@ namespace projectweb.Controllers
         // =====================================
         // 3. إنشاء ارتباط جديد - CREATE
         // =====================================
-        [Authorize(Roles = "Admin")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            PopulateDropdowns();
+            await PopulateDropdownsAsync();
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([Bind("ReportId,PersonId,RoleId,Signature,SignedAt")] ReportPerson reportPerson)
+        public async Task<IActionResult> Create([Bind("ReportId,PersonId,StudentId,RoleId,Signature,SignedAt")] ReportPerson reportPerson)
         {
             if (ModelState.IsValid)
             {
-                bool exists = await _context.ReportPersons.AnyAsync(rp => rp.ReportId == reportPerson.ReportId && rp.PersonId == reportPerson.PersonId);
+                bool exists = await _context.ReportPersons.AnyAsync(rp => rp.ReportId == reportPerson.ReportId && rp.PersonId == reportPerson.PersonId && rp.StudentId == reportPerson.StudentId);
                 if (exists)
                 {
-                    ModelState.AddModelError("", "هذا الشخص مرتبط بالفعل بهذا المحضر");
+                    ModelState.AddModelError("", "هذا الشخص أو الطالب مرتبط بالفعل بهذا المحضر الدراسية");
                 }
                 else
                 {
                     _context.Add(reportPerson);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "تم ربط الشخص بالمحضر بنجاح";
+                    TempData["SuccessMessage"] = "تم ربط الشخص والموقع بالمحضر بنجاح";
                     return RedirectToAction(nameof(Index));
                 }
             }
-            PopulateDropdowns(reportPerson);
+            await PopulateDropdownsAsync(reportPerson);
             return View(reportPerson);
         }
 
         // =====================================
         // 4. تعديل الارتباط - EDIT
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? reportId, int? personId)
         {
             if (reportId == null || personId == null) return NotFound();
 
-            var reportPerson = await _context.ReportPersons.FindAsync(reportId, personId);
+            // 🌟 تم التعديل هنا لعمل Include كامل لبيانات السجل لمنع ظهور الطلاسم أو الحقول الفارغة
+            var reportPerson = await _context.ReportPersons
+                .Include(r => r.Person)
+                .Include(r => r.Student)
+                .FirstOrDefaultAsync(m => m.ReportId == reportId && m.PersonId == personId);
+
             if (reportPerson == null) return NotFound();
 
-            PopulateDropdowns(reportPerson);
+            await PopulateDropdownsAsync(reportPerson);
             return View(reportPerson);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int reportId, int personId, [Bind("ReportId,PersonId,RoleId,Signature,SignedAt")] ReportPerson reportPerson)
+        public async Task<IActionResult> Edit(int reportId, int personId, [Bind("ReportId,PersonId,StudentId,RoleId,Signature,SignedAt")] ReportPerson reportPerson)
         {
             if (reportId != reportPerson.ReportId || personId != reportPerson.PersonId) return NotFound();
 
@@ -125,20 +129,20 @@ namespace projectweb.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            PopulateDropdowns(reportPerson);
+            await PopulateDropdownsAsync(reportPerson);
             return View(reportPerson);
         }
 
         // =====================================
         // 5. الحذف - DELETE
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? reportId, int? personId)
         {
             if (reportId == null || personId == null) return NotFound();
 
             var reportPerson = await _context.ReportPersons
                 .Include(r => r.Person)
+                .Include(r => r.Student)
                 .Include(r => r.Report)
                 .FirstOrDefaultAsync(m => m.ReportId == reportId && m.PersonId == personId);
 
@@ -149,7 +153,6 @@ namespace projectweb.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int reportId, int personId)
         {
             var reportPerson = await _context.ReportPersons.FindAsync(reportId, personId);
@@ -163,36 +166,52 @@ namespace projectweb.Controllers
         }
 
         // ==================================================
-        // HELPERS (دوال مساعدة لتحسين تجربة المستخدم)
+        // HELPERS (🌟 تحويل كامل لـ Async لمنع مشاكل الـ HTML Encoding والرموز المشوهة)
         // ==================================================
-        private void PopulateDropdowns(ReportPerson rp = null)
+        private async Task PopulateDropdownsAsync(ReportPerson rp = null)
         {
-            var persons = _context.Persons.AsNoTracking().ToList().Select(p => new
+            var dbPersons = await _context.Persons.AsNoTracking().ToListAsync();
+            var persons = dbPersons.Select(p => new
             {
                 ID = p.PersonId,
                 Name = $"{p.FullName} ({GetEnumDisplayName(p.JobRole)})"
-            });
+            }).ToList();
 
-            var reports = _context.Reports
+            var dbStudents = await _context.Students.AsNoTracking().ToListAsync();
+            var students = dbStudents.Select(s => new
+            {
+                ID = s.StudentId,
+                Name = $"{s.FullName} (رقم جلوس: {s.SeatNumber})"
+            }).ToList();
+
+            var dbReports = await _context.Reports
                 .Include(r => r.ExamSchedule).ThenInclude(s => s.Exam).ThenInclude(e => e.Subject)
-                .AsNoTracking().ToList().Select(r => new
-                {
-                    ID = r.ReportId,
-                    Text = $"محضر #{r.ReportId} - {r.ExamSchedule?.Exam?.Subject?.SubjectName} ({r.CreatedDate:yyyy/MM/dd})"
-                });
+                .AsNoTracking()
+                .ToListAsync();
+
+            var reports = dbReports.Select(r => new
+            {
+                ID = r.ReportId,
+                Text = r.ExamSchedule?.Exam?.Subject != null
+                    ? $"محضر #{r.ReportId} - {r.ExamSchedule.Exam.Subject.SubjectName} ({r.CreatedDate:yyyy/MM/dd})"
+                    : $"محضر #{r.ReportId} ({r.CreatedDate:yyyy/MM/dd})"
+            }).ToList();
+
+            var roles = await _context.Roles.AsNoTracking().ToListAsync();
 
             ViewData["PersonId"] = new SelectList(persons, "ID", "Name", rp?.PersonId);
+            ViewData["StudentId"] = new SelectList(students, "ID", "Name", rp?.StudentId);
             ViewData["ReportId"] = new SelectList(reports, "ID", "Text", rp?.ReportId);
-            ViewData["RoleId"] = new SelectList(_context.Roles, "RoleID", "RoleDescription", rp?.RoleId); // ربط الوصف أو مسمى الدور المناسب لجدول الأدوار
+            ViewData["RoleId"] = new SelectList(roles, "RoleID", "RoleDescription", rp?.RoleId);
         }
 
         private string GetEnumDisplayName(Enum enumValue)
         {
             return enumValue.GetType()
-                            .GetMember(enumValue.ToString())
-                            .First()
-                            .GetCustomAttribute<DisplayAttribute>()
-                            ?.Name ?? enumValue.ToString();
+                             .GetMember(enumValue.ToString())
+                             .First()
+                             .GetCustomAttribute<DisplayAttribute>()
+                             ?.Name ?? enumValue.ToString();
         }
 
         private bool ReportPersonExists(int reportId, int personId)

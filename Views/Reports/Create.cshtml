@@ -5,7 +5,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="row justify-content-center" dir="rtl">
+<div class="row justify-content-center" dir="rtl" style="text-align: right;">
     <div class="col-xl-9">
         @if (!ViewData.ModelState.IsValid)
         {
@@ -17,12 +17,12 @@
         <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
             <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
                 <div class="d-flex align-items-center">
-                    <div class="bg-white bg-opacity-25 rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                    <div class="bg-white bg-opacity-25 rounded-circle p-2 ms-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
                         <i class="bi bi-file-earmark-plus-fill text-white fs-4"></i>
                     </div>
                     <div>
                         <h4 class="mb-0 fw-bold text-white">إنشاء محضر جديد</h4>
-                        <p class="mb-0 small text-white-50">توثيق وقائع اللجان والامتحانات</p>
+                        <p class="mb-0 small text-white-50 mt-1">توثيق وقائع اللجان والامتحانات</p>
                     </div>
                 </div>
             </div>
@@ -32,82 +32,78 @@
                     @Html.AntiForgeryToken()
 
                     <div class="row g-4">
-                        @* 1. اختيار المادة والامتحان (تم تصحيح الـ Key ليكون ExamID مطابقاً لتمرير الكنترولر) *@
                         <div class="col-md-6">
                             <label class="form-label academic-label required fw-bold mb-2">اختر المادة / الامتحان</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-book"></i></span>
-                                <select id="examSelect" class="form-select academic-input border-start-0"
-                                        asp-items="@(ViewData["ExamID"] as SelectList)">
+                            <div class="input-group" style="flex-direction: row-reverse;">
+                                <select id="examSelect" class="form-select academic-input border-end-0"
+                                        asp-items="@(ViewData["ExamID"] as SelectList)" style="border-radius: 0 8px 8px 0 !important;">
                                     <option value="">-- اختر المادة --</option>
                                 </select>
+                                <span class="input-group-text bg-light text-muted" style="border-radius: 8px 0 0 8px !important;"><i class="bi bi-book"></i></span>
                             </div>
                         </div>
 
-                        @* 2. اختيار اللجنة التابعة للامتحان *@
                         <div class="col-md-6">
-                            <label asp-for="ScheduleId" class="form-label academic-label required fw-bold mb-2">اللجنة المختصة</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-door-open"></i></span>
-                                <select asp-for="ScheduleId" id="committeeSelect" class="form-select academic-input border-start-0" disabled>
+                            <label asp-for="ScheduleId" class="form-label academic-label required fw-bold mb-2">اللجنة المختصة (المبنى)</label>
+                            <div class="input-group" style="flex-direction: row-reverse;">
+                                <select asp-for="ScheduleId" id="committeeSelect" class="form-select academic-input border-end-0" disabled style="border-radius: 0 8px 8px 0 !important;">
                                     <option value="">-- اختر المادة أولاً --</option>
                                 </select>
+                                <span class="input-group-text bg-light text-muted" style="border-radius: 8px 0 0 8px !important;"><i class="bi bi-door-open"></i></span>
                             </div>
-                            <span asp-validation-for="ScheduleId" class="text-danger small fw-bold"></span>
+                            <span asp-validation-for="ScheduleId" class="text-danger small fw-bold mt-1 d-block"></span>
                         </div>
 
-                        @* 3. نوع وحالة المحضر *@
                         <div class="col-md-12">
                             <label asp-for="Status" class="form-label academic-label required fw-bold mb-2">نوع / حالة المحضر</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-info-square"></i></span>
-                                <select asp-for="Status" class="form-select academic-input border-start-0"
-                                        asp-items="ViewBag.StatusList">
+                            <div class="input-group" style="flex-direction: row-reverse;">
+                                <select asp-for="Status" class="form-select academic-input border-end-0"
+                                        asp-items="ViewBag.StatusList" style="border-radius: 0 8px 8px 0 !important;">
                                     <option value="">-- اختر نوع المحضر --</option>
                                 </select>
+                                <span class="input-group-text bg-light text-muted" style="border-radius: 8px 0 0 8px !important;"><i class="bi bi-info-square"></i></span>
                             </div>
+                            <span asp-validation-for="Status" class="text-danger small fw-bold mt-1 d-block"></span>
                         </div>
 
-                        @* 4. اختيار الطالب المعني بالواقعة *@
                         <div class="col-md-6 party-section" style="display:none;">
                             <label class="form-label academic-label fw-bold mb-2">الطالب المعني (إن وجد)</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-person-badge"></i></span>
-                                <select name="SelectedStudentId" id="studentSelect" class="form-select academic-input border-start-0">
+                            <div class="input-group" style="flex-direction: row-reverse;">
+                                <select name="SelectedStudentId" id="studentSelect" class="form-select academic-input border-end-0" style="border-radius: 0 8px 8px 0 !important;">
                                     <option value="">-- اختر الطالب --</option>
                                 </select>
+                                <span class="input-group-text bg-light text-muted" style="border-radius: 8px 0 0 8px !important;"><i class="bi bi-person-badge"></i></span>
                             </div>
                         </div>
 
-                        @* 5. اختيار الموظفين والملاحظين المشتركين *@
                         <div class="col-md-6 party-section" style="display:none;">
                             <label class="form-label academic-label required fw-bold mb-2">المكلفون الذين رصدوا الواقعة</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-people"></i></span>
-                                <select name="SelectedStaffIds" id="staffSelect" class="form-select academic-input border-start-0" multiple style="height: 120px;">
+                            <div class="input-group" style="flex-direction: row-reverse;">
+                                <select name="SelectedStaffIds" id="staffSelect" class="form-select academic-input border-end-0" multiple style="height: 120px; border-radius: 0 8px 8px 0 !important;">
                                 </select>
+                                <span class="input-group-text bg-light text-muted align-items-start pt-3" style="border-radius: 8px 0 0 8px !important;"><i class="bi bi-people"></i></span>
                             </div>
-                            <small class="text-muted" style="font-size: 0.75rem;">استخدم Ctrl لاختيار أكثر من موظف</small>
+                            <small class="text-muted d-block mt-1 fw-bold" style="font-size: 0.75rem;"><i class="bi bi-info-circle"></i> استخدم زر Ctrl لاختيار أكثر من موظف</small>
                         </div>
 
-                        @* 6. تفاصيل ووقائع المحضر *@
                         <div class="col-12 mt-4">
                             <label asp-for="Notes" class="form-label academic-label fw-bold mb-2">تفاصيل ووقائع المحضر</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0 align-items-start pt-3 text-muted">
+                            <div class="input-group" style="flex-direction: row-reverse;">
+                                <textarea asp-for="Notes" class="form-control academic-input border-end-0" rows="5"
+                                          placeholder="أدخل وصفاً تفصيلياً لما حدث داخل اللجنة..." style="border-radius: 0 8px 8px 0 !important;"></textarea>
+                                <span class="input-group-text bg-light align-items-start pt-3 text-muted" style="border-radius: 8px 0 0 8px !important;">
                                     <i class="bi bi-pencil-square"></i>
                                 </span>
-                                <textarea asp-for="Notes" class="form-control academic-input border-start-0" rows="5"
-                                          placeholder="أدخل وصفاً تفصيلياً لما حدث داخل اللجنة..."></textarea>
                             </div>
+                            <span asp-validation-for="Notes" class="text-danger small fw-bold mt-1 d-block"></span>
                         </div>
                     </div>
 
-                    <div class="d-flex flex-wrap gap-2 mt-5 pt-4 border-top">
+                    <div class="d-flex flex-wrap gap-2 mt-5 pt-4 border-top justify-content-start">
                         <button type="submit" class="btn btn-academic-primary px-5 fw-bold shadow-sm py-2">
                             <i class="bi bi-check-circle me-1"></i> حفظ المحضر
                         </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 border-0">
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 border-0" style="border-radius: 8px;">
                             <i class="bi bi-x-circle me-1"></i> إلغاء والعودة
                         </a>
                     </div>
@@ -123,7 +119,6 @@
     <script>
         $(document).ready(function () {
 
-            // 1. جلب اللجان الامتحانية الموزعة عند تغيير المادة
             $('#examSelect').change(function () {
                 var examId = $(this).val();
                 var committeeSelect = $('#committeeSelect');
@@ -144,27 +139,23 @@
                 }
             });
 
-            // 2. جلب الطلاب والموظفين المعينين داخل اللجنة المختارة عبر الـ AJAX المصحح في الذاكرة
             $('#committeeSelect').change(function () {
                 var scheduleId = $(this).val();
                 if (scheduleId) {
                     $.getJSON('@Url.Action("GetCommitteeParties")', { scheduleId: scheduleId }, function (data) {
 
-                        // تعبئة قائمة الطلاب الموزعين
                         var studentSelect = $('#studentSelect');
                         studentSelect.empty().append('<option value="">-- اختر الطالب --</option>');
                         $.each(data.students, function (i, s) {
                             studentSelect.append($('<option>', { value: s.id, text: s.name }));
                         });
 
-                        // تعبئة قائمة الموظفين (الملاحظين)
                         var staffSelect = $('#staffSelect');
                         staffSelect.empty();
                         $.each(data.staff, function (i, s) {
                             staffSelect.append($('<option>', { value: s.id, text: s.name }));
                         });
 
-                        // إظهار حقول الاختيار بحركة ناعمة
                         $('.party-section').fadeIn();
                     });
                 } else {
@@ -178,17 +169,6 @@
         .academic-input:focus {
             border-color: #1a3a5a !important;
             box-shadow: 0 0 0 0.25rem rgba(26, 58, 90, 0.1) !important;
-        }
-
-        .input-group-text {
-            border-radius: 0 8px 8px 0 !important;
-            border-color: #dee2e6;
-            background-color: #f8f9fa;
-        }
-
-        .academic-input {
-            border-radius: 8px 0 0 8px !important;
-            border-color: #dee2e6;
         }
 
         .academic-label.required::after {

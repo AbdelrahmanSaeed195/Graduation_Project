@@ -19,24 +19,19 @@ namespace projectweb.Controllers
             _context = context;
         }
 
-        // =====================================
-        // 1. القائمة الرئيسية - INDEX
-        // =====================================
         public async Task<IActionResult> Index()
         {
             var exams = _context.Exams
                 .AsNoTracking()
-                .Include(e => e.Subject) // ضروري لعرض السنة الدراسية من المادة
+                .Include(e => e.Subject)
                 .Include(e => e.ExamSchedules)
-                    .ThenInclude(es => es.Committee)
+                    .ThenInclude(es => es.Block)
+                        .ThenInclude(b => b.Hall)
                 .OrderByDescending(e => e.ExamDate);
 
             return View(await exams.ToListAsync());
         }
 
-        // =====================================
-        // 2. التفاصيل - DETAILS
-        // =====================================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -45,9 +40,8 @@ namespace projectweb.Controllers
                 .AsNoTracking()
                 .Include(e => e.Subject)
                 .Include(e => e.ExamSchedules)
-                    .ThenInclude(es => es.Committee)
-                        .ThenInclude(c => c.Block)
-                            .ThenInclude(b => b.Hall)
+                    .ThenInclude(es => es.Block)
+                        .ThenInclude(b => b.Hall)
                 .FirstOrDefaultAsync(m => m.ExamId == id);
 
             if (exam == null) return NotFound();
@@ -55,10 +49,6 @@ namespace projectweb.Controllers
             return View(exam);
         }
 
-        // =====================================
-        // 3. إنشاء امتحان جديد - CREATE
-        // =====================================
-        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             PopulateSubjects();
@@ -67,10 +57,8 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("ExamId,ExamDate,StartTime,EndTime,SubjectID")] Exam exam)
         {
-            // التحقق من المدة والتداخل
             var durationMinutes = (exam.EndTime - exam.StartTime).TotalMinutes;
             if (durationMinutes > 180)
             {
@@ -88,14 +76,14 @@ namespace projectweb.Controllers
 
             if (isOverlapping)
             {
-                ModelState.AddModelError("", "يوجد امتحان آخر مسجل في نفس هذا الموعد.");
+                ModelState.AddModelError("", "تنبيه: يوجد امتحان آخر مسجل في نفس الفترة الزمنية. يرجى مراجعة الصالات في جدول توزيع اللجان لضمان عدم التداخل.");
             }
 
             if (ModelState.IsValid)
             {
                 _context.Add(exam);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "تم إضافة الامتحان بنجاح.";
+                TempData["SuccessMessage"] = "تم إضافة الامتحان بنجاح. يمكنك الآن الانتقال لتوزيع الصالات (ExamSchedules).";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -103,10 +91,6 @@ namespace projectweb.Controllers
             return View(exam);
         }
 
-        // =====================================
-        // 4. تعديل امتحان - EDIT
-        // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -114,13 +98,26 @@ namespace projectweb.Controllers
             var exam = await _context.Exams.AsNoTracking().Include(e => e.Subject).FirstOrDefaultAsync(x => x.ExamId == id);
             if (exam == null) return NotFound();
 
+            string arabicYear = "غير محدد";
+            if (exam.Subject != null)
+            {
+                arabicYear = exam.Subject.AcademicYear switch
+                {
+                    AcademicLevel.FirstYear => "المستوى الأول",
+                    AcademicLevel.SecondYear => "المستوى الثاني",
+                    AcademicLevel.ThirdYear => "المستوى الثالث",
+                    AcademicLevel.FourthYear => "المستوى الرابع",
+                    _ => "غير محدد"
+                };
+            }
+            ViewBag.InitialAcademicYear = arabicYear;
+
             PopulateSubjects(exam.SubjectID);
             return View(exam);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, [Bind("ExamId,ExamDate,StartTime,EndTime,SubjectID")] Exam exam)
         {
             if (id != exam.ExamId) return NotFound();
@@ -143,7 +140,7 @@ namespace projectweb.Controllers
 
             if (isOverlapping)
             {
-                ModelState.AddModelError("", "هذا التعديل يتسبب في تداخل مع موعد امتحان آخر.");
+                ModelState.AddModelError("", "هذا التعديل قد يتسبب في تداخل زمني مع امتحان آخر مسجل.");
             }
 
             if (ModelState.IsValid)
@@ -166,10 +163,6 @@ namespace projectweb.Controllers
             return View(exam);
         }
 
-        // =====================================
-        // 5. الحذف - DELETE
-        // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -178,6 +171,8 @@ namespace projectweb.Controllers
                 .AsNoTracking()
                 .Include(e => e.Subject)
                 .Include(e => e.ExamSchedules)
+                    .ThenInclude(es => es.Block)
+                        .ThenInclude(b => b.Hall)
                 .FirstOrDefaultAsync(m => m.ExamId == id);
 
             if (exam == null) return NotFound();
@@ -187,12 +182,22 @@ namespace projectweb.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var exam = await _context.Exams.FindAsync(id);
+            var exam = await _context.Exams
+                .Include(e => e.ExamSchedules)
+                .FirstOrDefaultAsync(e => e.ExamId == id);
+
             if (exam != null)
             {
+                bool hasAssignments = await _context.CommitteesAssignments.AnyAsync(a => a.ExamSchedule.ExamId == id);
+
+                if (hasAssignments || exam.ExamSchedules.Any())
+                {
+                    TempData["ErrorMessage"] = "فشل الحذف: لا يمكن حذف الامتحان بسبب وجود ارتباطات في جدول توزيع اللجان والـ ExamSchedule أو طاقم المراقبة الذكي الحالي. يرجى مسح التوزيعات أولاً.";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 try
                 {
                     _context.Exams.Remove(exam);
@@ -201,21 +206,34 @@ namespace projectweb.Controllers
                 }
                 catch (Exception)
                 {
-                    TempData["ErrorMessage"] = "لا يمكن حذف الامتحان لوجود لجان أو بيانات مرتبطة به.";
+                    TempData["ErrorMessage"] = "لا يمكن حذف الامتحان لوجود سجلات معتمدة عليه في قواعد البيانات.";
                 }
             }
             return RedirectToAction(nameof(Index));
         }
 
-        // =====================================
-        // روابط مساعدة (AJAX)
-        // =====================================
-
         [HttpGet]
         public async Task<JsonResult> GetSubjectYear(int subjectId)
         {
-            var subject = await _context.Subjects.AsNoTracking().FirstOrDefaultAsync(s => s.SubjectId == subjectId);
-            return Json(new { academicYear = subject?.AcademicYear ?? "" });
+            var subject = await _context.Subjects
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.SubjectId == subjectId);
+
+            if (subject != null)
+            {
+                string arabicYear = subject.AcademicYear switch
+                {
+                    AcademicLevel.FirstYear => "المستوى الأول",
+                    AcademicLevel.SecondYear => "المستوى الثاني",
+                    AcademicLevel.ThirdYear => "المستوى الثالث",
+                    AcademicLevel.FourthYear => "المستوى الرابع",
+                    _ => "غير محدد"
+                };
+
+                return Json(new { academicYear = arabicYear });
+            }
+
+            return Json(new { academicYear = "" });
         }
 
         [HttpGet]

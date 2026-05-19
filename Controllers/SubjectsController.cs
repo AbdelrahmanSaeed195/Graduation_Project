@@ -52,7 +52,6 @@ namespace projectweb.Controllers
         // =====================================
         // CREATE
         // =====================================
-        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -60,7 +59,6 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("SubjectId,SubjectCode,SubjectName,AcademicYear")] Subject subject)
         {
             if (ModelState.IsValid)
@@ -76,7 +74,6 @@ namespace projectweb.Controllers
         // =====================================
         // EDIT
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -94,7 +91,6 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, [Bind("SubjectId,SubjectCode,SubjectName,AcademicYear")] Subject subject)
         {
             if (id != subject.SubjectId)
@@ -129,7 +125,6 @@ namespace projectweb.Controllers
         // =====================================
         // DELETE
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -149,7 +144,6 @@ namespace projectweb.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var subject = await _context.Subjects

@@ -1,4 +1,7 @@
 @model IEnumerable<projectweb.Models.Person>
+@using projectweb.Models
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
 
 @{
     ViewData["Title"] = "إدارة الموظفين";
@@ -11,7 +14,7 @@
         <h1 class="h3 mb-0 fw-bold academic-heading">
             <i class="bi bi-people-fill me-2"></i> إدارة الأشخاص والموظفين
         </h1>
-       
+
         <div class="d-flex gap-2">
             @if (User.IsInRole("Admin"))
             {
@@ -21,7 +24,7 @@
 
                 <a asp-action="ImportExcel" class="btn btn-outline-success shadow-sm">
                     <i class="bi bi-file-earmark-excel-fill me-1"></i> استيراد
-                </a> 
+                </a>
 
                 <a asp-action="ExportToExcel" class="btn btn-outline-primary shadow-sm">
                     <i class="bi bi-file-earmark-arrow-down-fill me-1"></i> تصدير
@@ -39,14 +42,12 @@
                         <span class="input-group-text bg-light border-start-0">
                             <i class="bi bi-search text-muted"></i>
                         </span>
-                        @* تم إضافة id="searchInput" لإمساكه في الجافا سكريبت *@
-                        <input type="text" id="searchInput" class="form-control academic-input border-end-0" 
-                               placeholder="ابدأ بالكتابة للبحث بالاسم، الرقم القومي، أو رقم الهاتف..." 
+                        <input type="text" id="searchInput" class="form-control academic-input border-end-0"
+                               placeholder="ابدأ بالكتابة للبحث بالاسم، الرقم القومي، أو رقم الهاتف..."
                                value="@ViewBag.Search" autocomplete="off">
                     </div>
                 </div>
                 <div class="col-md-2">
-                    @* زر إعادة التعيين يقوم بتصفير البحث *@
                     <a asp-action="Index" class="btn btn-outline-secondary w-100">إعادة تعيين</a>
                 </div>
             </div>
@@ -61,7 +62,7 @@
         </div>
     }
 
-    @* حاوية الجدول التي سيتم تحديثها بالـ AJAX *@
+    @* حاوية الجدول الرئيسية *@
     <div id="tableContainer" class="card academic-card overflow-hidden shadow-sm border-0">
         <partial name="_PersonTablePartial" model="Model" />
     </div>
@@ -73,24 +74,21 @@
         $(document).ready(function () {
             let timeout = null;
 
-            // الاستماع لكل حرف يتم كتابته في مربع البحث
             $('#searchInput').on('input', function () {
                 clearTimeout(timeout);
                 let searchValue = $(this).val();
 
-                // خاصية الـ Debounce: ننتظر 300 مللي ثانية حتى ينتهي المستخدم من الكتابة
                 timeout = setTimeout(function () {
                     $.ajax({
                         url: '@Url.Action("Index", "Persons")',
                         type: 'GET',
                         data: { search: searchValue },
                         beforeSend: function () {
-                            // تعتيم الجدول قليلاً لإعطاء إيحاء بالتحميل
                             $('#tableContainer').css('opacity', '0.6');
                         },
                         success: function (data) {
-                            // استبدال محتوى حاوية الجدول بالبيانات المفلترة القادمة من السيرفر
-                            $('#tableContainer').html(data);
+                            let newTable = $(data).find('#tableContainer').html();
+                            $('#tableContainer').html(newTable);
                             $('#tableContainer').css('opacity', '1');
                         },
                         error: function () {
@@ -98,30 +96,84 @@
                             $('#tableContainer').css('opacity', '1');
                         }
                     });
-                }, 300); 
+                }, 300);
             });
         });
     </script>
 
     <style>
-        /* تحسينات بسيطة للمظهر */
         .academic-input:focus {
             border-color: #1a3a5a;
             box-shadow: 0 0 0 0.25rem rgba(26, 58, 90, 0.1);
         }
+
         .btn-academic-primary {
             background-color: #1a3a5a;
             color: white;
             transition: all 0.3s;
             border: none;
         }
-        .btn-academic-primary:hover {
-            background-color: #2e5a88;
-            color: white;
-            transform: translateY(-1px);
-        }
+
+            .btn-academic-primary:hover {
+                background-color: #2e5a88;
+                color: white;
+                transform: translateY(-1px);
+            }
+
         #tableContainer {
             transition: opacity 0.2s ease-in-out;
+        }
+
+        .style-badge {
+            min-width: 120px;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            border: none !important;
+        }
+
+        .job-badge-professor-emeritus {
+            background-color: #1a3a5a !important;
+            color: #ffffff !important;
+        }
+
+        .job-badge-assistant-prof {
+            background-color: #0c59cf !important;
+            color: #ffffff !important;
+        }
+
+        .job-badge-professor {
+            background-color: #0b4699 !important; 
+            color: #ffffff !important;
+        }
+
+        .job-badge-lecturer {
+            background-color: #0d6efd !important; 
+            color: #ffffff !important;
+        }
+
+        .job-badge-assistant-staff {
+            background-color: #6c757d !important; 
+            color: #ffffff !important;
+        }
+
+        .job-badge-assistant {
+            color: #000000 !important;
+        }
+
+        .job-badge-employee {
+            background-color: #ffc107 !important; 
+            color: #000000 !important;
+        }
+
+        .job-badge-doctor {
+            background-color: #198754 !important;
+            color: #ffffff !important;
+        }
+
+        .job-badge-nurse {
+            background-color: #20c997 !important; 
+            color: #ffffff !important;
         }
     </style>
 }

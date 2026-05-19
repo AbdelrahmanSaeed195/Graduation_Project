@@ -1,7 +1,7 @@
 ﻿@model projectweb.Models.ExamSchedule
 
 @{
-    ViewData["Title"] = "تعديل توزيع اللجنة";
+    ViewData["Title"] = "تعديل توزيع البلوك";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -10,9 +10,9 @@
         <div class="col-md-9">
             <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
 
-                <div class="card-header py-3" style="background-color: #1a2c4e; border-bottom: none;">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border-bottom: none;">
                     <h4 class="card-title mb-0 fw-bold text-white text-center">
-                        <i class="bi bi-pencil-square me-2"></i> تعديل بيانات توزيع اللجنة
+                        <i class="bi bi-pencil-square me-2"></i> تعديل بيانات توزيع البلوك (المبنى)
                     </h4>
                 </div>
 
@@ -28,38 +28,37 @@
                                 <label asp-for="ExamId" class="form-label fw-bold small text-muted mb-1">اسم المادة / الامتحان المقرر <span class="text-danger">*</span></label>
                                 <select asp-for="ExamId" id="ExamSelect" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.ExamId" style="border-radius: 8px; font-size: 0.95rem;">
                                 </select>
-                                <span asp-validation-for="ExamId" class="text-danger small mt-1 d-block"></span>
+                                <span asp-validation-for="ExamId" class="text-danger small mt-1 d-block fw-bold"></span>
                             </div>
 
                             <div class="col-md-5 mb-3">
                                 <label class="form-label fw-bold small text-muted mb-1 text-center d-block">السنة الدراسية</label>
-                                @* إضافة ID لهذا الحقل ليتم تحديثه عبر JavaScript *@
-                                <div id="AcademicYearDisplay" class="p-2 border rounded-3 bg-light text-center fw-bold shadow-sm" style="font-size: 1.1rem; height: calc(3.5rem + 2px); display: flex; align-items: center; justify-content: center;">
-                                    @(Model.Exam?.Subject?.AcademicYear ?? "-")
+                                <div id="AcademicYearDisplay" class="p-2 border rounded-3 bg-light text-center fw-bold shadow-sm" style="font-size: 1.1rem; height: calc(3.5rem + 2px); display: flex; align-items: center; justify-content: center; color: #1a3a5a;">
+                                    جاري القراءة...
                                 </div>
                             </div>
 
                             <div class="col-12 mb-3">
-                                <label asp-for="CommitteeId" class="form-label fw-bold small text-muted mb-1">اللجنة المختصة <span class="text-danger">*</span></label>
-                                <select asp-for="CommitteeId" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.CommitteeId" style="border-radius: 8px; font-size: 0.95rem;">
+                                <label asp-for="BlockId" class="form-label fw-bold small text-muted mb-1">البلوك / المبنى المختص <span class="text-danger">*</span></label>
+                                <select asp-for="BlockId" id="BlockSelect" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="@(ViewBag.BlockId as SelectList)" style="border-radius: 8px; font-size: 0.95rem;">
                                 </select>
-                                <span asp-validation-for="CommitteeId" class="text-danger small mt-1 d-block"></span>
+                                <span asp-validation-for="BlockId" class="text-danger small mt-1 d-block fw-bold"></span>
                             </div>
 
                             <div class="col-12">
-                                <div class="alert alert-info border-0 shadow-sm mb-0">
+                                <div class="alert alert-info border-0 shadow-sm mb-0" style="border-radius: 8px;">
                                     <i class="bi bi-info-circle-fill me-2"></i>
-                                    تنبيه: يتم تحديث التاريخ والوقت تلقائياً بناءً على بيانات "الامتحان المقرر" الذي يتم اختياره أعلاه.
+                                    تنبيه: يتم تحديث قائمة البلوكات المتاحة تلقائياً عند تغيير الامتحان لضمان عدم حدوث تضارب في القاعات والمباني.
                                 </div>
                             </div>
                         </div>
 
                         <div class="border-top mt-5 pt-4">
                             <div class="d-flex justify-content-center gap-3">
-                                <button type="submit" class="btn btn-lg px-5 py-2 shadow-sm fw-bold" style="background-color: #1a2c4e; color: white; border-radius: 8px;">
+                                <button type="submit" class="btn btn-lg px-5 py-2 shadow-sm fw-bold text-white" style="background-color: #1a3a5a; border-radius: 8px; font-size: 1rem;">
                                     <i class="bi bi-check-circle me-2"></i> حفظ التعديلات
                                 </button>
-                                <a asp-action="Index" class="btn btn-lg btn-outline-secondary px-4" style="border-radius: 8px;">
+                                <a asp-action="Index" class="btn btn-lg btn-outline-secondary px-4" style="border-radius: 8px; font-size: 1rem;">
                                     إلغاء والعودة
                                 </a>
                             </div>
@@ -78,23 +77,59 @@
 
     <script>
         $(document).ready(function () {
-            $('#ExamSelect').change(function () {
-                // استخراج السنة الدراسية من النص الموجود داخل الـ Option المختار
-                // النص يكون بالتنسيق: "اسم المادة - التاريخ (السنة الدراسية)"
-                var selectedText = $(this).find("option:selected").text();
-                var academicYear = "-";
 
-                // البحث عن النص الموجود بين الأقواس
+            var currentBlockId = '@Model.BlockId';
+
+            function updateAcademicYearDisplay() {
+                var selectedText = $('#ExamSelect').find("option:selected").text();
+                var academicYear = "غير محدد";
                 var regExp = /\(([^)]+)\)/;
                 var matches = regExp.exec(selectedText);
 
                 if (matches && matches.length > 1) {
                     academicYear = matches[1];
                 }
-
-                // تحديث العرض في الصفحة
                 $('#AcademicYearDisplay').text(academicYear);
+            }
+
+            function handleExamChange(examId, isInitialLoad) {
+                if (!examId) return;
+
+                updateAcademicYearDisplay();
+
+                var blockSelect = $('#BlockSelect');
+
+                if (!isInitialLoad) {
+                    blockSelect.empty().append('<option value="">-- جاري تحميل البلوكات المتاحة --</option>');
+
+                    $.getJSON('@Url.Action("GetAvailableBlocks")', { examId: examId }, function (data) {
+                        blockSelect.empty();
+                        blockSelect.append('<option value="">-- اختر البلوك --</option>');
+
+                        $.each(data, function (i, item) {
+                            blockSelect.append($('<option>', { value: item.id, text: item.name }));
+                        });
+                    });
+                } else {
+         
+                    $.getJSON('@Url.Action("GetAvailableBlocks")', { examId: examId }, function (data) {
+                        $.each(data, function (i, item) {
+                            if (item.id != currentBlockId && blockSelect.find('option[value="' + item.id + '"]').length === 0) {
+                                blockSelect.append($('<option>', { value: item.id, text: item.name }));
+                            }
+                        });
+                    });
+                }
+            }
+
+            $('#ExamSelect').change(function () {
+                handleExamChange($(this).val(), false);
             });
+
+            var initialExamId = $('#ExamSelect').val();
+            if (initialExamId) {
+                handleExamChange(initialExamId, true);
+            }
         });
     </script>
 }

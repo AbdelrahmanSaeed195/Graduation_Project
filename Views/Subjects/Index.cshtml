@@ -1,7 +1,13 @@
 ﻿@model IEnumerable<projectweb.Models.Subject>
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+
+@{
+    ViewData["Title"] = "إدارة المواد الدراسية";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 
 <div class="container mt-4" dir="rtl" style="text-align: right;">
-    <!-- الهيدر: نفس ستايل إدارة الصالات -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 style="color: #0d1b3e; font-weight: bold;">
             <i class="fas fa-book-open ml-2"></i> إدارة المواد الدراسية
@@ -11,7 +17,6 @@
         </a>
     </div>
 
-    <!-- التنبيهات -->
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius: 10px;">
@@ -22,9 +27,8 @@
         </div>
     }
 
-    <!-- الجدول داخل كارت أبيض نظيف -->
     <div class="card shadow-sm border-0" style="border-radius: 15px; overflow: hidden; background-color: white;">
-        <table class="table mb-0 text-center table-hover">
+        <table class="table mb-0 text-center table-hover align-middle">
             <thead style="background-color: #fcfcfc; border-bottom: 2px solid #f0f0f0;">
                 <tr>
                     <th class="py-3 text-muted" style="width: 20%; font-weight: 600;">كود المادة</th>
@@ -37,38 +41,52 @@
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="4" class="py-5 text-muted">لا توجد مواد مسجلة في النظام حالياً.</td>
-                    </tr>
-                }
-                @foreach (var item in Model)
-                {
-                    <tr style="transition: all 0.3s;">
-                        <td class="align-middle" style="font-weight: bold; color: #0d1b3e;">
-                            @item.SubjectCode
-                        </td>
-                        <td class="align-middle" style="color: #333; font-weight: 500;">
-                            @item.SubjectName
-                        </td>
-                        <td class="align-middle">
-                            <span class="badge px-3 py-2" style="background-color: #f0f2f5; color: #0d1b3e; border-radius: 8px; font-size: 0.85rem; border: 1px solid #e0e0e0;">
-                                @item.AcademicYear
-                            </span>
-                        </td>
-                        <td class="align-middle">
-                            <!-- أيقونات ملونة مباشرة بدون Outline لتطابق صورة الصالات -->
-                            <div class="d-flex justify-content-center">
-                                <a asp-action="Edit" asp-route-id="@item.SubjectId" class="mx-2" title="تعديل" style="color: #ffc107;">
-                                    <i class="fas fa-edit fa-lg"></i>
-                                </a>
-                                <a asp-action="Details" asp-route-id="@item.SubjectId" class="mx-2" title="تفاصيل" style="color: #17a2b8;">
-                                    <i class="fas fa-eye fa-lg"></i>
-                                </a>
-                                <a asp-action="Delete" asp-route-id="@item.SubjectId" class="mx-2" title="حذف" style="color: #dc3545;">
-                                    <i class="fas fa-trash-alt fa-lg"></i>
-                                </a>
+                        <td colspan="4" class="py-5 text-muted text-center">
+                            <div class="py-4 opacity-75">
+                                <i class="fas fa-folder-open display-4 d-block mb-3" style="color: #a0aec0;"></i>
+                                <h5 class="fw-bold text-secondary">لا توجد مواد مسجلة في النظام حالياً</h5>
+                                <p class="small text-muted mb-0">يمكنك البدء بإضافة أول مادة دراسية من خلال زر الإضافة بالأعلى.</p>
                             </div>
                         </td>
                     </tr>
+                }
+                else
+                {
+                    foreach (var item in Model)
+                    {
+                        // 🌟 لوجيك ذكي لقراءة الـ Display Name العربي الخاص بالـ Enum الحالي لكل مادة في الجدول
+                        var enumType = item.AcademicYear.GetType();
+                        var memberInfo = enumType.GetMember(item.AcademicYear.ToString());
+                        var displayAttribute = memberInfo.Length > 0 ? memberInfo[0].GetCustomAttribute<DisplayAttribute>() : null;
+                        string arabicLevelName = displayAttribute != null ? displayAttribute.Name : item.AcademicYear.ToString();
+
+                        <tr style="transition: all 0.3s;">
+                            <td class="align-middle fw-bold" style="color: #0d1b3e;">
+                                @item.SubjectCode
+                            </td>
+                            <td class="align-middle" style="color: #333; font-weight: 500;">
+                                @item.SubjectName
+                            </td>
+                            <td class="align-middle">
+                                <span class="badge px-3 py-2" style="background-color: #f0f2f5; color: #0d1b3e; border-radius: 8px; font-size: 0.85rem; border: 1px solid #e0e0e0;">
+                                    <i class="fas fa-graduation-cap ml-1 text-muted"></i> @arabicLevelName
+                                </span>
+                            </td>
+                            <td class="align-middle">
+                                <div class="d-flex justify-content-center">
+                                    <a asp-action="Edit" asp-route-id="@item.SubjectId" class="mx-2" title="تعديل" style="color: #ffc107;">
+                                        <i class="fas fa-edit fa-lg"></i>
+                                    </a>
+                                    <a asp-action="Details" asp-route-id="@item.SubjectId" class="mx-2" title="تفاصيل" style="color: #17a2b8;">
+                                        <i class="fas fa-eye fa-lg"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.SubjectId" class="mx-2" title="حذف" style="color: #dc3545;">
+                                        <i class="fas fa-trash-alt fa-lg"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>

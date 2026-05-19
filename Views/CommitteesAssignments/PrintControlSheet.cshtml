@@ -128,7 +128,7 @@
             width: 30%;
         }
 
-       @@media print {
+        @@media print {
             .no-print
 
         {
@@ -167,11 +167,11 @@
                 </div>
                 <div style="text-align: left;">
                     نموذج رقم: AU-EX-02<br>
-                    صالة: @Model.HallName
+                    الموقع: @Model.HallName
                 </div>
             </div>
 
-            <div class="main-title">امتحانات @Model.Semester للعام الجامعي @Model.AcademicYear</div>
+            <div class="main-title">امتحانات الفصل الدراسي الثاني للعام الجامعي @Model.AcademicYear</div>
 
             <div class="info-grid">
                 <div class="right-info">
@@ -182,8 +182,8 @@
                     <div class="info-line">الزمن: <span class="line-draw">@Model.ExamTime</span></div>
                 </div>
                 <div class="left-info">
-                    <div class="info-line">رئيس اللجان (1): <span class="line-draw" style="min-width:220px;">@Model.MainHead1</span></div>
-                    <div class="info-line">رئيس اللجان (2): <span class="line-draw" style="min-width:220px;">@Model.MainHead2</span></div>
+                    <div class="info-line">رئيس اللجان الأساسي: <span class="line-draw" style="min-width:220px;">@Model.MainHead1</span></div>
+                    <div class="info-line">مراقب اللجان الأساسي: <span class="line-draw" style="min-width:220px;">@Model.MainHead2</span></div>
                 </div>
             </div>
 
@@ -191,10 +191,10 @@
                 <thead>
                     <tr>
                         <th style="width:30px;">م</th>
-                        <th>اسم الملاحظ (الأساسي)</th>
-                        <th style="width:60px;">اللجنة</th>
+                        <th>اسم الملاحظ</th>
+                        <th style="width:120px;">رقم اللجنة</th>
                         <th style="width:80px;">الكراسات</th>
-                        <th style="width:180px;">توقيع الاستلام</th>
+                        <th style="width:180px;">التوقيع بالاستلام</th>
                         <th style="width:120px;">ملاحظات</th>
                     </tr>
                 </thead>
@@ -204,9 +204,9 @@
                         @foreach (var block in Model.Blocks)
                         {
                             <tr>
-                                <td colspan="6" class="block-header">
-                                    @block.BlockName
-                                    <span style="margin-right: 40px;">مراقب البلوك: <b>@block.BlockObserverName</b></span>
+                                <td colspan="6" class="block-header" style="text-align: center !important; font-size: 13pt;">
+                                    المبنى الحالي: <b>@block.BlockName</b>
+                                    <span style="margin-right: 40px;">المراقب المسؤول: <b>@block.BlockObserverName</b></span>
                                 </td>
                             </tr>
 
@@ -217,7 +217,7 @@
                                     <tr>
                                         <td>@(i++)</td>
                                         <td style="text-align:right; padding-right:15px;">@obs.ObserverName</td>
-                                        <td>@obs.CommitteeNumber</td>
+                                        <td class="fw-bold">@obs.CommitteeNumber</td>
                                         <td></td>
                                         <td></td>
                                         <td></td>
@@ -227,59 +227,53 @@
                         }
                     }
 
-                    @for (int j = i; j <= 12; j++)
+                    @for (int j = i; j <= 10; j++)
                     {
-                        <tr style="height:35px;"><td>@j</td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr style="height:35px;">
+                            <td>@j</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
                     }
                 </tbody>
             </table>
 
             <div class="bottom-container">
                 <div class="section-box">
-                    <div class="section-title">طاقم الاحتياطي</div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <div style="width: 48%;">
-                            <small><b>احتياطي طاقم (1):</b></small>
-                            <div class="info-line" style="font-size: 10pt;">رئيس احتياطي: <span class="line-draw" style="min-width:140px;">@Model.ReserveHead1</span></div>
-                            <div class="info-line" style="font-size: 10pt;">مراقب احتياطي: <span class="line-draw" style="min-width:140px;">@Model.ReserveObserver1</span></div>
-                            @if (Model.ReserveNotes1 != null)
+                    <div class="section-title" style="text-align: right; padding-right: 10px; text-decoration: none;">طاقم الاحتياطي العام للجنة:</div>
+
+                    <div class="info-line" style="font-size: 11pt;">احتياطي رئيس اللجان: <span class="line-draw" style="min-width:250px;">@Model.ReserveHead1</span></div>
+                    <div class="info-line" style="font-size: 11pt;">احتياطي مراقب اللجان: <span class="line-draw" style="min-width:250px;">@Model.ReserveObserver1</span></div>
+
+                    @if (Model.Blocks != null)
+                    {
+                        @foreach (var block in Model.Blocks)
+                        {
+                            var reserveItems = block.CommitteeObservers.Where(o => o.CommitteeNumber == "ملاحظ احتياطي بالمبنى").ToList();
+                            @foreach (var res in reserveItems)
                             {
-                                @foreach (var note in Model.ReserveNotes1)
-                                {
-                                    <div class="info-line" style="font-size: 10pt;">ملاحظ احتياطي: <span class="line-draw" style="min-width:140px;">@note</span></div>
-                                }
+                                <div class="info-line" style="font-size: 11pt;">احتياطي ملاحظ اللجان: <span class="line-draw" style="min-width:250px;">@res.ObserverName</span></div>
                             }
-                        </div>
-                        <div style="width: 48%; border-right: 1px dashed #ccc; padding-right: 10px;">
-                            <small><b>احتياطي طاقم (2):</b></small>
-                            <div class="info-line" style="font-size: 10pt;">رئيس احتياطي: <span class="line-draw" style="min-width:140px;">@Model.ReserveHead2</span></div>
-                            <div class="info-line" style="font-size: 10pt;">مراقب احتياطي: <span class="line-draw" style="min-width:140px;">@Model.ReserveObserver2</span></div>
-                            @if (Model.ReserveNotes2 != null)
-                            {
-                                @foreach (var note in Model.ReserveNotes2)
-                                {
-                                    <div class="info-line" style="font-size: 10pt;">ملاحظ احتياطي: <span class="line-draw" style="min-width:140px;">@note</span></div>
-                                }
-                            }
-                        </div>
-                    </div>
+                        }
+                    }
                 </div>
 
                 <div class="section-box">
-                    <div class="section-title">الطاقم الطبي</div>
-                    <div class="info-line">طبيب اللجان: <span class="line-draw" style="min-width:160px;">@Model.DoctorName</span></div>
-                    <div class="info-line">مساعد الطبيب: <span class="line-draw" style="min-width:160px;">@Model.NurseName</span></div>
-                    <div style="margin-top: 15px; font-size: 10pt; color: #555;">
-                        * يعتمد،،<br>
-                        اجمالي عدد الكراسات: ............
+                    <div class="info-line" style="margin-top: 5px;">طبيب اللجان: <span class="line-draw" style="min-width:180px;">@Model.DoctorName</span></div>
+                    <div class="info-line">مساعد الطبيب: <span class="line-draw" style="min-width:180px;">@Model.NurseName</span></div>
+                    <div style="margin-top: 25px; font-size: 11pt; font-weight: bold;">
+                        إجمالي عدد الكراسات: .........................
                     </div>
                 </div>
             </div>
 
             <div class="footer-sigs">
                 <div class="sig-item">شئون طلاب<br><br>....................</div>
-                <div class="sig-item">مراقب اللجنة الأساسي<br><br>....................</div>
-                <div class="sig-item">رئيس اللجنة الأساسي<br><br>....................</div>
+                <div class="sig-item">مراقب اللجنة<br><br>....................</div>
+                <div class="sig-item">رئيس اللجنة<br><br>....................</div>
             </div>
         </div>
     }

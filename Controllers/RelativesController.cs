@@ -6,7 +6,6 @@ using projectweb.Models;
 
 namespace projectweb.Controllers
 {
-    [AllowAnonymous]
     public class RelativesController : Controller
     {
         private readonly ApplicationDbContext _db;
@@ -59,7 +58,6 @@ namespace projectweb.Controllers
         // =====================================
         // CREATE
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create()
         {
             ViewBag.PersonsList = await _db.Persons
@@ -75,7 +73,6 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Relative relative)
         {
             ModelState.Remove("Person");
@@ -93,7 +90,6 @@ namespace projectweb.Controllers
         // =====================================
         // EDIT
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -107,7 +103,6 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, Relative relative)
         {
             if (id != relative.RelativeId) return NotFound();
@@ -136,7 +131,6 @@ namespace projectweb.Controllers
         // =====================================
         // DELETE
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -150,7 +144,6 @@ namespace projectweb.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var relative = await _db.Relatives.FindAsync(id);

@@ -48,7 +48,6 @@ namespace projectweb.Controllers
         // =========================
         // CREATE - GET
         // =========================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create()
         {
             await LoadSupervisors();
@@ -60,7 +59,6 @@ namespace projectweb.Controllers
         // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Hall hall)
         {
             // التحقق من تكرار اسم القاعة
@@ -94,7 +92,6 @@ namespace projectweb.Controllers
         // =========================
         // EDIT - GET
         // =========================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -114,7 +111,6 @@ namespace projectweb.Controllers
         // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(Hall hall)
         {
             bool isNameExist = await db.Halls.AnyAsync(h => h.HallName == hall.HallName && h.HallId != hall.HallId);
@@ -147,7 +143,6 @@ namespace projectweb.Controllers
         // =========================
         // DELETE - GET
         // =========================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -167,7 +162,6 @@ namespace projectweb.Controllers
         // =========================
         // DELETE - POST
         // =========================
-        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

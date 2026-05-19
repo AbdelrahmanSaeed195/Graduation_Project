@@ -7,7 +7,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="content-body" dir="rtl">
+<div class="content-body" dir="rtl" style="text-align: right;">
 
     @if (TempData["SuccessMessage"] != null)
     {
@@ -18,7 +18,7 @@
     }
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 fw-bold academic-heading">
+        <h1 class="h3 mb-0 fw-bold academic-heading" style="color: #1a3a5a;">
             <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i> أرشيف التقارير والمحاضر
         </h1>
 
@@ -30,43 +30,55 @@
         }
     </div>
 
-    @* قسم التصفية المحدث *@
-    <div class="card academic-card mb-4 border-0 shadow-sm" style="border-radius: 15px;">
+    <div class="card academic-card mb-4 border-0 shadow-sm" style="border-radius: 15px; background-color: white;">
         <div class="card-body p-4">
-            <h6 class="fw-bold academic-heading mb-3"><i class="bi bi-funnel me-2"></i> تصفية النتائج</h6>
+            <h6 class="fw-bold academic-heading mb-3"><i class="bi bi-funnel me-2"></i> text تصفية النتائج</h6>
             <form asp-action="Index" method="get" class="row g-3 align-items-end">
                 <div class="col-md-5">
                     <label for="reportType" class="form-label small fw-bold text-muted">تصنيف المحضر</label>
-                    <select name="reportType" id="reportType" class="form-select academic-input" asp-items="ViewBag.ReportStatusList">
+                    <select name="reportType" id="reportType" class="form-select academic-input" style="border-radius: 8px;">
                         <option value="">-- عرض الكل --</option>
+                        @if (ViewBag.ReportStatusList != null)
+                        {
+                            foreach (var statusItem in (List<SelectListItem>)ViewBag.ReportStatusList)
+                            {
+                                if (ViewBag.SelectedReportType?.ToString() == statusItem.Value)
+                                {
+                                    <option value="@statusItem.Value" selected="selected">@statusItem.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@statusItem.Value">@statusItem.Text</option>
+                                }
+                            }
+                        }
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-academic-primary px-4 fw-bold w-100">
-                        <i class="bi bi-search me-1"></i> تصفية
+                    <button type="submit" class="btn btn-academic-primary px-4 fw-bold w-100" style="border-radius: 8px; height: calc(2.25rem + 2px);">
+                        <i class="bi bi-search me-1"></i> تصفية وبحث
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    @* جدول البيانات *@
-    <div class="card academic-card overflow-hidden border-0 shadow-sm" style="border-radius: 15px;">
-        <div class="card-header academic-card-header text-white p-3 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%);">
+    <div class="card academic-card overflow-hidden border-0 shadow-sm" style="border-radius: 15px; background-color: white;">
+        <div class="card-header text-white p-3 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
             <h5 class="mb-0 fw-bold text-white"><i class="bi bi-list-ul me-2"></i> سجل الوقائع المسجلة</h5>
-            <span class="badge bg-white bg-opacity-25 shadow-sm">إجمالي المحاضر: @Model.Count()</span>
+            <span class="badge bg-white text-dark fw-bold px-3 py-2" style="border-radius: 6px;">إجمالي المحاضر: @(Model?.Count() ?? 0)</span>
         </div>
         <div class="table-responsive">
             <table class="table academic-table table-hover align-middle mb-0">
                 <thead class="bg-light">
                     <tr class="text-center">
-                        <th class="ps-4 text-start" style="width: 100px;">كود</th>
-                        <th class="text-start">المادة / الامتحان</th>
-                        <th>اللجنة</th>
-                        <th>تاريخ الواقعة</th>
-                        <th>نوع المحضر</th>
-                        <th>ملخص الملاحظات</th>
-                        <th class="pe-4">الإجراءات</th>
+                        @* <th class="ps-4 text-start" style="width: 100px; border: none; font-weight: 700;">كود</th> *@
+                        <th class="text-start" style="border: none; font-weight: 700;">المادة / الامتحان</th>
+                        <th style="border: none; font-weight: 700;">اللجنة</th>
+                        <th style="border: none; font-weight: 700;">تاريخ الواقعة</th>
+                        <th style="border: none; font-weight: 700;">نوع المحضر</th>
+                        <th style="border: none; font-weight: 700;">ملخص الملاحظات</th>
+                        <th class="pe-4" style="border: none; font-weight: 700;">الإجراءات</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -75,19 +87,24 @@
                         foreach (var item in Model)
                         {
                             <tr class="text-center">
-                                <td class="ps-4 text-start fw-bold text-primary">#@item.ReportId</td>
+                                @* <td class="ps-4 text-start fw-bold text-primary">#@item.ReportId</td> *@
                                 <td class="text-start">
                                     @if (item.ExamSchedule?.Exam?.Subject != null)
                                     {
-                                        <div class="fw-bold text-dark">@item.ExamSchedule.Exam.Subject.SubjectName</div>
-                                        <div class="text-muted extra-small" style="font-size: 0.75rem;">
-                                            <i class="bi bi-calendar-event me-1"></i> @item.ExamSchedule.Exam.ExamDate.ToString("yyyy/MM/dd")
+                                        <div class="fw-bold text-dark" style="color: #1a3a5a !important;">@item.ExamSchedule.Exam.Subject.SubjectName</div>
+                                        <div class="text-muted extra-small" style="font-size: 0.75rem; font-weight: 600;">
+                                            <i class="bi bi-calendar-event me-1 text-secondary"></i> @item.ExamSchedule.Exam.ExamDate.ToString("yyyy/MM/dd")
                                         </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">غير محدد</span>
                                     }
                                 </td>
                                 <td>
-                                    <span class="badge rounded-pill bg-light text-dark border shadow-sm px-3">
-                                        @(item.ExamSchedule?.Committee?.CommitteeNumber ?? 0)
+                                    <span class="badge rounded-pill bg-light border shadow-sm px-3 py-2 text-navy fw-bold" style="color: #1a3a5a; border-radius: 6px;">
+                                        <i class="bi bi-door-open-fill text-primary me-1"></i>
+                                        @(item.Committee != null && item.Committee.CommitteeId > 0 ? "لجنة " + item.Committee.CommitteeNumber : "محضر عام")
                                     </span>
                                 </td>
                                 <td>
@@ -98,10 +115,9 @@
                                 </td>
                                 <td>
                                     @{
-                                        // استخراج الاسم العربي من الـ Display Attribute المعرف في الموديل
                                         var enumType = item.Status.GetType();
                                         var memberInfo = enumType.GetMember(item.Status.ToString());
-                                        var displayAttr = memberInfo[0].GetCustomAttribute<DisplayAttribute>();
+                                        var displayAttr = memberInfo.Length > 0 ? memberInfo[0].GetCustomAttribute<DisplayAttribute>() : null;
                                         var arabicName = displayAttr?.Name ?? item.Status.ToString();
 
                                         var statusClass = item.Status switch
@@ -114,12 +130,12 @@
                                             _ => "bg-info"
                                         };
                                     }
-                                    <span class="badge @statusClass px-3 py-2 shadow-sm" style="min-width: 100px; border-radius: 8px;">
+                                    <span class="badge @statusClass px-3 py-2 shadow-sm fw-bold" style="min-width: 100px; border-radius: 8px;">
                                         @arabicName
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="text-truncate text-muted small" style="max-width: 150px;" title="@item.Notes">
+                                    <div class="text-truncate text-muted small fw-bold" style="max-width: 150px; display: inline-block;" title="@item.Notes">
                                         @(string.IsNullOrEmpty(item.Notes) ? "— لا يوجد ملاحظات —" : item.Notes)
                                     </div>
                                 </td>
@@ -146,10 +162,10 @@
                     {
                         <tr>
                             <td colspan="7" class="text-center py-5">
-                                <div class="opacity-50">
+                                <div class="opacity-50 py-4">
                                     <i class="bi bi-folder-x fs-1 d-block mb-3 text-muted"></i>
-                                    <h5 class="fw-bold text-muted">لا توجد محاضر مسجلة حالياً</h5>
-                                    <p class="small text-muted">بإمكانك إضافة أول محضر من خلال زر "إنشاء محضر جديد" بالأعلى.</p>
+                                    <h5 class="fw-bold text-secondary">لا توجد محاضر مسجلة تطابق البحث حالياً</h5>
+                                    <p class="small text-muted mb-0">بإمكانك إضافة أول محضر من خلال زر "إنشاء محضر جديد" بالأعلى.</p>
                                 </div>
                             </td>
                         </tr>
@@ -163,7 +179,6 @@
 <style>
     .academic-table thead th {
         font-size: 0.85rem;
-        text-transform: uppercase;
         letter-spacing: 0.5px;
         font-weight: 700;
         background-color: #f8f9fa;

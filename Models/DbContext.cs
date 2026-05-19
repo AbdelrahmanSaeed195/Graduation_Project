@@ -11,7 +11,6 @@ namespace projectweb.Models
         {
         }
 
-        // جداول النظام الأساسية
         public DbSet<Person> Persons { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Relative> Relatives { get; set; }
@@ -30,39 +29,27 @@ namespace projectweb.Models
         {
             base.OnModelCreating(modelBuilder);
 
-            /* =======================================================
-               1. Seed Data - تغذية الجداول بالبيانات الأساسية للأدوار
-            ======================================================= */
             modelBuilder.Entity<Role>().HasData(
+                new Role { RoleID = 1, RoleName = StaffPosition.HallManager, RoleDescription = "رئيس صالة (أستاذ)" },
+                new Role { RoleID = 2, RoleName = StaffPosition.HallManager, RoleDescription = "رئيس صالة (أستاذ مساعد)" },
+                new Role { RoleID = 3, RoleName = StaffPosition.HallManager, RoleDescription = "رئيس صالة (أستاذ متفرغ)" },
+                new Role { RoleID = 4, RoleName = StaffPosition.BlockGroupLeader, RoleDescription = "مراقب (مدرس)" },
+                new Role { RoleID = 5, RoleName = StaffPosition.CommitteeObserver, RoleDescription = "ملاحظ (معيد)" },
+                new Role { RoleID = 6, RoleName = StaffPosition.CommitteeObserver, RoleDescription = "ملاحظ (مدرس مساعد)" },
+                new Role { RoleID = 7, RoleName = StaffPosition.CommitteeObserver, RoleDescription = "ملاحظ (موظف)" },
+                new Role { RoleID = 8, RoleName = StaffPosition.Doctor, RoleDescription = "طبيب" },
+                new Role { RoleID = 9, RoleName = StaffPosition.Nurse, RoleDescription = "ممرض" }
+            );
 
-                 new Role { RoleID = 1, RoleName = StaffPosition.HallManager, RoleDescription = "رئيس صالة" },
-
-                 new Role { RoleID = 2, RoleName = StaffPosition.BlockGroupLeader, RoleDescription = "مراقب" },
-
-                 new Role { RoleID = 3, RoleName = StaffPosition.CommitteeObserver, RoleDescription = "ملاحظ" },
-
-                 new Role { RoleID = 4, RoleName = StaffPosition.Doctor, RoleDescription = "طبيب" },
-
-                 new Role { RoleID = 5, RoleName = StaffPosition.Nurse, RoleDescription = "ممرض" }
-
-             );
-
-            /* =======================================================
-               2. العلاقات المعقدة (Fluent API)
-            ======================================================= */
-
-            // علاقة المادة بالامتحانات
             modelBuilder.Entity<Exam>()
                 .HasOne(e => e.Subject)
                 .WithMany(s => s.Exams)
                 .HasForeignKey(e => e.SubjectID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // إعدادات جدول التكليفات (CommitteesAssignment)
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasKey(ca => ca.AssignmentId);
 
-            // منع تكرار تكليف نفس الشخص في نفس الجلسة الامتحانية
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasIndex(ca => new { ca.PersonId, ca.ExamScheduleId })
                 .IsUnique();
@@ -85,7 +72,6 @@ namespace projectweb.Models
                 .HasForeignKey(ca => ca.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ربط التكليف بالصالة أو البلوك أو اللجنة (اختياري حسب نوع الدور)
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasOne(ca => ca.Hall)
                 .WithMany()
@@ -95,7 +81,7 @@ namespace projectweb.Models
 
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasOne(ca => ca.Block)
-                .WithMany() // تم التعديل للسماح للبلوك برؤية تكليفاته مباشرة
+                .WithMany()
                 .HasForeignKey(ca => ca.BlockId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -107,7 +93,6 @@ namespace projectweb.Models
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // إعدادات الأقارب (Relatives)
             modelBuilder.Entity<Relative>()
                 .HasOne(r => r.Student)
                 .WithMany(s => s.Relatives)
@@ -120,7 +105,6 @@ namespace projectweb.Models
                 .HasForeignKey(r => r.PersonId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // إعدادات القاعات والبلوكات واللجان (Hall -> Block -> Committee)
             modelBuilder.Entity<Hall>()
                 .HasOne(h => h.HallSupervisor)
                 .WithMany()
@@ -139,7 +123,6 @@ namespace projectweb.Models
                 .HasForeignKey(c => c.BlockId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // إعدادات جدول مواعيد الامتحانات (Exam Schedule)
             modelBuilder.Entity<ExamSchedule>()
                 .HasOne(es => es.Exam)
                 .WithMany(e => e.ExamSchedules)
@@ -147,23 +130,21 @@ namespace projectweb.Models
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ExamSchedule>()
-                .HasOne(es => es.Committee)
-                .WithMany(c => c.ExamSchedules)
-                .HasForeignKey(es => es.CommitteeId)
+                .HasOne(es => es.Block)
+                .WithMany()
+                .HasForeignKey(es => es.BlockId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ExamSchedule>()
-            .HasIndex(es => new { es.ExamId, es.CommitteeId })
-            .IsUnique();
+                .HasIndex(es => new { es.ExamId, es.BlockId })
+                .IsUnique();
 
-            // التقارير (Reports)
             modelBuilder.Entity<Report>()
                 .HasOne(r => r.ExamSchedule)
                 .WithMany(es => es.Reports)
                 .HasForeignKey(r => r.ScheduleId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // الربط المتعدد للأشخاص في التقارير (ReportPerson)
             modelBuilder.Entity<ReportPerson>()
                 .HasKey(rp => new { rp.ReportId, rp.PersonId });
 

@@ -6,24 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace projectweb.Models
 {
-    public enum ReportStatus
-    {
-        [Display(Name = "تقرير طبيعي/دوري")]
-        Normal = 1,
-
-        [Display(Name = "حالة غش")]
-        Cheating = 2,
-
-        [Display(Name = "شغب وضوضاء")]
-        Disturbance = 3,
-
-        [Display(Name = "حالة طوارئ")]
-        Emergency = 4,
-
-        [Display(Name = "مشكلة في الغياب")]
-        AbsenceIssue = 5
-    }
-
+   
     public class Report
     {
         [Key]
@@ -49,6 +32,14 @@ namespace projectweb.Models
         [ForeignKey("ScheduleId")]
         [Display(Name = "بيانات جلسة الامتحان")]
         public virtual ExamSchedule ExamSchedule { get; set; }
+        [ValidateNever]
+        [Display(Name = "اللجنة")]
+        public int? CommitteeId { get; set; }
+
+        [ValidateNever]
+        [ForeignKey("CommitteeId")]
+        [Display(Name = "بيانات اللجنة")]
+        public virtual Committee Committee { get; set; }
         [ValidateNever]
         [Display(Name = "الموقعون على المحضر")]
         public virtual ICollection<ReportPerson> ReportPersons { get; set; }

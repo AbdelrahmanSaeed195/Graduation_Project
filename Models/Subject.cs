@@ -18,7 +18,7 @@ namespace projectweb.Models
         public string SubjectName { get; set; }
         [Required(ErrorMessage = "السنة الدراسية مطلوبة")]
         [Display(Name = "السنة الدراسية")]
-        public string AcademicYear { get; set; }
+        public AcademicLevel AcademicYear { get; set; }
         [ValidateNever]
         [Display(Name = "الامتحانات المرتبطة")]
         public virtual ICollection<Exam> Exams { get; set; }

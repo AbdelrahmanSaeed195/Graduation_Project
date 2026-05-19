@@ -7,40 +7,53 @@
 
 <div class="row justify-content-center" dir="rtl">
     <div class="col-lg-7">
-        <div class="card academic-card">
-            <div class="card-header academic-card-header p-4 text-center">
-                <h4 class="mb-0 fw-bold"><i class="bi bi-building-check me-2"></i> إشعار توزيع اللجنة</h4>
+        <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+            <div class="card-header text-white p-4 text-center" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
+                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-building-check me-2"></i> إشعار توزيع اللجنة</h4>
             </div>
-            <div class="card-body p-4">
+            <div class="card-body p-4 bg-white">
                 <div class="text-center mb-4">
                     <i class="bi bi-person-check-fill text-success" style="font-size: 4rem;"></i>
-                    <h5 class="mt-2 fw-bold text-navy">@Model.FullName</h5>
-                    <p style="color: var(--text-muted);">المستوى الدراسي: @Model.AcademicYear</p>
+                    <h5 class="mt-2 fw-bold" style="color: #1a3a5a;">@Model.FullName</h5>
+                    <p class="text-muted mb-0">
+                        المستوى الدراسي:
+                        @{
+                            string arabicLevel = Model.AcademicYear switch
+                            {
+                                projectweb.Models.AcademicLevel.FirstYear => "المستوى الأول",
+                                projectweb.Models.AcademicLevel.SecondYear => "المستوى الثاني",
+                                projectweb.Models.AcademicLevel.ThirdYear => "المستوى الثالث",
+                                projectweb.Models.AcademicLevel.FourthYear => "المستوى الرابع",
+                                _ => Model.AcademicYear.ToString()
+                            };
+                        }
+                        @arabicLevel
+                    </p>
                 </div>
 
                 <div class="row g-3">
                     <div class="col-4">
-                        <div class="data-panel text-center">
-                            <div class="panel-label">رقم اللجنة</div>
-                            <div class="panel-value fs-3">@Model.CommitteeNumber</div>
+                        <div class="p-3 border rounded text-center bg-light bg-opacity-50 shadow-sm">
+                            <div class="small text-muted fw-bold mb-1">رقم اللجنة</div>
+                            <div class="fw-bold fs-3 text-dark">@Model.CommitteeNumber</div>
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="data-panel text-center">
-                            <div class="panel-label">رقم الجلوس</div>
-                            <div class="panel-value fs-3" style="color: var(--accent-blue);">@Model.SeatNumber</div>
+                        <div class="p-3 border rounded text-center bg-light bg-opacity-50 shadow-sm">
+                            <div class="small text-muted fw-bold mb-1">رقم الجلوس</div>
+                            <div class="fw-bold fs-3 text-primary">@Model.SeatNumber</div>
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="data-panel text-center">
-                            <div class="panel-label">سعة اللجنة</div>
-                            <div class="panel-value fs-3" style="color: var(--text-muted);">@Model.NumberOfStudent</div>
+                        <div class="p-3 border rounded text-center bg-light bg-opacity-50 shadow-sm">
+                            <div class="small text-muted fw-bold mb-1">سعة اللجنة</div>
+                            <div class="fw-bold fs-3 text-secondary">@Model.NumberOfStudent</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-4 pt-3 border-top text-center" style="border-color: var(--border-color) !important;">
-                    <a asp-action="Index" class="btn btn-outline-academic px-4 fw-bold">العودة لقائمة الطلاب</a>
+                <div class="mt-5 pt-4 border-top text-center" style="border-color: #dee2e6 !important;">
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-bold" style="border-radius: 8px;">العودة لقائمة الطلاب</a>
                 </div>
             </div>
         </div>

@@ -26,9 +26,7 @@ namespace projectweb.Models
         [Required(ErrorMessage = "وقت النهاية مطلوب")]
         [DataType(DataType.Time)]
         [Display(Name = "وقت الانتهاء")]
-        public TimeSpan EndTime { get; set; }
-
-       
+        public TimeSpan EndTime { get; set; }       
 
         [Required(ErrorMessage = "يجب اختيار المادة")]
         [Display(Name = "المادة الدراسية")]
@@ -41,7 +39,7 @@ namespace projectweb.Models
         [BindNever]
         [NotMapped]
         [Display(Name = "السنة الدراسية")]
-        public string? AcademicYear => Subject?.AcademicYear;
+        public AcademicLevel? AcademicYear => Subject?.AcademicYear;
 
         [ValidateNever]
         [Display(Name = "جدول توزيع اللجان")]

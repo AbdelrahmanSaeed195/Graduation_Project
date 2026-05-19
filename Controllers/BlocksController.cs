@@ -53,7 +53,6 @@ namespace projectweb.Controllers
         // =========================
         // CREATE - GET
         // =========================
-        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             // عرض أسماء الصالات بدلاً من الأكواد
@@ -66,7 +65,6 @@ namespace projectweb.Controllers
         // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Block block)
         {
             var hall = await db.Halls.Include(h => h.Blocks).FirstOrDefaultAsync(h => h.HallId == block.HallId);
@@ -108,7 +106,6 @@ namespace projectweb.Controllers
         // =========================
         // EDIT - GET
         // =========================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return BadRequest();
@@ -122,7 +119,6 @@ namespace projectweb.Controllers
         // =========================
         // EDIT - POST
         // =========================
-        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Block block)
@@ -158,7 +154,6 @@ namespace projectweb.Controllers
          // =====================================
          // Delete
          // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -192,7 +187,6 @@ namespace projectweb.Controllers
         // =========================
         // DELETE - POST
         // =========================
-        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

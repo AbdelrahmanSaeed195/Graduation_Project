@@ -26,13 +26,14 @@ namespace projectweb.Models
         [ForeignKey("ExamId")]
         public virtual Exam Exam { get; set; }
 
-        [Required(ErrorMessage = "يجب اختيار اللجنة")]
-        [Display(Name = "اللجنة")]
-        public int CommitteeId { get; set; }
+        [Required(ErrorMessage = "يجب اختيار الصالة")]
+        [Display(Name = "الصالة")]
+        public int BlockId { get; set; }
 
         [ValidateNever]
-        [ForeignKey("CommitteeId")]
-        public virtual Committee Committee { get; set; }
+        [ForeignKey("BlockId")]
+        [Display(Name = "بيانات الصالة")]
+        public virtual Block Block { get; set; }
 
         [ValidateNever]
         public virtual ICollection<Student> Students { get; set; }

@@ -40,10 +40,13 @@ namespace projectweb.Controllers
         {
             if (id == null) return BadRequest();
 
+            // تم تعديل الـ Include الذاهب للـ ExamSchedules ليتوافق مع الموديل الجديد
             var committee = await db.Committees
                 .Include(c => c.Block).ThenInclude(b => b.Hall)
                 .Include(c => c.Students)
-                .Include(c => c.ExamSchedules).ThenInclude(es => es.Exam).ThenInclude(e => e.Subject)
+                .Include(c => c.ExamSchedules)
+                    .ThenInclude(es => es.Exam)
+                        .ThenInclude(e => e.Subject)
                 .FirstOrDefaultAsync(c => c.CommitteeId == id);
 
             if (committee == null) return NotFound();
@@ -54,7 +57,6 @@ namespace projectweb.Controllers
         // =====================================
         // إضافة لجنة جديدة - GET
         // =====================================
-        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             ViewBag.BlockID = GetBlockSelectList();
@@ -67,11 +69,10 @@ namespace projectweb.Controllers
         // =====================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Committee committee)
         {
             if (ModelState.IsValid)
-            {            
+            {
                 bool exists = await db.Committees.AnyAsync(c => c.CommitteeNumber == committee.CommitteeNumber);
                 if (exists)
                 {
@@ -101,7 +102,6 @@ namespace projectweb.Controllers
         // =====================================
         // تعديل لجنة - GET
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return BadRequest();
@@ -118,7 +118,6 @@ namespace projectweb.Controllers
         // =====================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, Committee committee)
         {
             if (id != committee.CommitteeId) return NotFound();
@@ -154,10 +153,10 @@ namespace projectweb.Controllers
             ViewBag.StatusList = GetStatusList(committee.StatusOfCommittee);
             return View(committee);
         }
+
         // =====================================
         // Delete Get
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -175,7 +174,8 @@ namespace projectweb.Controllers
                 return NotFound();
             }
 
-             bool hasStudents = await db.Students.AnyAsync(s => s.ExamSchedule.CommitteeId == id);
+            // تم تعديل فحص الطلاب ليعتمد على حقل الـ CommitteeId المباشر في جدول الطلاب
+            bool hasStudents = await db.Students.AnyAsync(s => s.CommitteeId == id);
             bool hasAssignments = await db.CommitteesAssignments.AnyAsync(a => a.CommitteeId == id);
 
             if (hasStudents || hasAssignments)
@@ -190,10 +190,10 @@ namespace projectweb.Controllers
 
             return View(committee);
         }
+
         // =====================================
         // حذف لجنة - POST
         // =====================================
-        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -201,7 +201,8 @@ namespace projectweb.Controllers
             var committee = await db.Committees.FindAsync(id);
             if (committee == null) return NotFound();
 
-            bool hasDependencies = await db.Students.AnyAsync(s => s.ExamSchedule.Committee.CommitteeId == id) ||
+            // تم التحديث هنا أيضاً ليعتمد الفحص على حقل الربط المباشر لحماية تكامل البيانات
+            bool hasDependencies = await db.Students.AnyAsync(s => s.CommitteeId == id) ||
                                    await db.CommitteesAssignments.AnyAsync(a => a.CommitteeId == id);
 
             if (hasDependencies)
@@ -244,6 +245,5 @@ namespace projectweb.Controllers
             };
             return new SelectList(list, "Value", "Text", selected);
         }
-       
     }
 }

@@ -1,16 +1,29 @@
 ﻿@model projectweb.Models.ExamSchedule
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
 
 @{
-    ViewData["Title"] = "تفاصيل توزيع اللجنة";
+    ViewData["Title"] = "تفاصيل توزيع الجلسة";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // 🌟 لوجيك مطور ومؤمن تماماً لقراءة الـ Display Name العربي للـ Enum ومنع الرموز الإنجليزية أو الـ Null
+    string arabicLevelName = "غير محدد";
+    if (Model.Exam?.Subject != null)
+    {
+        var enumType = Model.Exam.Subject.AcademicYear.GetType();
+        var memberInfo = enumType.GetMember(Model.Exam.Subject.AcademicYear.ToString());
+        var displayAttribute = memberInfo.Length > 0 ? memberInfo[0].GetCustomAttribute<DisplayAttribute>() : null;
+
+        arabicLevelName = displayAttribute != null ? displayAttribute.Name : Model.Exam.Subject.AcademicYear.ToString();
+    }
 }
 
-<div class="content-body" dir="rtl">
+<div class="content-body" dir="rtl" style="text-align: right;">
     <div class="row justify-content-center mt-4">
         <div class="col-md-10">
             <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
 
-                <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: #1a2c4e; border-bottom: none;">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border-bottom: none;">
                     <h4 class="card-title mb-0 fw-bold text-white">
                         <i class="bi bi-info-circle me-2"></i> بيانات التوزيع: @(Model.Exam?.Subject?.SubjectName ?? "غير محدد")
                     </h4>
@@ -22,7 +35,7 @@
 
                         <div class="col-md-7">
                             <label class="form-label fw-bold small text-muted mb-1">اسم المادة الدراسية</label>
-                            <div class="p-3 border rounded-3 bg-light-subtle fw-bold fs-5 shadow-sm">
+                            <div class="p-3 border rounded-3 bg-light-subtle fw-bold fs-5 shadow-sm" style="color: #1a3a5a; background-color: #f8f9fa;">
                                 <i class="bi bi-book-half me-2 text-primary"></i>
                                 @(Model.Exam?.Subject?.SubjectName ?? "غير محدد")
                             </div>
@@ -30,43 +43,43 @@
 
                         <div class="col-md-5">
                             <label class="form-label fw-bold small text-muted mb-1 text-center d-block">السنة الدراسية المستهدفة</label>
-                            <div class="p-3 border rounded-3 bg-light-subtle fw-bold fs-5 text-center shadow-sm">
-                                @(Model.Exam?.Subject?.AcademicYear ?? "-")
+                            <div class="p-3 border rounded-3 bg-light-subtle fw-bold fs-5 text-center shadow-sm" style="color: #1a3a5a; background-color: #f8f9fa;">
+                                <i class="bi bi-graduation-cap me-2 text-secondary"></i>
+                                @arabicLevelName
                             </div>
                         </div>
 
                         <div class="col-12 mt-4">
-                            <label class="form-label fw-bold small text-muted mb-1">اللجنة والقاعة</label>
-                            <div class="p-3 border rounded-3 bg-light-subtle shadow-sm d-flex justify-content-between align-items-center">
-                                <span class="fw-bold text-primary fs-5">
-                                    <i class="bi bi-building me-2"></i> لجنة رقم @Model.Committee?.CommitteeNumber
+                            <label class="form-label fw-bold small text-muted mb-1">المبنى والمقر الامتحاني المعين</label>
+                            <div class="p-3 border rounded-3 bg-light-subtle shadow-sm d-flex justify-content-between align-items-center" style="background-color: #f8f9fa;">
+                                <span class="fw-bold text-primary fs-5" style="color: #1a3a5a !important;">
+                                    <i class="bi bi-building me-2 text-primary"></i> @(Model.Block?.BlockName ?? "غير محدد")
                                 </span>
-                                <span class="text-muted small">
-                                    <i class="bi bi-geo-alt me-1"></i> موقع اللجنة المخصص
+                                <span class="text-muted small fw-bold">
+                                    <i class="bi bi-geo-alt text-danger me-1"></i> كافة لجان البلوك تتبع هذا الامتحان
                                 </span>
                             </div>
                         </div>
 
                         <div class="col-12 mt-5">
-                            <h6 class="fw-bold border-bottom pb-2 mb-3">
+                            <h6 class="fw-bold border-bottom pb-2 mb-3" style="color: #1a3a5a;">
                                 <i class="bi bi-clock-fill me-2"></i> تفاصيل التوقيت (المسجل في جدول الامتحانات)
                             </h6>
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <div class="border rounded-3 p-3 text-center shadow-sm">
+                                    <div class="border rounded-3 p-3 text-center shadow-sm" style="background-color: #fff;">
                                         <i class="bi bi-calendar-check text-primary fs-2 mb-2"></i>
-                                        <div class="small text-muted">تاريخ الامتحان المقرر</div>
-                                        <div class="fw-bold fs-5">@Model.Exam?.ExamDate.ToString("yyyy/MM/dd")</div>
+                                        <div class="small text-muted mb-1">تاريخ الامتحان المقرر</div>
+                                        <div class="fw-bold fs-5 text-dark">@(Model.Exam?.ExamDate.ToString("yyyy / MM / dd") ?? "—")</div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="border rounded-3 p-3 text-center shadow-sm">
+                                    <div class="border rounded-3 p-3 text-center shadow-sm" style="background-color: #fff;">
                                         <i class="bi bi-clock-history text-success fs-2 mb-2"></i>
-                                        <div class="small text-muted">فترة الامتحان</div>
-                                        <div class="fw-bold fs-5" dir="ltr">
+                                        <div class="small text-muted mb-1">فترة الامتحان</div>
+                                        <div class="fw-bold fs-5 text-dark" dir="ltr">
                                             @if (Model.Exam != null)
                                             {
-                                                @* تحويل TimeSpan إلى DateTime لعرض التوقيت بنظام 12 ساعة *@
                                                 var startTime = DateTime.Today.Add(Model.Exam.StartTime).ToString("hh:mm tt");
                                                 var endTime = DateTime.Today.Add(Model.Exam.EndTime).ToString("hh:mm tt");
 
@@ -84,14 +97,14 @@
 
                     </div>
 
-                    <div class="mt-5 d-flex justify-content-center gap-3">
+                    <div class="mt-5 d-flex justify-content-center gap-3 border-top pt-4">
                         @if (User.IsInRole("Admin"))
                         {
-                            <a asp-action="Edit" asp-route-id="@Model.ExamScheduleId" class="btn btn-lg px-5" style="background-color: #1a2c4e; color: white; border-radius: 8px;">
+                            <a asp-action="Edit" asp-route-id="@Model.ExamScheduleId" class="btn btn-lg px-5 text-white shadow-sm" style="background-color: #1a3a5a; border-radius: 8px; font-size: 1rem; font-weight: 600;">
                                 <i class="bi bi-pencil-square me-2"></i> تعديل التوزيع
                             </a>
                         }
-                        <a asp-action="Index" class="btn btn-lg btn-outline-secondary px-4" style="border-radius: 8px;">
+                        <a asp-action="Index" class="btn btn-lg btn-outline-secondary px-4 shadow-sm" style="border-radius: 8px; font-size: 1rem;">
                             العودة للقائمة
                         </a>
                     </div>

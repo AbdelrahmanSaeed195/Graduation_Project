@@ -1,25 +1,34 @@
 ﻿@model projectweb.Models.Exam
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
 
 @{
     ViewData["Title"] = "تفاصيل الامتحان";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string arabicLevelName = "غير محدد";
+    if (Model.AcademicYear.HasValue)
+    {
+        var enumType = Model.AcademicYear.Value.GetType();
+        var memberInfo = enumType.GetMember(Model.AcademicYear.Value.ToString());
+        var displayAttribute = memberInfo.Length > 0 ? memberInfo[0].GetCustomAttribute<DisplayAttribute>() : null;
+        arabicLevelName = displayAttribute != null ? displayAttribute.Name : Model.AcademicYear.Value.ToString();
+    }
 }
 
 <div class="row justify-content-center" dir="rtl">
     <div class="col-xl-10">
         <div class="card academic-card mb-4 shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
-            @* رأس البطاقة *@
             <div class="card-header academic-card-header text-white p-4 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
                 <div>
                     <h4 class="mb-0 fw-bold text-white"><i class="bi bi-info-circle-fill me-2"></i> بيانات الامتحان التفصيلية</h4>
-                    <p class="mb-0 small text-white-50 mt-1">عرض المادة واللجان المرتبطة بها</p>
+                    <p class="mb-0 small text-white-50 mt-1">عرض المادة والبلوكات المرتبطة بها</p>
                 </div>
                 <span class="badge bg-white text-dark shadow-sm px-3 py-2 fs-6" style="border-radius: 8px;">كود الامتحان #@Model.ExamId</span>
             </div>
 
             <div class="card-body p-4 p-md-5 bg-white">
 
-                @* القسم الأول: البيانات الأساسية *@
                 <div class="row g-4 mb-5">
                     <div class="col-md-4">
                         <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm">
@@ -48,9 +57,8 @@
                     <div class="col-md-4">
                         <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm text-center">
                             <div class="small text-muted mb-1 fw-bold">السنة الدراسية</div>
-                            @* التعديل هنا: استخدام الخاصية الجديدة AcademicYear *@
                             <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fs-6 mt-1" style="border: 1px solid rgba(13, 110, 253, 0.2); border-radius: 8px;">
-                                @(Model.AcademicYear ?? "غير محدد")
+                                <i class="bi bi-graduation-cap me-1"></i> @arabicLevelName
                             </span>
                         </div>
                     </div>
@@ -74,10 +82,9 @@
                     </div>
                 </div>
 
-                @* القسم الثاني: جدول اللجان فقط *@
                 <div class="border-bottom pb-2 mb-3 mt-4">
                     <h5 class="fw-bold mb-0 text-navy">
-                        <i class="bi bi-diagram-3-fill me-2"></i> توزيع اللجان (@(Model.ExamSchedules?.Count ?? 0))
+                        <i class="bi bi-diagram-3-fill me-2"></i> توزيع صالات الامتحانات (@(Model.ExamSchedules?.Count ?? 0))
                     </h5>
                 </div>
 
@@ -88,8 +95,8 @@
                             <thead class="bg-light">
                                 <tr>
                                     <th>كود الجلسة</th>
-                                    <th>رقم اللجنة</th>
-                                    <th>الموقع (الصالة/البلوك)</th>
+                                    <th>المبنى / البلوك</th>
+                                    <th>الصالة الرئيسية</th>
                                     <th>الإجراءات</th>
                                 </tr>
                             </thead>
@@ -98,15 +105,19 @@
                                 {
                                     <tr>
                                         <td class="fw-bold text-muted small">#@s.ExamScheduleId</td>
-                                        <td><span class="fw-bold text-navy fs-6">لجنة @s.Committee?.CommitteeNumber</span></td>
+                                        <td>
+                                            <span class="fw-bold text-navy fs-6">
+                                                <i class="bi bi-building me-1 text-primary"></i> @(s.Block?.BlockName ?? "غير محدد")
+                                            </span>
+                                        </td>
                                         <td class="small text-muted">
                                             <i class="bi bi-geo-alt-fill text-danger me-1"></i>
-                                            @(s.Committee?.Block?.Hall?.HallName) - @(s.Committee?.Block?.BlockName)
+                                            @(s.Block?.Hall?.HallName ?? "غير محدد")
                                         </td>
                                         <td>
                                             <a asp-controller="ExamSchedules" asp-action="Details" asp-route-id="@s.ExamScheduleId"
                                                class="btn btn-sm btn-outline-primary px-3 py-1 fw-bold" style="border-radius: 6px;">
-                                                <i class="bi bi-eye-fill"></i> تفاصيل اللجنة
+                                                <i class="bi bi-eye-fill"></i> تفاصيل الجلسة
                                             </a>
                                         </td>
                                     </tr>
@@ -119,11 +130,10 @@
                 {
                     <div class="text-center p-5 border rounded bg-light bg-opacity-25 border-dashed">
                         <i class="bi bi-calendar-x fs-1 text-muted opacity-25"></i>
-                        <p class="text-muted mt-2 mb-0 fw-bold">لا توجد لجان موزعة لهذا الامتحان بعد.</p>
+                        <p class="text-muted mt-2 mb-0 fw-bold">لا توجد صالات أو بلوكات موزعة لهذا الامتحان بعد.</p>
                     </div>
                 }
 
-                @* أزرار التحكم *@
                 <div class="d-flex flex-wrap gap-2 mt-5 pt-4 border-top">
                     @if (User.IsInRole("Admin"))
                     {

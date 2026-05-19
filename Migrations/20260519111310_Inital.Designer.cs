@@ -12,8 +12,8 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260516002827_Init")]
-    partial class Init
+    [Migration("20260519111310_Inital")]
+    partial class Inital
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -380,7 +380,10 @@ namespace projectweb.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExamScheduleId"));
 
-                    b.Property<int>("CommitteeId")
+                    b.Property<int>("BlockId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CommitteeId")
                         .HasColumnType("int");
 
                     b.Property<int>("ExamId")
@@ -391,9 +394,11 @@ namespace projectweb.Migrations
 
                     b.HasKey("ExamScheduleId");
 
+                    b.HasIndex("BlockId");
+
                     b.HasIndex("CommitteeId");
 
-                    b.HasIndex("ExamId", "CommitteeId")
+                    b.HasIndex("ExamId", "BlockId")
                         .IsUnique();
 
                     b.ToTable("ExamSchedules");
@@ -516,6 +521,9 @@ namespace projectweb.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReportId"));
 
+                    b.Property<int?>("CommitteeId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -529,6 +537,8 @@ namespace projectweb.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("ReportId");
+
+                    b.HasIndex("CommitteeId");
 
                     b.HasIndex("ScheduleId");
 
@@ -593,30 +603,54 @@ namespace projectweb.Migrations
                         new
                         {
                             RoleID = 1,
-                            RoleDescription = "رئيس صالة",
+                            RoleDescription = "رئيس صالة (أستاذ)",
                             RoleName = 1
                         },
                         new
                         {
                             RoleID = 2,
-                            RoleDescription = "مراقب",
-                            RoleName = 2
+                            RoleDescription = "رئيس صالة (أستاذ مساعد)",
+                            RoleName = 1
                         },
                         new
                         {
                             RoleID = 3,
-                            RoleDescription = "ملاحظ",
-                            RoleName = 3
+                            RoleDescription = "رئيس صالة (أستاذ متفرغ)",
+                            RoleName = 1
                         },
                         new
                         {
                             RoleID = 4,
+                            RoleDescription = "مراقب (مدرس)",
+                            RoleName = 2
+                        },
+                        new
+                        {
+                            RoleID = 5,
+                            RoleDescription = "ملاحظ (معيد)",
+                            RoleName = 3
+                        },
+                        new
+                        {
+                            RoleID = 6,
+                            RoleDescription = "ملاحظ (مدرس مساعد)",
+                            RoleName = 3
+                        },
+                        new
+                        {
+                            RoleID = 7,
+                            RoleDescription = "ملاحظ (موظف)",
+                            RoleName = 3
+                        },
+                        new
+                        {
+                            RoleID = 8,
                             RoleDescription = "طبيب",
                             RoleName = 4
                         },
                         new
                         {
-                            RoleID = 5,
+                            RoleID = 9,
                             RoleDescription = "ممرض",
                             RoleName = 5
                         });
@@ -630,9 +664,8 @@ namespace projectweb.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StudentId"));
 
-                    b.Property<string>("AcademicYear")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("AcademicYear")
+                        .HasColumnType("int");
 
                     b.Property<int?>("CommitteeId")
                         .HasColumnType("int");
@@ -651,6 +684,9 @@ namespace projectweb.Migrations
                         .HasColumnType("nvarchar(14)");
 
                     b.Property<int>("SeatNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Specialization")
                         .HasColumnType("int");
 
                     b.HasKey("StudentId");
@@ -673,9 +709,8 @@ namespace projectweb.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubjectId"));
 
-                    b.Property<string>("AcademicYear")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("AcademicYear")
+                        .HasColumnType("int");
 
                     b.Property<string>("SubjectCode")
                         .IsRequired()
@@ -829,11 +864,15 @@ namespace projectweb.Migrations
 
             modelBuilder.Entity("projectweb.Models.ExamSchedule", b =>
                 {
-                    b.HasOne("projectweb.Models.Committee", "Committee")
-                        .WithMany("ExamSchedules")
-                        .HasForeignKey("CommitteeId")
+                    b.HasOne("projectweb.Models.Block", "Block")
+                        .WithMany()
+                        .HasForeignKey("BlockId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("projectweb.Models.Committee", null)
+                        .WithMany("ExamSchedules")
+                        .HasForeignKey("CommitteeId");
 
                     b.HasOne("projectweb.Models.Exam", "Exam")
                         .WithMany("ExamSchedules")
@@ -841,7 +880,7 @@ namespace projectweb.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Committee");
+                    b.Navigation("Block");
 
                     b.Navigation("Exam");
                 });
@@ -888,11 +927,17 @@ namespace projectweb.Migrations
 
             modelBuilder.Entity("projectweb.Models.Report", b =>
                 {
+                    b.HasOne("projectweb.Models.Committee", "Committee")
+                        .WithMany()
+                        .HasForeignKey("CommitteeId");
+
                     b.HasOne("projectweb.Models.ExamSchedule", "ExamSchedule")
                         .WithMany("Reports")
                         .HasForeignKey("ScheduleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Committee");
 
                     b.Navigation("ExamSchedule");
                 });
@@ -932,13 +977,15 @@ namespace projectweb.Migrations
 
             modelBuilder.Entity("projectweb.Models.Student", b =>
                 {
-                    b.HasOne("projectweb.Models.Committee", null)
+                    b.HasOne("projectweb.Models.Committee", "Committee")
                         .WithMany("Students")
                         .HasForeignKey("CommitteeId");
 
                     b.HasOne("projectweb.Models.ExamSchedule", "ExamSchedule")
                         .WithMany("Students")
                         .HasForeignKey("ExamScheduleId");
+
+                    b.Navigation("Committee");
 
                     b.Navigation("ExamSchedule");
                 });

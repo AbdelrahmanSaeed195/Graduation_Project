@@ -1,7 +1,7 @@
 ﻿@model projectweb.Models.ExamSchedule
 
 @{
-    ViewData["Title"] = "إضافة توزيع لجنة";
+    ViewData["Title"] = "إضافة توزيع البلوك";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -9,9 +9,9 @@
     <div class="row justify-content-center mt-4">
         <div class="col-md-8">
             <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
-                <div class="card-header py-3" style="background-color: #1a2c4e; border-bottom: none;">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border-bottom: none;">
                     <h4 class="card-title mb-0 fw-bold text-white text-center">
-                        <i class="bi bi-calendar-plus me-2"></i> تخصيص لجنة لامتحان
+                        <i class="bi bi-calendar-plus me-2"></i> تخصيص مبنى / بلوك لامتحان
                     </h4>
                 </div>
 
@@ -22,26 +22,26 @@
                         <div class="row g-4">
                             <div class="col-md-12 mb-3">
                                 <label asp-for="ExamId" class="form-label fw-bold" style="color: #4a5568;">الامتحان / المادة المحددة <span class="text-danger">*</span></label>
-                                <select asp-for="ExamId" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.ExamId" style="font-size: 0.95rem; border-radius: 8px;">
+                                <select asp-for="ExamId" id="ExamSelect" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.ExamId" style="font-size: 0.95rem; border-radius: 8px;">
                                     <option value="">-- اختر الامتحان (المادة - التاريخ) --</option>
                                 </select>
-                                <span asp-validation-for="ExamId" class="text-danger small mt-1 d-block"></span>
-                                <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i> يتم سحب التاريخ والوقت تلقائياً بناءً على اختيار الامتحان.</div>
+                                <span asp-validation-for="ExamId" class="text-danger small mt-1 d-block fw-bold"></span>
+                                <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i> يتم سحب التوقيت وفحص الإشغال تلقائياً بناءً على اختيار الامتحان.</div>
                             </div>
 
                             <div class="col-md-12 mb-3">
-                                <label asp-for="CommitteeId" class="form-label fw-bold" style="color: #4a5568;">اللجنة المختصة <span class="text-danger">*</span></label>
-                                <select asp-for="CommitteeId" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.CommitteeId" style="font-size: 0.95rem; border-radius: 8px;">
-                                    <option value="">-- اختر الامتحان أولاً لعرض اللجان المتاحة --</option>
+                                <label asp-for="BlockId" class="form-label fw-bold" style="color: #4a5568;">البلوك / المبنى المستهدف <span class="text-danger">*</span></label>
+                                <select asp-for="BlockId" id="BlockSelect" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.BlockId" style="font-size: 0.95rem; border-radius: 8px;">
+                                    <option value="">-- اختر الامتحان أولاً لعرض المباني المتاحة --</option>
                                 </select>
-                                <span asp-validation-for="CommitteeId" class="text-danger small mt-1 d-block"></span>
+                                <span asp-validation-for="BlockId" class="text-danger small mt-1 d-block fw-bold"></span>
                             </div>
                         </div>
 
                         <div class="border-top mt-5 pt-4">
                             <div class="d-flex justify-content-center gap-3">
-                                <button type="submit" class="btn btn-lg px-5 py-2 shadow-sm" style="background-color: #1a2c4e; color: white; border-radius: 8px; font-size: 1rem;">
-                                    <i class="bi bi-check-circle me-2"></i> حفظ التوزيع
+                                <button type="submit" class="btn btn-lg px-5 py-2 shadow-sm text-white" style="background-color: #1a3a5a; border-radius: 8px; font-size: 1rem; font-weight: 600;">
+                                    <i class="bi bi-check-circle me-2"></i> حفظ لتوزيع
                                 </button>
                                 <a asp-action="Index" class="btn btn-lg btn-outline-secondary px-5 py-2" style="border-radius: 8px; font-size: 1rem;">
                                     إلغاء
@@ -66,37 +66,37 @@
                 $('.alert-danger').removeClass('d-none');
             }
 
-            $('#ExamId').change(function () {
+            $('#ExamSelect').change(function () {
                 var examId = $(this).val();
-                var committeeSelect = $('#CommitteeId');
+                var blockSelect = $('#BlockSelect');
 
-                committeeSelect.empty();
+                blockSelect.empty();
 
                 if (examId) {
-                    committeeSelect.append('<option value="">-- جاري تحميل اللجان المتاحة... --</option>');
+                    blockSelect.append('<option value="">-- جاري تحميل المباني المتاحة... --</option>');
 
                     $.ajax({
-                        url: '@Url.Action("GetAvailableCommittees")', 
+                        url: '@Url.Action("GetAvailableBlocks")',
                         type: 'GET',
                         data: { examId: examId },
                         success: function (data) {
-                            committeeSelect.empty();
-                            committeeSelect.append('<option value="">-- اختر اللجنة المختصة --</option>');
+                            blockSelect.empty();
+                            blockSelect.append('<option value="">-- اختر البلوك / المبنى المختص --</option>');
 
                             $.each(data, function (index, item) {
-                                committeeSelect.append($('<option>', {
+                                blockSelect.append($('<option>', {
                                     value: item.id,
-                                    text: item.number
+                                    text: item.name
                                 }));
                             });
                         },
                         error: function () {
-                            committeeSelect.empty();
-                            committeeSelect.append('<option value="">-- خطأ في تحميل البيانات، أعد المحاولة --</option>');
+                            blockSelect.empty();
+                            blockSelect.append('<option value="">-- خطأ في تحميل البيانات، أعد المحاولة --</option>');
                         }
                     });
                 } else {
-                    committeeSelect.append('<option value="">-- اختر الامتحان أولاً لعرض اللجان المتاحة --</option>');
+                    blockSelect.append('<option value="">-- اختر الامتحان أولاً لعرض المباني المتاحة --</option>');
                 }
             });
         });

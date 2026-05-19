@@ -10,8 +10,7 @@
 <div class="row justify-content-center" dir="rtl">
     <div class="col-xl-10">
         <div class="card academic-card shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
-            @* رأس البطاقة - تصميم احترافي *@
-            <div class="card-header academic-card-header text-white p-4 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
+            <div class="card-header text-white p-4 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
                 <div>
                     <h4 class="mb-0 fw-bold text-white"><i class="bi bi-file-earmark-text-fill me-2"></i> تفاصيل المحضر الرسمي</h4>
                     <small class="text-white-50">توثيق وقائع الجلسة الامتحانية رقم #@Model.ReportId</small>
@@ -23,7 +22,6 @@
 
             <div class="card-body p-4 p-md-5" style="background-color: #ffffff;">
 
-                @* القسم الأول: البيانات الأساسية *@
                 <div class="row g-4 mb-5 text-center">
                     <div class="col-md-6 col-lg-4 text-start">
                         <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm">
@@ -39,7 +37,9 @@
                         <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm text-center">
                             <label class="small text-muted d-block mb-1 fw-bold">رقم اللجنة</label>
                             <div class="panel-value fw-bold fs-5">
-                                <span class="badge rounded-pill bg-white text-navy border px-3">@(Model.ExamSchedule?.Committee?.CommitteeNumber ?? 0)</span>
+                                <span class="badge rounded-pill bg-white text-navy border px-3">
+                                    @(Model.Committee != null ? Model.Committee.CommitteeNumber : 0)
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -67,7 +67,6 @@
                     </div>
                 </div>
 
-                @* القسم الثاني: تفاصيل الملاحظات *@
                 <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 text-primary">
                     <i class="bi bi-chat-left-text-fill me-2"></i> وقائع وتفاصيل المحضر
                 </h5>
@@ -75,7 +74,6 @@
                     <p class="mb-0 fs-6 lh-lg text-dark" style="white-space: pre-line;">@(string.IsNullOrEmpty(Model.Notes) ? "لا توجد تفاصيل إضافية مسجلة." : Model.Notes)</p>
                 </div>
 
-                @* القسم الثالث: أطراف المحضر *@
                 <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 text-primary">
                     <i class="bi bi-people-fill me-2"></i> أطراف المحضر (المكلفون والطلاب)
                 </h5>
@@ -173,7 +171,6 @@
                     </div>
                 }
 
-                @* أزرار الإجراءات *@
                 <div class="d-flex flex-wrap gap-2 mt-5 pt-4 border-top no-print">
                     @if (User.IsInRole("Admin"))
                     {
@@ -221,32 +218,35 @@
     }
 
     @@media print {
-        .no-print {
-            display: none !important;
-        }
+        .no-print
 
-        body {
-            background: white !important;
-        }
+    {
+        display: none !important;
+    }
 
-        .academic-card {
-            border: none !important;
-            box-shadow: none !important;
-        }
+    body {
+        background: white !important;
+    }
 
-        .card-header {
-            background: #f8f9fa !important;
+    .academic-card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .card-header {
+        background: #f8f9fa !important;
+        color: black !important;
+        border-bottom: 2px solid black !important;
+    }
+
+        .card-header h4, .card-header small, .badge {
             color: black !important;
-            border-bottom: 2px solid black !important;
         }
 
-            .card-header h4, .card-header small, .badge {
-                color: black !important;
-            }
+    .badge {
+        border: 1px solid #000 !important;
+        background: transparent !important;
+    }
 
-        .badge {
-            border: 1px solid #000 !important;
-            background: transparent !important;
-        }
     }
 </style>

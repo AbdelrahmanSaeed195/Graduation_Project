@@ -20,15 +20,13 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // INDEX - عرض توزيع اللجان
+        // 1. القائمة الرئيسية - INDEX
         // =====================================
         public async Task<IActionResult> Index()
         {
-            
             var examSchedules = _context.ExamSchedules
-                .Include(e => e.Committee)
-                .Include(e => e.Exam)
-                    .ThenInclude(ex => ex.Subject)
+                .Include(e => e.Block)
+                .Include(e => e.Exam).ThenInclude(ex => ex.Subject)
                 .OrderBy(e => e.Exam.ExamDate)
                 .ThenBy(e => e.Exam.StartTime);
 
@@ -36,16 +34,15 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // DETAILS
+        // 2. التفاصيل - DETAILS
         // =====================================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
 
             var examSchedule = await _context.ExamSchedules
-                .Include(e => e.Committee)
-                .Include(e => e.Exam)
-                    .ThenInclude(ex => ex.Subject)
+                .Include(e => e.Block)
+                .Include(e => e.Exam).ThenInclude(ex => ex.Subject)
                 .FirstOrDefaultAsync(m => m.ExamScheduleId == id);
 
             if (examSchedule == null) return NotFound();
@@ -54,53 +51,80 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // CREATE
+        // 3. شاشة الإضافة - CREATE (GET)
         // =====================================
-        [Authorize(Roles = "Admin")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var examsQuery = _context.Exams
+            var exams = await _context.Exams
                 .Include(e => e.Subject)
-                .Select(e => new
+                .AsNoTracking()
+                .ToListAsync();
+
+            var examList = exams.Select(e =>
+            {
+                string arabicLevel = "غير محدد";
+                if (e.Subject != null)
+                {
+                    arabicLevel = e.Subject.AcademicYear switch
+                    {
+                        AcademicLevel.FirstYear => "المستوى الأول",
+                        AcademicLevel.SecondYear => "المستوى الثاني",
+                        AcademicLevel.ThirdYear => "المستوى الثالث",
+                        AcademicLevel.FourthYear => "المستوى الرابع",
+                        _ => "غير محدد"
+                    };
+                }
+
+                return new
                 {
                     Id = e.ExamId,
-                    Name = $"{e.Subject.SubjectName} - {e.ExamDate.ToShortDateString()} ({e.Subject.AcademicYear})"
-                }).ToList();
+                    Name = e.Subject != null
+                        ? $"{e.Subject.SubjectName} - {e.ExamDate.ToString("yyyy/MM/dd")} ({arabicLevel})"
+                        : $"امتحان رقم #{e.ExamId} - {e.ExamDate.ToString("yyyy/MM/dd")}"
+                };
+            }).ToList();
 
-            ViewData["ExamId"] = new SelectList(examsQuery, "Id", "Name");
-            ViewData["CommitteeId"] = new SelectList(Enumerable.Empty<SelectListItem>(), "Value", "Text");
+            ViewData["ExamId"] = new SelectList(examList, "Id", "Name");
+            ViewData["BlockId"] = new SelectList(Enumerable.Empty<SelectListItem>(), "Value", "Text");
 
             return View();
         }
+
+        // =====================================
+        // 4. دالة تفاعلية: جلب البلوكات المتاحة وقت الامتحان
+        // =====================================
         [HttpGet]
-        public async Task<IActionResult> GetAvailableCommittees(int examId)
+        public async Task<IActionResult> GetAvailableBlocks(int examId)
         {
             var selectedExam = await _context.Exams.FindAsync(examId);
             if (selectedExam == null) return Json(new List<object>());
 
-            var busyCommitteeIds = await _context.ExamSchedules
+            var busyBlockIds = await _context.ExamSchedules
                 .Include(es => es.Exam)
                 .Where(es => es.Exam.ExamDate.Date == selectedExam.ExamDate.Date
                           && selectedExam.StartTime < es.Exam.EndTime
                           && selectedExam.EndTime > es.Exam.StartTime)
-                .Select(es => es.CommitteeId)
+                .Select(es => es.BlockId)
                 .ToListAsync();
 
-            var availableCommittees = await _context.Committees
-                .Where(c => !busyCommitteeIds.Contains(c.CommitteeId))
-                .Select(c => new
+            var availableBlocks = await _context.Blocks
+                .Where(b => !busyBlockIds.Contains(b.BlockId))
+                .Select(b => new
                 {
-                    id = c.CommitteeId,
-                    number = "لجنة " + c.CommitteeNumber
+                    id = b.BlockId,
+                    name = b.BlockName
                 })
                 .ToListAsync();
 
-            return Json(availableCommittees);
+            return Json(availableBlocks);
         }
+
+        // =====================================
+        // 5. حفظ الجلسة الجديدة - CREATE (POST)
+        // =====================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([Bind("ExamScheduleId,ExamId,CommitteeId")] ExamSchedule examSchedule)
+        public async Task<IActionResult> Create([Bind("ExamScheduleId,ExamId,BlockId,ScheduledDate")] ExamSchedule examSchedule)
         {
             if (ModelState.IsValid)
             {
@@ -108,48 +132,51 @@ namespace projectweb.Controllers
 
                 bool isBusy = await _context.ExamSchedules
                     .Include(es => es.Exam)
-                    .AnyAsync(es => es.CommitteeId == examSchedule.CommitteeId
-                                 && es.Exam.ExamDate.Date == currentExam.ExamDate.Date 
-                                 && (
-                                     (currentExam.StartTime < es.Exam.EndTime && currentExam.EndTime > es.Exam.StartTime)
-                                 ));
+                    .AnyAsync(es => es.BlockId == examSchedule.BlockId
+                                 && es.Exam.ExamDate.Date == currentExam.ExamDate.Date
+                                 && (currentExam.StartTime < es.Exam.EndTime && currentExam.EndTime > es.Exam.StartTime));
 
                 if (isBusy)
                 {
-                    ModelState.AddModelError("", "هذه اللجنة محجوزة بالفعل في هذا الوقت لامتحان آخر.");
+                    ModelState.AddModelError("", "هذا البلوك (المبنى) محجوز بالكامل في هذا الوقت لامتحان آخر.");
                 }
                 else
                 {
                     _context.Add(examSchedule);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "تم تخصيص اللجنة بنجاح.";
+                    TempData["SuccessMessage"] = "تم تخصيص البلوك للجلسة بنجاح.";
                     return RedirectToAction(nameof(Index));
                 }
             }
 
-            PopulateDropdowns(examSchedule.ExamId, examSchedule.CommitteeId);
+            await PopulateDropdownsAsync(examSchedule.ExamId, examSchedule.BlockId);
             return View(examSchedule);
         }
 
         // =====================================  
-        // EDIT
+        // 6. شاشة التعديل - EDIT (GET)
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var examSchedule = await _context.ExamSchedules.FindAsync(id);
+            var examSchedule = await _context.ExamSchedules
+                .Include(es => es.Exam)
+                    .ThenInclude(e => e.Subject)
+                .FirstOrDefaultAsync(es => es.ExamScheduleId == id);
+
             if (examSchedule == null) return NotFound();
 
-            PopulateDropdowns(examSchedule.ExamId, examSchedule.CommitteeId);
+            await PopulateDropdownsAsync(examSchedule.ExamId, examSchedule.BlockId);
             return View(examSchedule);
         }
 
+        // =====================================
+        // 7. حفظ التعديلات - EDIT (POST)
+        // =====================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("ExamScheduleId,ExamId,CommitteeId")] ExamSchedule examSchedule)
+        public async Task<IActionResult> Edit(int id, [Bind("ExamScheduleId,ExamId,BlockId,ScheduledDate")] ExamSchedule examSchedule)
         {
             if (id != examSchedule.ExamScheduleId) return NotFound();
 
@@ -157,9 +184,25 @@ namespace projectweb.Controllers
             {
                 try
                 {
+                    var currentExam = await _context.Exams.FindAsync(examSchedule.ExamId);
+
+                    bool isBusy = await _context.ExamSchedules
+                        .Include(es => es.Exam)
+                        .AnyAsync(es => es.BlockId == examSchedule.BlockId
+                                     && es.ExamScheduleId != examSchedule.ExamScheduleId
+                                     && es.Exam.ExamDate.Date == currentExam.ExamDate.Date
+                                     && (currentExam.StartTime < es.Exam.EndTime && currentExam.EndTime > es.Exam.StartTime));
+
+                    if (isBusy)
+                    {
+                        ModelState.AddModelError("", "عفواً، تم تعديل الجدول مسبقاً وهذا البلوك مشغول حالياً.");
+                        await PopulateDropdownsAsync(examSchedule.ExamId, examSchedule.BlockId);
+                        return View(examSchedule);
+                    }
+
                     _context.Update(examSchedule);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "تم تحديث التوزيع بنجاح.";
+                    TempData["SuccessMessage"] = "تم تحديث توزيع البلوك بنجاح.";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -169,32 +212,46 @@ namespace projectweb.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            PopulateDropdowns(examSchedule.ExamId, examSchedule.CommitteeId);
+            await PopulateDropdownsAsync(examSchedule.ExamId, examSchedule.BlockId);
             return View(examSchedule);
         }
 
         // =====================================
-        // DELETE
+        // 8. شاشة الحذف - DELETE (GET)
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
 
             var examSchedule = await _context.ExamSchedules
-                .Include(e => e.Committee)
-                .Include(e => e.Exam)
-                    .ThenInclude(ex => ex.Subject)
+                .Include(e => e.Block)
+                .Include(e => e.Exam).ThenInclude(ex => ex.Subject)
                 .FirstOrDefaultAsync(m => m.ExamScheduleId == id);
 
             if (examSchedule == null) return NotFound();
 
+            string arabicLevel = "غير محدد";
+            if (examSchedule.Exam?.Subject != null)
+            {
+                arabicLevel = examSchedule.Exam.Subject.AcademicYear switch
+                {
+                    AcademicLevel.FirstYear => "المستوى الأول",
+                    AcademicLevel.SecondYear => "المستوى الثاني",
+                    AcademicLevel.ThirdYear => "المستوى الثالث",
+                    AcademicLevel.FourthYear => "المستوى الرابع",
+                    _ => "غير محدد"
+                };
+            }
+            ViewBag.ArabicAcademicYear = arabicLevel;
+
             return View(examSchedule);
         }
 
+        // =====================================
+        // 9. تأكيد الحذف - DELETE (POST)
+        // =====================================
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var examSchedule = await _context.ExamSchedules.FindAsync(id);
@@ -202,30 +259,57 @@ namespace projectweb.Controllers
             {
                 _context.ExamSchedules.Remove(examSchedule);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "تم حذف التوزيع بنجاح.";
+                TempData["SuccessMessage"] = "تم حذف جلسة توزيع البلوك بنجاح.";
             }
             return RedirectToAction(nameof(Index));
         }
 
-        private void PopulateDropdowns(object selectedExam = null, object selectedCommittee = null)
+        // =====================================
+        // 10. دالة تعبئة القوائم المنسدلة الموحدة (محدثة بالكامل لـ Async والـ Enum)
+        // =====================================
+        private async Task PopulateDropdownsAsync(object selectedExam = null, object selectedBlock = null)
         {
-            var examsQuery = _context.Exams
+            var exams = await _context.Exams
                 .Include(e => e.Subject)
-                .Select(e => new
+                .AsNoTracking()
+                .ToListAsync();
+
+            var examsQuery = exams.Select(e =>
+            {
+                string arabicLevel = "غير محدد";
+                if (e.Subject != null)
+                {
+                    arabicLevel = e.Subject.AcademicYear switch
+                    {
+                        AcademicLevel.FirstYear => "المستوى الأول",
+                        AcademicLevel.SecondYear => "المستوى الثاني",
+                        AcademicLevel.ThirdYear => "المستوى الثالث",
+                        AcademicLevel.FourthYear => "المستوى الرابع",
+                        _ => "غير محدد"
+                    };
+                }
+
+                return new
                 {
                     Id = e.ExamId,
-                    Name = $"{e.Subject.SubjectName} - {e.ExamDate.ToShortDateString()} ({e.Subject.AcademicYear})"
-                }).ToList();
+                    Name = e.Subject != null
+                        ? $"{e.Subject.SubjectName} - {e.ExamDate.ToString("yyyy/MM/dd")} ({arabicLevel})"
+                        : $"امتحان #{e.ExamId} - {e.ExamDate.ToString("yyyy/MM/dd")}"
+                };
+            }).ToList();
 
-            var committeesQuery = _context.Committees
-                .Select(c => new
-                {
-                    Id = c.CommitteeId,
-                    Number = "لجنة " + c.CommitteeNumber
-                }).ToList();
+            var blocksList = await _context.Blocks
+                .AsNoTracking()
+                .ToListAsync();
+
+            var blocksQuery = blocksList.Select(b => new
+            {
+                Id = b.BlockId,
+                Name = b.BlockName
+            }).ToList();
 
             ViewData["ExamId"] = new SelectList(examsQuery, "Id", "Name", selectedExam);
-            ViewData["CommitteeId"] = new SelectList(committeesQuery, "Id", "Number", selectedCommittee);
+            ViewData["BlockId"] = new SelectList(blocksQuery, "Id", "Name", selectedBlock);
         }
 
         private bool ExamScheduleExists(int id)

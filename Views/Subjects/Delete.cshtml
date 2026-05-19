@@ -1,10 +1,22 @@
 ﻿@model projectweb.Models.Subject
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+
+@{
+    ViewData["Title"] = "تأكيد حذف المادة";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // لوجيك ذكي لقراءة الـ Display Name العربي الخاص بالـ Enum الحالي للمادة
+    var enumType = Model.AcademicYear.GetType();
+    var memberInfo = enumType.GetMember(Model.AcademicYear.ToString());
+    var displayAttribute = memberInfo.Length > 0 ? memberInfo[0].GetCustomAttribute<DisplayAttribute>() : null;
+    string arabicLevelName = displayAttribute != null ? displayAttribute.Name : Model.AcademicYear.ToString();
+}
 
 <div class="container mt-5" dir="rtl" style="text-align: right;">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card shadow-sm border-0" style="border-radius: 12px;">
-                <!-- رأس الكارت: استخدمنا الأحمر للتحذير مع الحفاظ على الحواف الدائرية -->
                 <div class="card-header text-white" style="background-color: #dc3545; border-radius: 12px 12px 0 0; padding: 15px 20px;">
                     <h4 class="mb-0 font-weight-bold"><i class="fas fa-exclamation-triangle ml-2"></i> تأكيد الحذف</h4>
                 </div>
@@ -15,7 +27,6 @@
                         <i class="fas fa-info-circle ml-1"></i> ملاحظة: لا يمكن حذف المادة إذا كانت مرتبطة بجداول امتحانات قائمة.
                     </p>
 
-                    <!-- بوكس البيانات: خلفية فاتحة مع حدود ناعمة -->
                     <div class="p-3 mb-2" style="background-color: #f8f9fa; border-right: 5px solid #dc3545; border-radius: 8px;">
                         <div class="mb-2">
                             <span class="text-muted small">كود المادة:</span>
@@ -28,13 +39,12 @@
                         <div class="mb-0">
                             <span class="text-muted small">السنة الدراسية:</span>
                             <span class="d-block font-weight-bold">
-                                <i class="fas fa-graduation-cap ml-1 text-muted"></i> @Model.AcademicYear
+                                <i class="fas fa-graduation-cap ml-1 text-muted"></i> @arabicLevelName
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <!-- تذييل الكارت: الأزرار بنفس أبعاد ونظام التصميم الموحد -->
                 <div class="card-footer bg-white d-flex justify-content-start py-3" style="border-radius: 0 0 12px 12px; border-top: 1px solid #f0f0f0;">
                     <form asp-action="Delete">
                         <input type="hidden" asp-for="SubjectId" />

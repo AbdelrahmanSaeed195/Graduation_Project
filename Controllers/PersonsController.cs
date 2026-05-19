@@ -72,7 +72,6 @@ namespace projectweb.Controllers
         // =====================================
         // CREATE
         // =====================================
-        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -80,7 +79,6 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Person person)
         {
 
@@ -111,7 +109,6 @@ namespace projectweb.Controllers
         // =====================================
         // EDIT
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -123,7 +120,6 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, Person person)
         {
             if (id != person.PersonId) return NotFound();
@@ -159,7 +155,6 @@ namespace projectweb.Controllers
         // =====================================
         // DELETE
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -170,7 +165,6 @@ namespace projectweb.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var person = await _context.Persons.FindAsync(id);
@@ -212,24 +206,27 @@ namespace projectweb.Controllers
 
             if (rawAssignments != null && rawAssignments.Any())
             {
-                // ✅ أول خطوة: ملء الأوقات من البيانات
                 foreach (var assignment in rawAssignments.Where(a => a.ExamSchedule?.Exam != null))
                 {
                     var exam = assignment.ExamSchedule.Exam;
-                    string yearText = exam.Subject?.AcademicYear ?? "";
-                    string yearNum = yearText.Contains("الأولى") ? "1" :
-                                     yearText.Contains("الثانية") ? "2" :
-                                     yearText.Contains("الثالثة") ? "3" :
-                                     yearText.Contains("الرابعة") ? "4" : "";
 
-                    // ✅ إذا لم يتم تعيين الوقت بعد، عيّنه الآن
+                    AcademicLevel? level = exam.Subject?.AcademicYear;
+
+                    string yearNum = level switch
+                    {
+                        AcademicLevel.FirstYear => "1",
+                        AcademicLevel.SecondYear => "2",
+                        AcademicLevel.ThirdYear => "3",
+                        AcademicLevel.FourthYear => "4",
+                        _ => ""
+                    };
+
                     if (!string.IsNullOrEmpty(yearNum) && string.IsNullOrEmpty(yearTimesMap[yearNum]))
                     {
                         yearTimesMap[yearNum] = $"{DateTime.Today.Add(exam.StartTime):hh:mm tt} - {DateTime.Today.Add(exam.EndTime):hh:mm tt}";
                     }
                 }
 
-                // ✅ ثاني خطوة: تجميع البيانات حسب التاريخ
                 groupedRows = rawAssignments
                     .Where(a => a.ExamSchedule?.Exam != null)
                     .GroupBy(a => a.ExamSchedule.Exam.ExamDate.Date)
@@ -240,11 +237,17 @@ namespace projectweb.Controllers
                         DailyItems = g.Select(a =>
                         {
                             var exam = a.ExamSchedule.Exam;
-                            string yearText = exam.Subject?.AcademicYear ?? "";
-                            string yearNum = yearText.Contains("الأولى") ? "1" :
-                                             yearText.Contains("الثانية") ? "2" :
-                                             yearText.Contains("الثالثة") ? "3" :
-                                             yearText.Contains("الرابعة") ? "4" : "";
+
+                            AcademicLevel? level = exam.Subject?.AcademicYear;
+
+                            string yearNum = level switch
+                            {
+                                AcademicLevel.FirstYear => "1",
+                                AcademicLevel.SecondYear => "2",
+                                AcademicLevel.ThirdYear => "3",
+                                AcademicLevel.FourthYear => "4",
+                                _ => ""
+                            };
 
                             return new AssignmentReportItem
                             {
@@ -263,7 +266,7 @@ namespace projectweb.Controllers
                 PersonFullName = person.FullName,
                 PersonRoleInReport = GetArabicJobTitle(person.JobRole),
                 Rows = groupedRows,
-                YearTimes = yearTimesMap,  // ✅ بتحتوي على الأوقات الصحيحة
+                YearTimes = yearTimesMap,
                 AcademicYear = "2025/2026",
                 CollegeName = "كلية علوم الرياضة"
             };
@@ -278,7 +281,6 @@ namespace projectweb.Controllers
                 JobTitle.ProfessorEmeritus => "أستاذ متفرغ",
                 JobTitle.AssistantProfessor => "أستاذ مساعد",
                 JobTitle.Professor => "أستاذ",
-                JobTitle.Dean => "عميد الكلية",
                 JobTitle.StaffObserver => "مدرس",
                 JobTitle.AssistantStaff => "مدرس مساعد",
                 JobTitle.Assistant => "معيد",
@@ -344,7 +346,6 @@ namespace projectweb.Controllers
         // =====================================
         // IMPORT EXCEL - GET
         // =====================================
-        [Authorize(Roles = "Admin")]
         public IActionResult ImportExcel()
         {
             return View();
@@ -354,7 +355,6 @@ namespace projectweb.Controllers
         // IMPORT EXCEL - POST
         // =====================================
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ImportExcel(IFormFile excelfile)
         {
@@ -380,8 +380,8 @@ namespace projectweb.Controllers
                 var fullName = sheet.Cells[i, 1].Text?.Trim();
                 var nationalId = sheet.Cells[i, 2].Text?.Trim();
                 var phone = sheet.Cells[i, 3].Text?.Trim();
-                var email = sheet.Cells[i, 4].Text?.Trim();
-                var jobText = sheet.Cells[i, 5].Text?.Trim();
+                var email = sheet.Cells[i, 5].Text?.Trim();
+                var jobText = sheet.Cells[i, 4].Text?.Trim();
 
                 if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(nationalId))
                 {
@@ -389,7 +389,6 @@ namespace projectweb.Controllers
                     continue;
                 }
 
-                // تجاهل الرقم القومي المكرر
                 if (_context.Persons.Any(p => p.NationalId == nationalId))
                 {
                     skipped++;
@@ -401,7 +400,6 @@ namespace projectweb.Controllers
                     "أستاذ متفرغ" => JobTitle.ProfessorEmeritus,
                     "أستاذ مساعد" => JobTitle.AssistantProfessor,
                     "أستاذ" => JobTitle.Professor,
-                    "عميد الكلية" => JobTitle.Dean,
                     "مدرس" => JobTitle.StaffObserver,
                     "مدرس مساعد" => JobTitle.AssistantStaff,
                     "معيد" => JobTitle.Assistant,

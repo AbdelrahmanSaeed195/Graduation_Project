@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
 using projectweb.ViewModel;
@@ -25,11 +26,10 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Index()
         {
             var students = await _context.Students
+                .Include(s => s.Committee)
                 .Include(s => s.ExamSchedule)
-                    .ThenInclude(e => e.Committee)
-                .Include(s => s.ExamSchedule)
-                    .ThenInclude(e => e.Exam)
                 .OrderBy(s => s.AcademicYear)
+                .ThenBy(s => s.Specialization)
                 .ThenBy(s => s.FullName)
                 .ToListAsync();
 
@@ -43,10 +43,8 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Search(string searchTerm)
         {
             var query = _context.Students
+                .Include(s => s.Committee)
                 .Include(s => s.ExamSchedule)
-                    .ThenInclude(e => e.Committee)
-                .Include(s => s.ExamSchedule)
-                    .ThenInclude(e => e.Exam)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTerm))
@@ -71,13 +69,11 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var student = await _context.Students
-                .Include(s => s.ExamSchedule)
-                    .ThenInclude(e => e.Committee)
+                .Include(s => s.Committee)
                 .Include(s => s.Relatives)
                 .FirstOrDefaultAsync(s => s.StudentId == id);
 
-            if (student == null)
-                return NotFound();
+            if (student == null) return NotFound();
 
             return View(student);
         }
@@ -85,48 +81,57 @@ namespace projectweb.Controllers
         // =====================================
         // 4. إضافة طالب - CREATE
         // =====================================
-        [Authorize(Roles = "Admin")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            ViewData["CommitteeId"] = new SelectList(await _context.Committees.OrderBy(c => c.CommitteeNumber).ToListAsync(), "CommitteeId", "CommitteeNumber");
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(StudentCreateViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
-
-            model.NationalId = model.NationalId?.Replace(" ", "").Trim();
-
-            bool exists = await _context.Students.AnyAsync(s => s.NationalId == model.NationalId);
-            if (exists)
+            if (ModelState.IsValid)
             {
-                ModelState.AddModelError("NationalId", "هذا الرقم القومي مسجل بالفعل");
-                return View(model);
+                model.NationalId = model.NationalId?.Replace(" ", "").Trim();
+
+                bool exists = await _context.Students.AnyAsync(s => s.NationalId == model.NationalId);
+                if (exists)
+                {
+                    ModelState.AddModelError("NationalId", "هذا الرقم القومي مسجل بالفعل");
+                    ViewData["CommitteeId"] = new SelectList(await _context.Committees.OrderBy(c => c.CommitteeNumber).ToListAsync(), "CommitteeId", "CommitteeNumber", model.CommitteeId);
+                    return View(model);
+                }
+
+                var student = new Student
+                {
+                    FullName = model.FullName,
+                    NationalId = model.NationalId,
+                    AcademicYear = model.AcademicYear,
+                    Specialization = model.Specialization,
+                    CommitteeId = model.CommitteeId, 
+                    SeatNumber = 0,
+                    ExamScheduleId = null
+                };
+
+                _context.Add(student);
+                await _context.SaveChangesAsync();
+
+                if (student.CommitteeId.HasValue)
+                {
+                    await RecalculateSeatNumbersByCommittee(student.CommitteeId.Value);
+                }
+
+                return RedirectToAction(nameof(Index));
             }
 
-            var student = new Student
-            {
-                FullName = model.FullName,
-                NationalId = model.NationalId,
-                AcademicYear = model.AcademicYear,
-                SeatNumber = 0,
-                ExamScheduleId = null
-            };
-
-            _context.Students.Add(student);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
+            ViewData["CommitteeId"] = new SelectList(await _context.Committees.OrderBy(c => c.CommitteeNumber).ToListAsync(), "CommitteeId", "CommitteeNumber", model.CommitteeId);
+            return View(model);
         }
 
         // =====================================
         // 5. تعديل طالب - EDIT
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var student = await _context.Students.FindAsync(id);
@@ -136,236 +141,239 @@ namespace projectweb.Controllers
             {
                 FullName = student.FullName,
                 NationalId = student.NationalId,
-                AcademicYear = student.AcademicYear
+                AcademicYear = student.AcademicYear,
+                Specialization = student.Specialization,
+                CommitteeId = student.CommitteeId
             };
 
             ViewBag.StudentId = student.StudentId;
+            ViewData["CommitteeId"] = new SelectList(await _context.Committees.OrderBy(c => c.CommitteeNumber).ToListAsync(), "CommitteeId", "CommitteeNumber", student.CommitteeId);
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, StudentCreateViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
-
-            var student = await _context.Students.FindAsync(id);
-            if (student == null) return NotFound();
-
-            bool exists = await _context.Students
-                .AnyAsync(s => s.NationalId == model.NationalId && s.StudentId != id);
-
-            if (exists)
+            if (ModelState.IsValid)
             {
-                ModelState.AddModelError("NationalId", "هذا الرقم القومي مستخدم لطالب آخر");
-                return View(model);
+                model.NationalId = model.NationalId?.Replace(" ", "").Trim();
+
+                bool exists = await _context.Students
+                    .AnyAsync(s => s.NationalId == model.NationalId && s.StudentId != id);
+
+                if (exists)
+                {
+                    ModelState.AddModelError("NationalId", "هذا الرقم القومي مستخدم لطالب آخر");
+                    ViewData["CommitteeId"] = new SelectList(await _context.Committees.OrderBy(c => c.CommitteeNumber).ToListAsync(), "CommitteeId", "CommitteeNumber", model.CommitteeId);
+                    return View(model);
+                }
+
+                var student = await _context.Students.FindAsync(id);
+                if (student == null) return NotFound();
+
+                int? oldCommitteeId = student.CommitteeId;
+
+                student.FullName = model.FullName;
+                student.NationalId = model.NationalId;
+                student.AcademicYear = model.AcademicYear;
+                student.Specialization = model.Specialization;
+                student.CommitteeId = model.CommitteeId;
+
+                _context.Update(student);
+                await _context.SaveChangesAsync();
+
+                if (oldCommitteeId != student.CommitteeId)
+                {
+                    if (oldCommitteeId.HasValue)
+                    {
+                        await RecalculateSeatNumbersByCommittee(oldCommitteeId.Value);
+                    }
+                    if (student.CommitteeId.HasValue)
+                    {
+                        await RecalculateSeatNumbersByCommittee(student.CommitteeId.Value);
+                    }
+                }
+
+                return RedirectToAction(nameof(Index));
             }
 
-            student.FullName = model.FullName;
-            student.NationalId = model.NationalId?.Replace(" ", "").Trim();
-            student.AcademicYear = model.AcademicYear;
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            ViewData["CommitteeId"] = new SelectList(await _context.Committees.OrderBy(c => c.CommitteeNumber).ToListAsync(), "CommitteeId", "CommitteeNumber", model.CommitteeId);
+            return View(model);
         }
 
         // =====================================
-        // 6. الحذف - DELETE (بدون حذف أي سطر)
+        // 6. الحذف - DELETE
         // =====================================
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-                return BadRequest();
+            if (id == null) return BadRequest();
 
             var student = await _context.Students
-                .Include(s => s.Relatives)
-                .Include(s => s.ExamSchedule)
-                    .ThenInclude(e => e.Committee)
+                .Include(s => s.Committee)
                 .FirstOrDefaultAsync(m => m.StudentId == id);
 
-            if (student == null)
-                return NotFound();
+            if (student == null) return NotFound();
 
             return View(student);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var student = await _context.Students
-                .Include(s => s.Relatives)
-                .FirstOrDefaultAsync(m => m.StudentId == id);
+            var student = await _context.Students.FindAsync(id);
+            if (student == null) return NotFound();
 
-            if (student == null)
-                return NotFound();
+            int? committeeId = student.CommitteeId;
 
             _context.Students.Remove(student);
             await _context.SaveChangesAsync();
 
+            // إعادة ترقيم مقاعد اللجنة التي حذف منها الطالب لحماية التسلسل الأبجدي
+            if (committeeId.HasValue)
+            {
+                await RecalculateSeatNumbersByCommittee(committeeId.Value);
+            }
+
             return RedirectToAction(nameof(Index));
         }
 
-        // =====================================
-        // 7. توزيع الطلاب تلقائياً - DISTRIBUTE
-        // =====================================
-        [Authorize(Roles = "Admin")]
+        // ======================================================================
+        // 7. التوزيع التلقائي الشامل والذكي للطلاب على اللجان المتاحة بالترتيب الأبجدي 🚀
+        // ======================================================================
+        // ======================================================================
+        // 7. التوزيع التلقائي الشامل والذكي للطلاب بناءً على توزيع اللجان 🚀
+        // ======================================================================
         public async Task<IActionResult> DistributeStudents()
         {
-            // 1. جلب الطلاب غير الموزعين
-            var students = await _context.Students
-                .Where(s => s.ExamScheduleId == null)
-                .OrderBy(s => s.AcademicYear)
-                .ThenBy(s => s.FullName)
-                .ToListAsync();
+            // 1. جلب كافة الطلاب المسجلين بالسيستم (سواء مرتبطين بلجنة أو لسه)
+            var allStudents = await _context.Students.ToListAsync();
 
-            if (!students.Any())
+            if (!allStudents.Any())
             {
-                TempData["InfoMessage"] = "لا يوجد طلاب بانتظار التوزيع.";
+                TempData["ErrorMessage"] = "عفواً، لا يوجد طلاب مسجلين في النظام حالياً لإجراء التوزيع.";
                 return RedirectToAction(nameof(Index));
             }
 
-            // 2. جلب الجلسات مع اللجان والمواد
-            var schedules = await _context.ExamSchedules
-                .Include(es => es.Committee)
-                .Include(es => es.Exam)
-                    .ThenInclude(ex => ex.Subject)
-                .OrderBy(es => es.Exam.ExamDate)
-                .ThenBy(es => es.Exam.StartTime)
-                .ToListAsync();
+            // 2. جلب كافة اللجان المتاحة في قاعدة البيانات
+            var allCommittees = await _context.Committees.OrderBy(c => c.CommitteeNumber).ToListAsync();
 
-            // 3. حساب عدد الطلاب الحاليين في كل لجنة
-            var scheduleCounts = await _context.Students
-                .Where(s => s.ExamScheduleId != null)
-                .GroupBy(s => s.ExamScheduleId)
-                .Select(g => new { Id = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => x.Id!.Value, x => x.Count);
-
-            var yearMapping = new Dictionary<string, string>
-    {
-        { "1", "الأولى" },
-        { "2", "الثانية" },
-        { "3", "الثالثة" },
-        { "4", "الرابعة" }
-    };
-
-            int totalAssigned = 0;
-
-            // 5. عملية التوزيع
-            var groupedStudents = students.GroupBy(s => s.AcademicYear).ToList();
-
-            foreach (var group in groupedStudents)
+            if (!allCommittees.Any())
             {
-                string rawYear = group.Key?.Trim() ?? "";
-
-                // محاولة تحويل الرقم إلى مسمى (مثلاً من "1" إلى "الأولى")
-                // إذا لم يجد تحويل، سيستخدم النص الأصلي كما هو
-                string studentYear = yearMapping.ContainsKey(rawYear) ? yearMapping[rawYear] : rawYear;
-
-                var relevantSchedules = schedules
-                    .Where(s => s.Exam?.Subject != null &&
-                                (s.Exam.Subject.AcademicYear.Trim() == studentYear ||
-                                 s.Exam.Subject.AcademicYear.Contains(studentYear)))
-                    .ToList();
-
-                if (!relevantSchedules.Any()) continue;
-
-                int scheduleIndex = 0;
-                foreach (var student in group)
-                {
-                    bool distributed = false;
-                    while (scheduleIndex < relevantSchedules.Count)
-                    {
-                        var currentSchedule = relevantSchedules[scheduleIndex];
-                        var currentCount = scheduleCounts.GetValueOrDefault(currentSchedule.ExamScheduleId, 0);
-
-                        // التحقق من السعة
-                        if (currentCount < currentSchedule.Committee.NumberOfStudent)
-                        {
-                            student.ExamScheduleId = currentSchedule.ExamScheduleId;
-
-                            // تحديث العداد في الذاكرة
-                            scheduleCounts[currentSchedule.ExamScheduleId] = currentCount + 1;
-                            totalAssigned++;
-                            distributed = true;
-                            break;
-                        }
-                        scheduleIndex++;
-                    }
-                    if (!distributed) break;
-                }
+                TempData["ErrorMessage"] = "فشل التوزيع: لا توجد لجان امتحانية منشأة في قاعدة البيانات لتوزيع الطلاب عليها.";
+                return RedirectToAction(nameof(Index));
             }
 
-            // 6. الحفظ وإعادة ترقيم الجلوس
+            // 3. خوارزمية توزيع الطلاب الذكية بناءً على توزيع اللجان الفعلي والسعة الاستيعابية
+            // نقوم بترتيب الطلاب حسب المستوى الدراسي ثم أبجدياً بالاسم كاملاً لضمان تسلسل أرقام الجلوس
+            var orderedStudents = allStudents.OrderBy(s => s.AcademicYear).ThenBy(s => s.FullName).ToList();
+            var committeeOccupancy = allCommittees.ToDictionary(c => c.CommitteeId, c => 0);
+
+            int totalAssigned = 0;
+            int committeeIndex = 0;
+
+            foreach (var student in orderedStudents)
+            {
+                bool distributed = false;
+
+                // التوزيع يتم بالتتابع بناءً على ترتيب اللجان المعتمد وسعتها الاستيعابية القصوى
+                while (committeeIndex < allCommittees.Count)
+                {
+                    var targetCommittee = allCommittees[committeeIndex];
+                    int currentCount = committeeOccupancy[targetCommittee.CommitteeId];
+
+                    // التأكد من أن اللجنة الحالية لم تمتزج أو تتخطى الحد الأقصى لسعتها من الطلاب
+                    if (currentCount < targetCommittee.NumberOfStudent)
+                    {
+                        student.CommitteeId = targetCommittee.CommitteeId;
+                        committeeOccupancy[targetCommittee.CommitteeId] = currentCount + 1;
+                        totalAssigned++;
+                        distributed = true;
+                        break;
+                    }
+
+                    // إذا امتلأت اللجنة الحالية، ننتقل تلقائياً للجنة التالية في خطة التوزيع
+                    committeeIndex++;
+                }
+
+                if (!distributed) break;
+            }
+
+            // 4. حفظ التعديلات وإعادة توليد أرقام الجلوس أبجدياً لكل لجنة تأثرت بالتوزيع
             if (totalAssigned > 0)
             {
                 await _context.SaveChangesAsync();
 
-                var affectedIds = students.Where(s => s.ExamScheduleId != null)
-                    .Select(s => s.ExamScheduleId!.Value).Distinct();
+                // تحديث وإعادة توليد أرقام المقاعد (أرقام الجلوس) بشكل تسلسلي صحيح من 1 إلى N لكل لجنة على حدة
+                var affectedCommitteeIds = allCommittees.Select(c => c.CommitteeId).Distinct().ToList();
+                foreach (var committeeId in affectedCommitteeIds)
+                {
+                    await RecalculateSeatNumbersByCommittee(committeeId);
+                }
 
-                foreach (var id in affectedIds)
-                    await RecalculateSeatNumbers(id);
-
-                TempData["SuccessMessage"] = $"تم توزيع {totalAssigned} طالب بنجاح.";
+                if (totalAssigned < allStudents.Count)
+                {
+                    TempData["InfoMessage"] = $"تم تسكين عدد {totalAssigned} طالب بنجاح وفقاً لتوزيع اللجان، ولكن اللجان امتلأت بالكامل ويوجد عدد {allStudents.Count - totalAssigned} طالب بحاجة لإنشاء لجان إضافية.";
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = $"نجاح التوزيع الشامل: تم تسكين وتوزيع جميع الطلاب البالغ عددهم ({totalAssigned}) طالب على لجانهم الامتحانية وتوليد أرقام الجلوس أبجدياً بنجاح 🚀.";
+                }
             }
             else
             {
-                TempData["ErrorMessage"] = "فشل التوزيع: لم يتم العثور على جلسات تطابق السنة الدراسية للطلاب. تأكد من كتابة السنة في المادة (الأولى، الثانية...) وفي الطالب (1، 2...).";
+                TempData["ErrorMessage"] = "فشل التوزيع التلقائي: سعة اللجان الحالية ممتلئة بالكامل، يرجى زيادة سعة المقاعد للجان القائمة.";
             }
 
             return RedirectToAction(nameof(Index));
         }
 
         // =====================================
-        // عرض لجنة الطالب - COMMITTEE
+        // 8. عرض لجنة الطالب - COMMITTEE
         // =====================================
         public async Task<IActionResult> Committee(int id)
         {
             var student = await _context.Students
-                .Include(s => s.ExamSchedule)
-                    .ThenInclude(e => e.Committee)
-                .Include(s => s.ExamSchedule)
-                    .ThenInclude(e => e.Exam)
+                .Include(s => s.Committee)
                 .FirstOrDefaultAsync(s => s.StudentId == id);
 
             if (student == null) return NotFound();
 
-            if (student.ExamScheduleId == null || student.ExamSchedule == null)
+            if (student.CommitteeId == null || student.CommitteeId == 0 || student.Committee == null)
             {
-                ViewBag.Message = $"عفواً، الطالب ({student.FullName}) لم يتم توزيعه على أي لجنة امتحانية حتى الآن.";
+                ViewBag.Message = $"عفواً، الطالب ({student.FullName}) لم يتم تسكينه في أي لجنة ثابتة حتى الآن.";
                 return View("NoCommittee");
             }
 
-            // 3. إذا كان موزعاً، نقوم بملء الـ ViewModel
-            var model = new StudentCommitteeViewModel
+            var viewModel = new StudentCommitteeViewModel
             {
                 StudentId = student.StudentId,
                 FullName = student.FullName,
                 AcademicYear = student.AcademicYear,
                 SeatNumber = student.SeatNumber,
-                CommitteeId = student.ExamSchedule.Committee.CommitteeId,
-                CommitteeNumber = student.ExamSchedule.Committee.CommitteeNumber,
-                NumberOfStudent = student.ExamSchedule.Committee.NumberOfStudent
+                CommitteeId = student.Committee.CommitteeId,
+                CommitteeNumber = student.Committee.CommitteeNumber,
+                NumberOfStudent = student.Committee.NumberOfStudent
             };
 
-            return View(model);
+            return View(viewModel);
         }
+
         // =====================================
-        // 9. مساعد: إعادة ترقيم الجلوس
+        // 9. مساعد: إعادة ترقيم مقاعد الجلوس أبجدياً داخل اللجنة
         // =====================================
-        private async Task RecalculateSeatNumbers(int examScheduleId)
+        private async Task RecalculateSeatNumbersByCommittee(int committeeId)
         {
-            var students = await _context.Students
-                .Where(s => s.ExamScheduleId == examScheduleId)
+            var studentsInCommittee = await _context.Students
+                .Where(s => s.CommitteeId == committeeId)
                 .OrderBy(s => s.FullName)
                 .ToListAsync();
 
-            for (int i = 0; i < students.Count; i++)
-                students[i].SeatNumber = i + 1;
+            for (int i = 0; i < studentsInCommittee.Count; i++)
+            {
+                studentsInCommittee[i].SeatNumber = i + 1;
+            }
 
             await _context.SaveChangesAsync();
         }

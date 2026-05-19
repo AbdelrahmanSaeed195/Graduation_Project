@@ -8,7 +8,6 @@
             JobTitle.ProfessorEmeritus => "أستاذ متفرغ",
             JobTitle.AssistantProfessor => "أستاذ مساعد",
             JobTitle.Professor => "أستاذ",
-            JobTitle.Dean => "عميد الكلية",
             JobTitle.StaffObserver => "مدرس",
             JobTitle.AssistantStaff => "مدرس مساعد",
             JobTitle.Assistant => "معيد",
@@ -43,13 +42,21 @@
                         <td><span style="color: #2e5a88;" class="fw-medium">@p.Phone</span></td>
                         <td>
                             @{
-                                string badgeClass = "bg-light text-dark border";
-                                if ((int)p.JobRole <= 4) badgeClass = "bg-primary text-white";
-                                else if ((int)p.JobRole <= 6) badgeClass = "bg-info text-dark";
-                                else if ((int)p.JobRole == 7) badgeClass = "bg-warning text-dark";
-                                else if ((int)p.JobRole >= 9) badgeClass = "bg-secondary text-white";
+                                string badgeClass = p.JobRole switch
+                                {
+                                    JobTitle.ProfessorEmeritus => "job-badge-professor-emeritus",
+                                    JobTitle.AssistantProfessor => "job-badge-assistant-prof",
+                                    JobTitle.Professor => "job-badge-professor",
+                                    JobTitle.StaffObserver => "job-badge-lecturer",
+                                    JobTitle.AssistantStaff => "job-badge-assistant-staff",
+                                    JobTitle.Assistant => "job-badge-assistant",
+                                    JobTitle.Employee => "job-badge-employee",
+                                    JobTitle.Doctor => "job-badge-doctor",
+                                    JobTitle.Nurse => "job-badge-nurse",
+                                    _ => "bg-light text-dark border"
+                                };
                             }
-                            <span class="badge @badgeClass px-3 py-2" style="min-width: 100px;">
+                            <span class="badge @badgeClass style-badge px-3 py-2" style="min-width: 100px;">
                                 @GetArabicJobTitle(p.JobRole)
                             </span>
                         </td>

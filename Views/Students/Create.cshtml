@@ -7,30 +7,31 @@
 
 <div class="row justify-content-center" dir="rtl">
     <div class="col-xl-8">
-        <div class="card academic-card">
-            <div class="card-header academic-card-header p-4">
-                <h4 class="mb-0 fw-bold"><i class="bi bi-person-plus-fill me-2"></i> إضافة طالب جديد</h4>
+        <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+            <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
+                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-person-plus-fill me-2"></i> إضافة طالب جديد</h4>
             </div>
-            <div class="card-body p-4">
-                <form asp-action="Create" method="post">
+            <div class="card-body p-4 bg-white">
+                <form asp-action="Create" method="post" id="createStudentForm">
+                    @Html.AntiForgeryToken()
                     <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
                     <div class="row g-4">
                         <div class="col-md-12">
-                            <label asp-for="FullName" class="form-label academic-label required">اسم الطالب بالكامل</label>
-                            <input asp-for="FullName" class="form-control academic-input" placeholder="أدخل الاسم الكامل" />
+                            <label asp-for="FullName" class="form-label academic-label required fw-bold mb-2">اسم الطالب بالكامل</label>
+                            <input asp-for="FullName" class="form-control academic-input" placeholder="أدخل الاسم الكامل من واقع بطاقة الرقم القومي" style="border-radius: 8px;" />
                             <span asp-validation-for="FullName" class="text-danger small"></span>
                         </div>
 
-                        <div class="col-md-6">
-                            <label asp-for="NationalId" class="form-label academic-label required">الرقم القومي</label>
-                            <input asp-for="NationalId" class="form-control academic-input" placeholder="14 رقمًا" maxlength="14" />
+                        <div class="col-md-4">
+                            <label asp-for="NationalId" class="form-label academic-label required fw-bold mb-2">الرقم القومي</label>
+                            <input asp-for="NationalId" class="form-control academic-input" placeholder="14 رقمًا" maxlength="14" style="border-radius: 8px;" />
                             <span asp-validation-for="NationalId" class="text-danger small"></span>
                         </div>
 
-                        <div class="col-md-6">
-                            <label asp-for="AcademicYear" class="form-label academic-label required">السنة الدراسية</label>
-                            <select asp-for="AcademicYear" class="form-select academic-input">
+                        <div class="col-md-4">
+                            <label asp-for="AcademicYear" class="form-label academic-label required fw-bold mb-2">السنة الدراسية / المستوى</label>
+                            <select asp-for="AcademicYear" id="levelSelect" class="form-select academic-input" style="border-radius: 8px;">
                                 <option value="">-- اختر المستوى --</option>
                                 <option value="1">المستوى الأول</option>
                                 <option value="2">المستوى الثاني</option>
@@ -39,17 +40,24 @@
                             </select>
                             <span asp-validation-for="AcademicYear" class="text-danger small"></span>
                         </div>
-                    </div>
 
-                    <div class="alert alert-info mt-4 small border-0" style="background-color: rgba(29, 79, 145, 0.1); color: var(--accent-blue);">
-                        <i class="bi bi-info-circle me-1"></i> سيتم تعيين الطالب تلقائياً للجنة المناسبة وتحديد رقم الجلوس فور التوزيع الآلي.
+                        <div class="col-md-4">
+                            <label asp-for="Specialization" class="form-label academic-label required fw-bold mb-2">التخصص الأكاديمي</label>
+                            <select asp-for="Specialization" id="specializationSelect" class="form-select academic-input" style="border-radius: 8px;">
+                                <option value="1">عام / غير متخصص</option>
+                                <option value="2">إدارة</option>
+                                <option value="3">تدريس</option>
+                                <option value="4">تدريب</option>
+                            </select>
+                            <span asp-validation-for="Specialization" class="text-danger small"></span>
+                        </div>
                     </div>
-
-                    <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
-                        <button type="submit" class="btn btn-academic-primary px-4 fw-bold">
-                            <i class="bi bi-check-circle"></i> حفظ البيانات
+                    
+                    <div class="d-flex flex-wrap gap-2 mt-5 pt-4 border-top" style="border-color: #dee2e6 !important;">
+                        <button type="submit" class="btn btn-academic-primary px-5 fw-bold text-white" style="background-color: #1a3a5a; border-radius: 8px;">
+                            <i class="bi bi-check-circle me-1"></i> حفظ بيانات الطالب
                         </button>
-                        <a asp-action="Index" class="btn btn-outline-academic px-4">إلغاء</a>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4" style="border-radius: 8px;">إلغاء وتراجع</a>
                     </div>
                 </form>
             </div>
@@ -59,4 +67,36 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function () {
+            function toggleSpecialization() {
+                var level = $('#levelSelect').val();
+                if (level === "1" || level === "2" || level === "") {
+                    $('#specializationSelect').val("1");
+                    $('#specializationSelect option[value="2"], #specializationSelect option[value="3"], #specializationSelect option[value="4"]').hide();
+                } else {
+                    $('#specializationSelect option').show();
+                }
+            }
+
+            $('#levelSelect').change(function () {
+                toggleSpecialization();
+            });
+
+            toggleSpecialization(); 
+        });
+    </script>
+
+    <style>
+        .btn-academic-primary:hover {
+            background-color: #2e5a88 !important;
+            transform: translateY(-1px);
+        }
+
+        .academic-input:focus {
+            border-color: #1a3a5a !important;
+            box-shadow: 0 0 0 0.25rem rgba(26, 58, 90, 0.1) !important;
+        }
+    </style>
 }

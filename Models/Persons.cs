@@ -7,30 +7,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace projectweb.Models
 {
-    public enum JobTitle
-    {
-        [Display(Name = "أستاذ متفرغ")]
-        ProfessorEmeritus = 1,
-        [Display(Name = "أستاذ مساعد")]
-        AssistantProfessor = 2,
-        [Display(Name = "أستاذ")]
-        Professor = 3,
-        [Display(Name = "عميد الكلية")]
-        Dean = 4,
-        [Display(Name = "مدرس")]
-        StaffObserver = 5,
-        [Display(Name = "مدرس مساعد ")]
-        AssistantStaff = 6,
-        [Display(Name = "معيد")]
-        Assistant = 7,
-        [Display(Name = "موظف")]
-        Employee = 8,
-        [Display(Name = "دكتور")]
-        Doctor = 9,
-        [Display(Name = "ممرض")]
-        Nurse = 10
-    }
-
     [Index(nameof(NationalId), IsUnique = true)]
     public class Person
     {

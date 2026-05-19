@@ -78,7 +78,7 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        $(document).ready(function () {
+               $(document).ready(function () {
             $('#SubjectSelect').on('change', function () {
                 var subjectId = $(this).val();
                 var $yearField = $('#AcademicYearField');
@@ -89,6 +89,7 @@
                         type: 'GET',
                         data: { subjectId: subjectId },
                         success: function (data) {
+                            // 🌟 قراءة النص العربي المترجم القادم من السيرفر مباشرة
                             if (data && data.academicYear) {
                                 $yearField.val(data.academicYear);
                             } else {
@@ -146,7 +147,6 @@
 
             $('#ExamDate, #StartTime, #EndTime').on('change', checkConstraints);
 
-            // منع الإرسال إذا كانت البيانات غير منطقية
             $('#examForm').on('submit', function (e) {
                 var start = $('#StartTime').val();
                 var end = $('#EndTime').val();

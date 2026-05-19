@@ -4,24 +4,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace projectweb.Models
 {
-    public enum StaffPosition
-    {
-        [Display(Name = "رئيس صالة")]
-        HallManager = 1,
-
-        [Display(Name = "مراقب")]
-        BlockGroupLeader = 2,
-
-        [Display(Name = "ملاحظ")]
-        CommitteeObserver = 3,
-
-        [Display(Name = "طبيب")]
-        Doctor = 4,
-
-        [Display(Name = "ممرض")]
-        Nurse = 5,
-
-    }
     public class Role
     {
         [Key]

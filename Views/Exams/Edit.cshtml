@@ -37,7 +37,8 @@
                                    readonly
                                    style="border-radius: 8px;"
                                    placeholder="سيتم تحديدها آلياً..."
-                                   value="@Model?.AcademicYear" />
+                                   @* 🌟 تم التعديل هنا ليقرأ اللفظ العربي المترجم فور تحميل الصفحة *@
+                                   value="@ViewBag.InitialAcademicYear" />
                         </div>
 
                         <div class="col-md-4">
@@ -78,6 +79,7 @@
 
     <script>
         $(document).ready(function () {
+            // 🌟 تحديث جلب السنة الدراسية لتقرأ النص العربي المترجم الصريح عند تغيير المادة
             $('#SubjectDropdown').change(function () {
                 var subjectId = $(this).val();
                 if (subjectId) {

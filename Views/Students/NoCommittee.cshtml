@@ -6,11 +6,9 @@
 <div class="container mt-5" dir="rtl">
     <div class="row justify-content-center">
         <div class="col-lg-6">
-            @* بطاقة التنبيه بتصميم أكاديمي عصري *@
-            <div class="card border-0 shadow-lg text-center" style="border-radius: 20px; border-top: 5px solid var(--primary-navy) !important;">
+            <div class="card border-0 shadow-lg text-center" style="border-radius: 20px; border-top: 5px solid #1a3a5a !important;">
                 <div class="card-body p-5">
 
-                    @* أيقونة التنبيه مع تأثير الظل *@
                     <div class="mb-4">
                         <i class="bi bi-exclamation-triangle-fill text-warning"
                            style="font-size: 6rem; filter: drop-shadow(0px 10px 15px rgba(255, 193, 7, 0.4));"></i>
@@ -18,7 +16,6 @@
 
                     <h2 class="fw-bold mb-3 text-dark academic-heading">تنبيه النظام</h2>
 
-                    @* عرض الرسالة الديناميكية القادمة من الكنترولر *@
                     <div class="alert alert-light border-0 py-3 mb-4" style="background-color: #fcfcfc; border-radius: 15px;">
                         <p class="fs-5 text-muted mb-0 fw-semibold">
                             @(ViewBag.Message ?? "عفواً، لا توجد بيانات لجنة مسجلة لهذا الطالب في الوقت الحالي.")
@@ -31,10 +28,9 @@
 
                     <hr class="my-4 opacity-25">
 
-                    @* أزرار التحكم *@
                     <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
                         <a asp-action="Index" class="btn btn-academic-primary px-5 py-2 fw-bold shadow-sm" style="border-radius: 10px; transition: 0.3s;">
-                            <i class="bi bi-arrow-right-circle me-2"></i> العودة لسجل الطلاب
+                            <i class="bi bi-arrow-right-circle me-2"></i>  العودة لسجل الطلاب
                         </a>
                     </div>
                 </div>
@@ -44,7 +40,6 @@
 </div>
 
 <style>
-    /* تحسينات إضافية للتنسيق */
     .academic-heading {
         color: #1a3a5a;
         letter-spacing: -0.5px;
@@ -63,23 +58,25 @@
             box-shadow: 0 5px 15px rgba(26, 58, 90, 0.3);
         }
 
-    /* تأثير نبض للأيقونة لجذب الانتباه */
     .bi-exclamation-triangle-fill {
         display: inline-block;
         animation: pulse-warning 2s infinite;
     }
 
     @@keyframes pulse-warning {
-        0% {
-            transform: scale(1);
-        }
+        0%
 
-        50% {
-            transform: scale(1.05);
-        }
+    {
+        transform: scale(1);
+    }
 
-        100% {
-            transform: scale(1);
-        }
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+
     }
 </style>
