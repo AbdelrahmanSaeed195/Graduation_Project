@@ -189,14 +189,10 @@ namespace projectweb.Controllers
 
             var rawAssignments = await _context.CommitteesAssignments
                 .AsNoTracking()
-                .Include(a => a.Role)
-                .Include(a => a.ExamSchedule)
-                    .ThenInclude(es => es.Exam)
-                        .ThenInclude(e => e.Subject)
+                .Include(a => a.ExamSchedule).ThenInclude(es => es.Exam).ThenInclude(e => e.Subject)
                 .Where(a => a.PersonId == id)
                 .ToListAsync();
 
-            // ✅ تهيئة الأوقات فارغة
             var yearTimesMap = new Dictionary<string, string>
     {
         { "1", "" }, { "2", "" }, { "3", "" }, { "4", "" }
@@ -204,12 +200,23 @@ namespace projectweb.Controllers
 
             var groupedRows = new List<AssignmentRowGroup>();
 
+            string assignedRoleInCommittee = "عضو لجنة امتحانات";
+
             if (rawAssignments != null && rawAssignments.Any())
             {
+                var firstValidAssignment = rawAssignments.FirstOrDefault(a => !string.IsNullOrEmpty(a.RoleType));
+                if (firstValidAssignment != null)
+                {
+                    assignedRoleInCommittee = firstValidAssignment.RoleType;
+
+                    if (assignedRoleInCommittee.Contains("رئيس صالة")) assignedRoleInCommittee = "رئيس صالة";
+                    else if (assignedRoleInCommittee.Contains("مراقب")) assignedRoleInCommittee = "مراقب";
+                    else if (assignedRoleInCommittee.Contains("ملاحظ")) assignedRoleInCommittee = "ملاحظ";
+                }
+
                 foreach (var assignment in rawAssignments.Where(a => a.ExamSchedule?.Exam != null))
                 {
                     var exam = assignment.ExamSchedule.Exam;
-
                     AcademicLevel? level = exam.Subject?.AcademicYear;
 
                     string yearNum = level switch
@@ -237,7 +244,6 @@ namespace projectweb.Controllers
                         DailyItems = g.Select(a =>
                         {
                             var exam = a.ExamSchedule.Exam;
-
                             AcademicLevel? level = exam.Subject?.AcademicYear;
 
                             string yearNum = level switch
@@ -264,7 +270,7 @@ namespace projectweb.Controllers
             var model = new PrintReportViewModel
             {
                 PersonFullName = person.FullName,
-                PersonRoleInReport = GetArabicJobTitle(person.JobRole),
+                PersonRoleInReport = assignedRoleInCommittee,
                 Rows = groupedRows,
                 YearTimes = yearTimesMap,
                 AcademicYear = "2025/2026",

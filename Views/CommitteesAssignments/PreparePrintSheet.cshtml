@@ -19,7 +19,7 @@
 
             <div class="card-body p-5 bg-white">
 
-                @* رسالة الخطأ في حال عدم وجود تكليفات (قادمة من الكنترولر) *@
+                @* رسالة الخطأ في حال عدم وجود تكليفات *@
                 @if (TempData["ErrorMessage"] != null)
                 {
                     <div class="alert alert-warning border-0 shadow-sm mb-4 d-flex align-items-center" style="border-radius: 10px; background-color: #fff3cd; color: #856404;">
@@ -28,8 +28,8 @@
                     </div>
                 }
 
-                @* التحقق من وجود بيانات لتجنب خطأ NullReferenceException *@
-                @if (ViewBag.Exams == null || ViewBag.Blocks == null)
+                @* التحقق من وجود بيانات لتجنب خطأ NullReferenceException (تم التعديل ليفحص الـ Halls) *@
+                @if (ViewBag.Exams == null || ViewBag.Halls == null)
                 {
                     <div class="alert alert-danger border-0 shadow-sm mb-4 d-flex align-items-center" style="border-radius: 8px;">
                         <i class="bi bi-exclamation-octagon-fill fs-4 me-3"></i>
@@ -48,17 +48,18 @@
                         @Html.AntiForgeryToken()
 
                         <div class="row g-4">
-                            @* اختيار المبنى / البلوك (تم تعديلها لتأخذ blockId) *@
+                            @* اختيار الصالة الكاملة المجمعة للبلوكات *@
                             <div class="col-md-6">
                                 <div class="p-4 rounded border h-100 shadow-sm" style="background-color: #f8f9fa;">
                                     <label class="small fw-bold mb-3 d-block" style="color: #6c757d;">
-                                        <i class="bi bi-building me-1"></i> اختر الصالة والمبنى (البلوك):
+                                        <i class="bi bi-building me-1"></i> اختر الصالة الرئيسية للامتحان:
                                     </label>
-                                    <select name="blockId" class="form-select form-select-lg fw-bold" style="color: #1a2c4e; border-color: #dee2e6;" required>
-                                        <option value="">-- حدد المبنى / البلوك --</option>
-                                        @foreach (var item in (SelectList)ViewBag.Blocks)
+                                    @* تم تغيير الاسم هنا ليرسل hallId للـ POST *@
+                                    <select name="hallId" class="form-select form-select-lg fw-bold" style="color: #1a2c4e; border-color: #dee2e6;" required>
+                                        <option value="">-- حدد الصالة الرئيسية --</option>
+                                        @foreach (var item in (SelectList)ViewBag.Halls)
                                         {
-                                            <option value="@item.Value">@item.Text</option>
+                                            <option value="@item.Value">صالة (@item.Text)</option>
                                         }
                                     </select>
                                 </div>
@@ -115,7 +116,6 @@
         padding: 0.75rem 1rem;
     }
 
-    /* تحسين شكل التنبيه */
     .alert-warning {
         border-right: 5px solid #ffc107 !important;
     }

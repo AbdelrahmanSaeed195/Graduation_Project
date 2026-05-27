@@ -2,81 +2,88 @@
 
 @{
     ViewData["Title"] = "تكليف يدوي جديد";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container mt-5 text-end" dir="rtl">
+<div class="container mt-5" dir="rtl" style="text-align: right;">
     <div class="card mx-auto shadow border-0" style="max-width: 750px; border-radius: 15px;">
 
-        <div class="card-header text-white text-center py-3" style="background-color: #1a3a5a; border-radius: 15px 15px 0 0;">
-            <h4 class="mb-0"><i class="bi bi-person-plus-fill me-2"></i> إنشاء تكليف يدوي جديد</h4>
+        <div class="card-header text-white text-center py-3" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border-radius: 15px 15px 0 0;">
+            <h4 class="mb-0 fw-bold text-white"><i class="bi bi-person-plus-fill me-2"></i> إنشاء تكليف يدوي جديد</h4>
         </div>
 
-        <div class="card-body p-4">
-            <form asp-action="Create">
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm border-0 mb-4 py-2 small"></div>
+        <div class="card-body p-4 bg-white">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm border-0 mb-4 py-2 small" style="border-radius: 8px;"></div>
 
-                <div class="row">
-                  
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label fw-bold text-dark"><i class="bi bi-person-circle me-1"></i> اختيار الموظف</label>
-                        <select asp-for="PersonId" id="personSelect" class="form-select shadow-sm border-light-subtle" asp-items="ViewBag.PersonId">
+                <div class="row g-3">
+
+                    <div class="col-md-12 mb-2">
+                        <label class="form-label fw-bold text-dark mb-2"><i class="bi bi-person-circle me-1 text-primary"></i> اختيار الموظف / عضو هيئة التدريس</label>
+                        <select asp-for="PersonId" id="personSelect" class="form-select shadow-sm border-light-subtle"
+                                asp-items="@(ViewBag.PersonId as SelectList ?? new SelectList(Enumerable.Empty<SelectListItem>()))" style="border-radius: 8px;">
                             <option value="">-- اختر الموظف (الاسم والوظيفة) --</option>
                         </select>
-                        <span asp-validation-for="PersonId" class="text-danger small"></span>
+                        <span asp-validation-for="PersonId" class="text-danger small fw-bold mt-1 d-block"></span>
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold text-dark"><i class="bi bi-calendar-check me-1"></i> جلسة الامتحان</label>
-                        <select asp-for="ExamScheduleId" class="form-select shadow-sm border-light-subtle" asp-items="ViewBag.ExamScheduleId">
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label fw-bold text-dark mb-2"><i class="bi bi-calendar-check me-1 text-success"></i> جلسة الامتحان المعنية</label>
+                        <select asp-for="ExamScheduleId" class="form-select shadow-sm border-light-subtle"
+                                asp-items="@(ViewBag.ExamScheduleId as SelectList ?? new SelectList(Enumerable.Empty<SelectListItem>()))" style="border-radius: 8px; font-size: 0.9rem;">
                             <option value="">-- اختر الجلسة (المادة - التاريخ) --</option>
                         </select>
-                        <span asp-validation-for="ExamScheduleId" class="text-danger small"></span>
+                        <span asp-validation-for="ExamScheduleId" class="text-danger small fw-bold mt-1 d-block"></span>
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold text-dark"><i class="bi bi-briefcase me-1"></i> الدور في اللجنة</label>
-                        <select asp-for="RoleId" id="roleSelect" class="form-select shadow-sm border-light-subtle" asp-items="ViewBag.RoleId">
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label fw-bold text-dark mb-2"><i class="bi bi-briefcase me-1 text-info"></i> الدور في اللجنة</label>
+                        <select asp-for="RoleId" id="roleSelect" class="form-select shadow-sm border-light-subtle"
+                                asp-items="@(ViewBag.RoleId as SelectList ?? new SelectList(Enumerable.Empty<SelectListItem>()))" style="border-radius: 8px;">
                             <option value="">-- اختر الدور المكلف به --</option>
                         </select>
-                        <span asp-validation-for="RoleId" class="text-danger small"></span>
+                        <span asp-validation-for="RoleId" class="text-danger small fw-bold mt-1 d-block"></span>
                     </div>
 
-                    <div class="col-md-12 my-3 p-4 rounded-4 border-0 shadow-sm" style="background-color: #f8faff;">
+                    <div class="col-md-12 my-3 p-4 rounded-3 border shadow-sm" style="background-color: #f8faff; border-radius: 12px !important;">
                         <h6 class="fw-bold border-bottom pb-2 mb-3 text-primary">
-                            <i class="bi bi-geo-alt-fill me-1"></i> تحديد نطاق المسئولية 
+                            <i class="bi bi-geo-alt-fill me-1"></i> تحديد نطاق وتوزيع المسئولية
                         </h6>
-                        <div class="row">
-                            <div class="col-md-4 mb-2">
-                                <label class="small text-muted fw-bold d-block mb-1">صالة كاملة</label>
-                                <select asp-for="HallId" id="hallSelect" class="form-select form-select-sm shadow-sm" asp-items="ViewBag.HallId">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="small text-muted fw-bold d-block mb-2">صالة كاملة</label>
+                                <select asp-for="HallId" id="hallSelect" class="form-select form-select-sm shadow-sm"
+                                        asp-items="@(ViewBag.HallId as SelectList ?? new SelectList(Enumerable.Empty<SelectListItem>()))" style="border-radius: 6px;">
                                     <option value="">-- لا يوجد --</option>
                                 </select>
-                                <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">(رئيس صالة / دكتور / ممرض)</small>
+                                <small class="text-muted d-block mt-2 fw-bold" style="font-size: 0.7rem; color: #718096 !important;">(رئيس صالة / دكتور / ممرض)</small>
                             </div>
 
-                            <div class="col-md-4 mb-2">
-                                <label class="small text-muted fw-bold d-block mb-1">بلوك محدد</label>
-                                <select asp-for="BlockId" id="blockSelect" class="form-select form-select-sm shadow-sm" asp-items="ViewBag.BlockId">
+                            <div class="col-md-4">
+                                <label class="small text-muted fw-bold d-block mb-2">بلوك محدد</label>
+                                <select asp-for="BlockId" id="blockSelect" class="form-select form-select-sm shadow-sm"
+                                        asp-items="@(ViewBag.BlockId as SelectList ?? new SelectList(Enumerable.Empty<SelectListItem>()))" style="border-radius: 6px;">
                                     <option value="">-- لا يوجد --</option>
                                 </select>
-                                <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">(لمراقب البلوك)</small>
+                                <small class="text-muted d-block mt-2 fw-bold" style="font-size: 0.7rem; color: #718096 !important;">(لمراقب البلوك والمبنى)</small>
                             </div>
 
-                          
-                            <div class="col-md-4 mb-2">
-                                <label class="small text-muted fw-bold d-block mb-1">لجنة فرعية</label>
-                                <select asp-for="CommitteeId" id="committeeSelect" class="form-select form-select-sm shadow-sm" asp-items="ViewBag.CommitteeID">
+                            <div class="col-md-4">
+                                <label class="small text-muted fw-bold d-block mb-2">لجنة فرعية</label>
+                                <select asp-for="CommitteeId" id="committeeSelect" class="form-select form-select-sm shadow-sm"
+                                        asp-items="@(ViewBag.CommitteeId as SelectList ?? new SelectList(Enumerable.Empty<SelectListItem>()))" style="border-radius: 6px;">
                                     <option value="">-- لا يوجد --</option>
                                 </select>
-                                <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">(لملاحظ اللجنة)</small>
+                                <small class="text-muted d-block mt-2 fw-bold" style="font-size: 0.7rem; color: #718096 !important;">(لملاحظ القاعة الفرعية)</small>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="d-grid gap-2 mt-4">
-                    <button type="submit" class="btn btn-lg shadow text-white fw-bold" style="background-color: #1a3a5a; border-radius: 8px;">
-                        <i class="bi bi-check-all me-1"></i> إتمام وحفظ التكليف
+                    <button type="submit" class="btn btn-lg shadow text-white fw-bold py-2" style="background-color: #1a3a5a; border-radius: 8px; font-size: 1.05rem;">
+                        <i class="bi bi-check-all me-1"></i> إتمام وحفظ التكليف اليدوي
                     </button>
                     <a asp-action="Index" class="btn btn-light border py-2 fw-bold" style="border-radius: 8px;">
                         <i class="bi bi-x-circle me-1"></i> إلغاء العملية والرجوع
@@ -93,77 +100,67 @@
     }
 
     <script>
-        const personSelect = document.getElementById("personSelect");
-        const roleSelect = document.getElementById("roleSelect");
-        const hallSelect = document.getElementById("hallSelect");
-        const blockSelect = document.getElementById("blockSelect");
-        const committeeSelect = document.getElementById("committeeSelect");
+        $(document).ready(function () {
+            const roleSelect = $('#roleSelect');
+            const hallSelect = $('#hallSelect');
+            const blockSelect = $('#blockSelect');
+            const committeeSelect = $('#committeeSelect');
 
-     
-        function updateFieldsAvailability() {
-            const roleText = roleSelect.options[roleSelect.selectedIndex].text;
+            function updateFieldsAvailability() {
+                const roleText = roleSelect.find("option:selected").text();
 
-           
-            hallSelect.disabled = false;
-            blockSelect.disabled = false;
-            committeeSelect.disabled = false;
+                hallSelect.prop('disabled', false);
+                blockSelect.prop('disabled', false);
+                committeeSelect.prop('disabled', false);
 
-            if (roleText.includes("رئيس صالة") || roleText.includes("طبيب") || roleText.includes("ممرض")) {
-               
-                blockSelect.value = "";
-                committeeSelect.value = "";
-                blockSelect.disabled = true;
-                committeeSelect.disabled = true;
+                if (roleText.includes("رئيس صالة") || roleText.includes("طبيب") || roleText.includes("ممرض")) {
+                    blockSelect.val("");
+                    committeeSelect.val("");
+                    blockSelect.prop('disabled', true);
+                    committeeSelect.prop('disabled', true);
+                }
+                else if (roleText.includes("مراقب")) {
+                    committeeSelect.val("");
+                    committeeSelect.prop('disabled', true);
+                }
             }
-            else if (roleText.includes("مراقب")) {
-               
-                committeeSelect.value = "";
-                committeeSelect.disabled = true;
-            }
-            else if (roleText.includes("ملاحظ")) {
-             
-            }
-        }
 
-      
-        personSelect.addEventListener("change", function () {
-            const selectedText = this.options[this.selectedIndex].text;
+            $('#personSelect').change(function () {
+                const selectedText = $(this).find("option:selected").text();
 
-            if (selectedText.includes("أستاذ") || selectedText.includes("عميد")) roleSelect.value = "1";
-            else if (selectedText.includes("مدرس") || selectedText.includes("معيد")) roleSelect.value = "2";
-            else if (selectedText.includes("موظف")) roleSelect.value = "3";
-            else if (selectedText.includes("دكتور")) roleSelect.value = "4";
-            else if (selectedText.includes("ممرض")) roleSelect.value = "5";
+                if (selectedText.includes("أستاذ") || selectedText.includes("عميد")) roleSelect.val("1");
+                else if (selectedText.includes("مدرس") || selectedText.includes("معيد")) roleSelect.val("2");
+                else if (selectedText.includes("موظف")) roleSelect.val("3");
+                else if (selectedText.includes("دكتور")) roleSelect.val("4");
+                else if (selectedText.includes("ممرض")) roleSelect.val("5");
 
-          
-            updateFieldsAvailability();
-        });
+                updateFieldsAvailability();
+            });
 
-        
-        roleSelect.addEventListener("change", updateFieldsAvailability);
+            roleSelect.change(updateFieldsAvailability);
 
-   
-        hallSelect.addEventListener("change", function () {
-            const hallId = this.value;
+            hallSelect.change(function () {
+                const hallId = $(this).val();
 
-            blockSelect.innerHTML = '<option value="">-- لا يوجد --</option>';
-            committeeSelect.innerHTML = '<option value="">-- لا يوجد --</option>';
+                blockSelect.empty().append('<option value="">-- لا يوجد --</option>');
+                committeeSelect.empty().append('<option value="">-- لا يوجد --</option>');
 
-            if (!hallId) return;
+                if (!hallId) return;
 
-            fetch(`/CommitteesAssignments/GetHallDetails?hallId=${hallId}`)
-                .then(response => response.json())
-                .then(data => {
-                    data.blocks.forEach(block => {
-                        blockSelect.add(new Option(block.name, block.id));
-                    });
-                    data.committees.forEach(com => {
-                        committeeSelect.add(new Option(com.name, com.id));
-                    });
-
+                $.getJSON('/CommitteesAssignments/GetHallDetails', { hallId: hallId }, function (data) {
+                    if(data.blocks) {
+                        $.each(data.blocks, function(i, b) {
+                            blockSelect.append($('<option>', { value: b.id, text: b.name }));
+                        });
+                    }
+                    if(data.committees) {
+                        $.each(data.committees, function(i, c) {
+                            committeeSelect.append($('<option>', { value: c.id, text: c.name }));
+                        });
+                    }
                     updateFieldsAvailability();
-                })
-                .catch(error => console.error('Error:', error));
+                }).fail(function(err) { console.error('Error fetching details:', err); });
+            });
         });
     </script>
 }

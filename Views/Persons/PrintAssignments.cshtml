@@ -3,26 +3,38 @@
 
 @{
     Layout = null;
-    var personName = Model.PersonFullName ?? ".............................";
+    var personName = Model.PersonFullName ?? "............................................";
     int counter = 1;
-}<!DOCTYPE html><html lang="ar" dir="rtl"><head>
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
     <meta charset="utf-8" />
-    <title>طباعة تكليف - @Model.AcademicYear</title>
+    <title>طباعة خطاب تكليف - جامعة أسيوط</title>
     <style>
-        
-        @@media print {
-            .no-print-zone { display: none !important; }
-            body { padding: 0; margin: 0; }
-            .print-table th { background-color: #f8f9fa !important; -webkit-print-color-adjust: exact; }
+        /* إلغاء هوامش المتصفح نهائياً لإخفاء الروابط والتاريخ الخارجي */
+        @@page {
+            size: auto;
+            margin: 0mm;
         }
 
         body {
             font-family: 'Times New Roman', Times, serif;
             background-color: white;
             color: black;
-            margin: 10px 40px;
+            margin: 0;
+            padding: 0;
             direction: rtl;
             line-height: 1.4;
+        }
+
+        .page-print-container {
+            padding: 35px 50px;
+            box-sizing: border-box;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .header-container {
@@ -30,113 +42,250 @@
             justify-content: space-between;
             align-items: flex-start;
             border-bottom: 2px solid black;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
         }
 
-        .header-side { font-weight: bold; font-size: 13pt; }
-        .header-center { text-align: center; font-size: 9pt; }
-
-        .report-title { text-align: center; margin: 15px 0; }
-        .report-title h2 { 
-            display: inline-block; 
-            border-bottom: 2px solid black; 
-            padding-bottom: 5px;
-            font-size: 17pt; 
+        .header-side {
+            font-weight: bold;
+            font-size: 13pt;
+            line-height: 1.5;
         }
 
-        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-        .print-table th, .print-table td { border: 1px solid black; text-align: center; padding: 6px; font-size: 11pt; }
-        .print-table th { background-color: #f8f9fa; font-weight: bold; }
-        
-        
+        .header-center {
+            text-align: center;
+            font-size: 10pt;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-top: 5px;
+        }
+
+        .recipient-section {
+            margin: 20px 0 10px 0;
+            font-size: 14pt;
+            font-weight: bold;
+            line-height: 1.8;
+        }
+
+        .line-value {
+            border-bottom: 1px dotted black;
+            display: inline-block;
+            padding: 0 10px;
+            font-weight: bold;
+        }
+
+        .greeting {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14pt;
+            margin-bottom: 15px;
+            text-decoration: underline;
+        }
+
+        .letter-intro {
+            font-size: 13.5pt;
+            text-align: justify;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+            .print-table th, .print-table td {
+                border: 1px solid black;
+                text-align: center;
+                padding: 8px 6px;
+                font-size: 12pt;
+            }
+
+            .print-table th {
+                background-color: #f8f9fa;
+                font-weight: bold;
+            }
+
         .time-header {
-    display: block;
-    font-size: 9pt;
-    font-weight: normal;
-    color: #444;
-    margin-top: 4px;
-    padding-top: 2px;
-}
+            display: block;
+            font-size: 10pt;
+            font-weight: normal;
+            color: #000;
+            margin-top: 4px;
+            direction: ltr;
+        }
+
         .subject-box {
             font-weight: bold;
-            font-size: 11pt;
-            padding: 5px 0;
+            font-size: 12pt;
+            padding: 3px 0;
+        }
+
+        .closing-note {
+            font-weight: bold;
+            font-size: 12pt;
+            margin-top: 10px;
+            line-height: 1.6;
+            text-align: justify;
+        }
+
+        .respect-phrase {
+            text-align: center;
+            font-weight: bold;
+            font-size: 13pt;
+            margin: 20px 0 5px 0;
         }
 
         .signatures {
-            margin-top: 40px;
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
             text-align: center;
             font-weight: bold;
-            font-size: 11pt;
+            font-size: 12.5pt;
+            margin-top: auto;
+            padding: 0 10px;
         }
 
-        .no-print-zone { padding: 15px; background: #f8f9fa; border: 1px solid #ddd; margin-bottom: 20px; border-radius: 6px; }
-        .btn-print { background: #28a745; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
-    </style></head><body>
+        .sig-column {
+            width: 23%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
 
-    <div class="no-print-zone">
-        <button class="btn-print" onclick="window.print()">🖨️ طباعة التكليف الحالي</button>
-        <a asp-controller="Persons" asp-action="Index" style="display: inline-block; padding: 10px 15px; cursor:pointer; margin-right:10px; background-color: #e2e6ea; color: black; text-decoration: none; border: 1px solid #ccc; border-radius: 4px; font-size: 13.3333px; font-family: Arial;">العودة للقائمة</a>
-        <span style="margin-right:20px; color:#666; font-size: 0.9rem;">* المواعيد تظهر تلقائياً في رأس الجدول بناءً على ترم الامتحانات.</span>
+        .sig-line {
+            margin-top: 15px;
+            border-top: 1px dashed black;
+            width: 85%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .system-footer {
+            margin-top: 20px;
+            border-top: 2px solid black;
+            font-size: 10pt;
+            font-weight: bold;
+            padding-top: 6px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .no-print-zone {
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            border-radius: 6px;
+        }
+
+        .btn-print {
+            background: #1a3a5a;
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        @@media print {
+            .no-print-zone {
+                display: none !important;
+            }
+
+            body {
+                padding: 0;
+                margin: 0;
+            }
+
+            .print-table th {
+                background-color: #f8f9fa !important;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print-zone" style="text-align: center;">
+        <button class="btn-print" onclick="window.print()">🖨️ طباعة التكليف الفردي الآن</button>
+        <a asp-controller="Persons" asp-action="Index" style="display: inline-block; padding: 10px 15px; cursor:pointer; margin-right:10px; background-color: #e2e6ea; color: black; text-decoration: none; border: 1px solid #ccc; border-radius: 4px; font-size: 13.3333px; font-family: Arial;">العودة للقائمة الرئيسية</a>
     </div>
 
-    <div class="container">
-        <div class="header-container">
-            <div class="header-side">
-                جامعة أسيوط<br />
-                @Model.CollegeName<br />
-                إدارة شئون الطلاب
+    <div class="page-print-container">
+        <div>
+            <div class="header-container">
+                <div class="header-side">
+                    جامعة أسيوط<br />
+                    كلية علوم الرياضة<br />
+                    ادارة شئون الطلاب
+                </div>
+                <div class="header-center">
+                    AU-QAD-DC-FRM-003<br />
+                    الإصدار وتاريخه رقم : 01 - 2017/01/01
+                </div>
+                <div class="header-side" style="text-align: left;">
+                    كلية علوم الرياضة
+                </div>
             </div>
-            <div class="header-center">
-                AU-QAD-DC-FRM-003<br />
-                الإصدار وتاريخه رقم : 01 - 01/01/2017<br /><br />
-               
-            </div>
-            <div class="header-side" style="text-align: left;">
-                كلية علوم الرياضة
-            </div>
-        </div>
 
-        <div class="report-title">
-            <h2>السيد الأستاذ  / @personName</h2>
-            <p style="font-weight:bold; margin-top:10px; font-size:14pt;">تحية طيبة وبعد،،،</p>
-        </div>
-
-        @if (Model.Rows == null || !Model.Rows.Any() || !Model.Rows.Any(r => r.DailyItems.Any()))
-        {
-            <div style="text-align: center; padding: 50px; border: 2px dashed #ccc; border-radius: 10px; margin: 20px 0;">
-                <h3 style="color: #666;">نود الإحاطة بأنه لا توجد تكليفات مسجلة لسيادتكم حالياً</h3>
-                <p style="color: #888;">برجاء مراجعة إدارة شئون الطلاب في حالة وجود أي استفسار.</p>
+            <div class="recipient-section">
+                <div>السيد / أ.د / <span class="line-value" style="min-width: 300px;">@personName</span></div>
+                <div>بالقسم / <span class="line-value" style="min-width: 250px;">............................................</span></div>
             </div>
-        }
-        else
-        {
-            <p style="font-size:14pt; line-height:1.6; text-align:justify;">
-                نتشرف بالإحاطة بأنه تم تكليف سيادتكم بأعمال <strong>(@Model.PersonRoleInReport)</strong> وذلك للعمل في لجان امتحانات دور يوليو 2026 للعام الجامعي @Model.AcademicYear م.
-            </p>
 
-            <table class="print-table">
-                <thead>
-                    <tr>
-                        <th rowspan="2" style="width:30px;">م</th>
-                        <th rowspan="2" style="width:80px;">اليوم</th>
-                        <th rowspan="2" style="width:100px;">التاريخ</th>
-                        <th colspan="4">الفرق الدراسية</th>
-                    </tr>
-                    <tr>
-                        <th>الفرقة الأولى @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("1"))) { <span class="time-header">@Model.YearTimes["1"]</span> }</th><th>الفرقة الثانية @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("2"))) { <span class="time-header">@Model.YearTimes["2"]</span> }</th><th>الفرقة الثالثة @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("3"))) { <span class="time-header">@Model.YearTimes["3"]</span> }</th><th>الفرقة الرابعة @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("4"))) { <span class="time-header">@Model.YearTimes["4"]</span> }</th>
+            <div class="greeting">تحية طيبة وبعد،،،</div>
+
+            @if (Model.Rows == null || !Model.Rows.Any() || !Model.Rows.Any(r => r.DailyItems.Any()))
+            {
+                <div style="text-align: center; padding: 50px; border: 2px dashed #ccc; border-radius: 10px; margin: 20px 0;">
+                    <h3 style="color: #666;">نود الإحاطة بأنه لا توجد تكليفات لجان مسجلة لسيادتكم حالياً</h3>
+                    <p style="color: #888;">برجاء مراجعة إدارة شئون الطلاب في حالة وجود أي استفسار.</p>
+                </div>
+            }
+            else
+            {
+                <div class="letter-intro">
+                    اتشرف بالإحاطة بأنه قد تم تكليف سيادتكم بأعمال <b>( @Model.PersonRoleInReport )</b> وذلك للعمل في لجان امتحانات دور يوليو للعام الجامعي <span style="font-family: 'Arial';">@Model.AcademicYear</span> م.
+                </div>
+
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width:40px; vertical-align: middle;">م</th>
+                            <th rowspan="2" style="width:90px; vertical-align: middle;">اليوم</th>
+                            <th rowspan="2" style="width:110px; vertical-align: middle;">التاريخ</th>
+                            <th colspan="4">الفرق الدراسية</th>
+                        </tr>
+                        <tr>
+                            <th>الفرقة الأولى @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("1"))) {
+                            <span class="time-header">(@Model.YearTimes["1"])</span>
+                        }
+</th>
+                        <th>الفرقة الثانية @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("2"))) {
+                        <span class="time-header">(@Model.YearTimes["2"])</span>
+                                                }
+</th>
+                        <th>الفرقة الثالثة @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("3"))) {
+                        <span class="time-header">(@Model.YearTimes["3"])</span>
+                                                }
+</th>
+                        <th>الفرقة الرابعة @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("4"))) {
+                        <span class="time-header">(@Model.YearTimes["4"])</span>
+                                                }
+</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var row in Model.Rows)
                     {
                         <tr>
-                            <td>@(counter++)</td>
-                            <td>@row.Day</td>
-                            <td>@row.Date.ToString("yyyy/MM/dd")</td>
+                            <td style="font-weight: bold;">@(counter++)</td>
+                            <td style="font-weight: bold;">@row.Day</td>
+                            <td style="font-family: 'Arial';">@row.Date.ToString("yyyy/MM/dd")</td>
                             @foreach (var yearName in new[] { "1", "2", "3", "4" })
                             {
                                 <td>
@@ -152,7 +301,7 @@
                                     }
                                     else
                                     {
-                                        <span style="color: #ddd;"></span>
+                                        <span></span>
                                     }
                                 </td>
                             }
@@ -161,19 +310,43 @@
                 </tbody>
             </table>
 
-            <div style="font-weight: bold; font-size: 11pt; margin-top: 10px;">
-                فقط لا غير، يرجى الحضور قبل بدء اللجنة بنصف ساعة.
+            <div class="closing-note">
+                <u>فقط لا غير</u><br />
+                كما يرجى عدم التأخير عن موعد لجنة الامتحانات وضرورة الحضور إلى مقر اللجنة قبل بدء الامتحانات بنصف ساعة مع الالتزام بالجدول الخاص بسيادتكم.
             </div>
-        }
-
-        <div class="signatures">
-            <div>شئون الطلاب<br/><br/>سارة محمود</div>
-            <div>مدير شئون الطلاب<br/><br/>إيهاب صبري</div>
-            <div>وكيل الكلية<br/><br/>أ.د/ ياسر حسن</div>
-            <div>يعتمد، عميد الكلية<br/><br/>أ.د/ عماد سمير</div>
+                        }
         </div>
 
-        <div style="margin-top: 30px; border-top: 1px solid black; font-size: 9pt; padding-top: 5px; text-align: center;">
-            داخلي : 5 / 4267 / 4298 / 4268 &nbsp;&nbsp; | &nbsp;&nbsp; مباشر : 088232168 &nbsp;&nbsp; | &nbsp;&nbsp; فاكس : 088/2334517
+        <div>
+            <div class="respect-phrase">وتفضلوا بقبول فائق الاحترام والتقدير،،،</div>
+
+            <div class="signatures">
+                <div class="sig-column">
+                    <div>شئون الطلاب</div>
+                    <div style="margin-top: 15px; font-weight: normal;">سارة محمود</div>
+                    <div class="sig-line"></div>
+                </div>
+                <div class="sig-column">
+                    <div>مدير شئون الطلاب</div>
+                    <div style="margin-top: 15px; font-weight: normal;">إيهاب صبري</div>
+                    <div class="sig-line"></div>
+                </div>
+                <div class="sig-column">
+                    <div>وكيل الكلية لشئون التعليم والطلاب</div>
+                    <div style="margin-top: 15px;">أ.د / ياسر حسن حامد</div>
+                    <div class="sig-line"></div>
+                </div>
+                <div class="sig-column">
+                    <div>يعتمد، عميد الكلية</div>
+                    <div style="margin-top: 15px;">أ.د / عماد سمير محمود على</div>
+                    <div class="sig-line"></div>
+                </div>
+            </div>
+
+            <div class="system-footer">
+                داخلي : 5 / 4267 / 4298 / 4268 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; مباشر : 088232168 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; فاكس : 088/2334517
+            </div>
         </div>
-    </div></body></html>
+    </div>
+</body>
+</html>
