@@ -28,36 +28,36 @@ namespace projectweb.Controllers
         // =========================================================
         // REGISTER
         // =========================================================
-        [HttpGet]
-        public IActionResult Register() => View();
+        //[HttpGet]
+        //public IActionResult Register() => View();
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel account)
-        {
-            if (ModelState.IsValid)
-            {
-                var user = new IdentityUser
-                {
-                    UserName = account.Email,
-                    Email = account.Email,
-                    PhoneNumber = account.PhoneNumber
-                };
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Register(RegisterViewModel account)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        var user = new IdentityUser
+        //        {
+        //            UserName = account.Email,
+        //            Email = account.Email,
+        //            PhoneNumber = account.PhoneNumber
+        //        };
 
-                var result = await UserManager.CreateAsync(user, account.Password);
+        //        var result = await UserManager.CreateAsync(user, account.Password);
 
-                if (result.Succeeded)
-                {
-                    await SignInManager.SignInAsync(user, false);
-                    return RedirectToAction("Index", "Home");
-                }
+        //        if (result.Succeeded)
+        //        {
+        //            await SignInManager.SignInAsync(user, false);
+        //            return RedirectToAction("Index", "Home");
+        //        }
 
-                foreach (var error in result.Errors)
-                    ModelState.AddModelError("", error.Description);
-            }
+        //        foreach (var error in result.Errors)
+        //            ModelState.AddModelError("", error.Description);
+        //    }
 
-            return View(account);
-        }
+        //    return View(account);
+        //}
 
         // =========================================================
         // LOGIN

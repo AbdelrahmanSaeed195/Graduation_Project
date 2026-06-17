@@ -231,11 +231,11 @@ namespace projectweb.Services
                     ExamScheduleId = examScheduleId,
                     RoleId = reserveLeader.RoleId,
                     HallId = hallId,
-                    BlockId = null, // غير مربوط ببلوك محدد، تحت إدارة رئيس الصالة
+                    BlockId = null, 
                     AssignmentType = "Auto",
                     RoleType = "مراقب احتياطي للصالة (تحت إدارة رئيس الصالة)"
                 });
-                poolLeaders.Remove(reserveLeader); // حذفناه من المتاحين للبلوكات الأساسية
+                poolLeaders.Remove(reserveLeader); 
             }
 
             // حساب الـ 5% ملاحظين احتياطيين
@@ -329,7 +329,7 @@ namespace projectweb.Services
                             ExamScheduleId = examScheduleId,
                             RoleId = reserveNote.RoleId,
                             HallId = hallId,
-                            BlockId = block.BlockId, // مربوط بالبلوك ليكون تحت إدارة مراقب البلوك
+                            BlockId = block.BlockId, 
                             AssignmentType = "Auto",
                             RoleType = "ملاحظ احتياطي للكلية (تحت إدارة المراقب)"
                         });

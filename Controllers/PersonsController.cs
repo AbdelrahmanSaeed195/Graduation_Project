@@ -318,12 +318,11 @@ namespace projectweb.Controllers
             sheet.Cells[1, 1].Value = "الاسم الكامل";
             sheet.Cells[1, 2].Value = "الرقم القومي";
             sheet.Cells[1, 3].Value = "رقم الهاتف";
-            sheet.Cells[1, 4].Value = "البريد الإلكتروني";
-            sheet.Cells[1, 5].Value = "الوظيفة";
-            sheet.Cells[1, 6].Value = "الحالة";
+            sheet.Cells[1, 4].Value = "الوظيفة";
+            sheet.Cells[1, 5].Value = "الحالة";
 
             // تنسيق الهيدر
-            using (var range = sheet.Cells[1, 1, 1, 6])
+            using (var range = sheet.Cells[1, 1, 1, 5])
             {
                 range.Style.Font.Bold = true;
                 range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
@@ -337,9 +336,8 @@ namespace projectweb.Controllers
                 sheet.Cells[row, 1].Value = p.FullName;
                 sheet.Cells[row, 2].Value = p.NationalId;
                 sheet.Cells[row, 3].Value = p.Phone;
-                sheet.Cells[row, 4].Value = p.Email;
-                sheet.Cells[row, 5].Value = GetArabicJobTitle(p.JobRole);
-                sheet.Cells[row, 6].Value = p.IsActiveForAssignment ? "نشط" : "متوقف";
+                sheet.Cells[row, 4].Value = GetArabicJobTitle(p.JobRole);
+                sheet.Cells[row, 5].Value = p.IsActiveForAssignment ? "نشط" : "متوقف";
                 row++;
             }
 
@@ -386,7 +384,6 @@ namespace projectweb.Controllers
                 var fullName = sheet.Cells[i, 1].Text?.Trim();
                 var nationalId = sheet.Cells[i, 2].Text?.Trim();
                 var phone = sheet.Cells[i, 3].Text?.Trim();
-                var email = sheet.Cells[i, 5].Text?.Trim();
                 var jobText = sheet.Cells[i, 4].Text?.Trim();
 
                 if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(nationalId))
@@ -420,7 +417,6 @@ namespace projectweb.Controllers
                     FullName = fullName,
                     NationalId = nationalId,
                     Phone = phone ?? "",
-                    Email = email ?? "",
                     JobRole = jobRole,
                     RoleId = 1,
                     IsActiveForAssignment = true

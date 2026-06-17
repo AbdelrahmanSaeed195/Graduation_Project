@@ -12,8 +12,8 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260519111310_Inital")]
-    partial class Inital
+    [Migration("20260617192946_InitCreate")]
+    partial class InitCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -443,10 +443,6 @@ namespace projectweb.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PersonId"));
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
                         .IsRequired()

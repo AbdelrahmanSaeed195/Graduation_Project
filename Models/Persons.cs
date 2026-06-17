@@ -23,10 +23,6 @@ namespace projectweb.Models
         [Display(Name = "رقم الهاتف")]
         public string Phone { get; set; }
 
-        [EmailAddress(ErrorMessage = "صيغة البريد الإلكتروني غير صحيحة")]
-        [Display(Name = "البريد الإلكتروني")]
-        public string Email { get; set; }
-
         [Required(ErrorMessage = "الرقم القومي مطلوب")]
         [StringLength(20, MinimumLength = 14, ErrorMessage = "الرقم القومي يجب أن يكون 14 رقماً")]
         [Display(Name = "الرقم القومي")]
