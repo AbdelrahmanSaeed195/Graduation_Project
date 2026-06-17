@@ -12,8 +12,8 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260519111310_Inital")]
-    partial class Inital
+    [Migration("20260613232827_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
