@@ -33,6 +33,10 @@ namespace projectweb.Controllers
             return View(committees);
         }
 
+
+        // =====================================
+        // تفاصيل اللجنة (Details)
+        // =====================================
         // =====================================
         // تفاصيل اللجنة (Details)
         // =====================================
@@ -40,20 +44,25 @@ namespace projectweb.Controllers
         {
             if (id == null) return BadRequest();
 
-            // تم تعديل الـ Include الذاهب للـ ExamSchedules ليتوافق مع الموديل الجديد
             var committee = await db.Committees
-                .Include(c => c.Block).ThenInclude(b => b.Hall)
+                .Include(c => c.Block)
+                    .ThenInclude(b => b.Hall)
                 .Include(c => c.Students)
-                .Include(c => c.ExamSchedules)
-                    .ThenInclude(es => es.Exam)
-                        .ThenInclude(e => e.Subject)
                 .FirstOrDefaultAsync(c => c.CommitteeId == id);
 
             if (committee == null) return NotFound();
 
+            var examSchedules = await db.ExamSchedules
+                .Include(es => es.Exam)
+                    .ThenInclude(e => e.Subject)
+                .Where(es => es.BlockId == committee.BlockId)
+                .OrderBy(es => es.Exam.ExamDate)
+                .ToListAsync();
+
+            committee.ExamSchedules = examSchedules;
+
             return View(committee);
         }
-
         // =====================================
         // إضافة لجنة جديدة - GET
         // =====================================
@@ -201,7 +210,6 @@ namespace projectweb.Controllers
             var committee = await db.Committees.FindAsync(id);
             if (committee == null) return NotFound();
 
-            // تم التحديث هنا أيضاً ليعتمد الفحص على حقل الربط المباشر لحماية تكامل البيانات
             bool hasDependencies = await db.Students.AnyAsync(s => s.CommitteeId == id) ||
                                    await db.CommitteesAssignments.AnyAsync(a => a.CommitteeId == id);
 
@@ -227,7 +235,7 @@ namespace projectweb.Controllers
                 .Select(b => new
                 {
                     b.BlockId,
-                    DisplayName = "قاعة " + (b.Hall != null ? b.Hall.HallName : "---") + " / بلوك " + b.BlockName
+                    DisplayName = "جراش " + (b.Hall != null ? b.Hall.HallName : "---") + " / صالة " + b.BlockName
                 })
                 .OrderBy(b => b.DisplayName)
                 .ToList();

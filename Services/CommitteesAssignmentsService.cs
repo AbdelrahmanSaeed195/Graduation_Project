@@ -90,14 +90,41 @@ namespace projectweb.Services
                 .OrderBy(b => b.BlockName)
                 .ToList();
 
+            // -------------------------------------------------------------
+            // تحديث: جلب الموظفين المستبعدين بسبب صلات القرابة مع طلاب الصالة/المادة
+            // -------------------------------------------------------------
+            // جلب معرفات اللجان النشطة في هذه الصالة لهذه الجلسة
+            var activeBlockIds = activeBlocks.Select(b => b.BlockId).ToList();
+            var activeCommitteeIds = await _context.Committees
+                .Where(c => activeBlockIds.Contains(c.BlockId))
+                .Select(c => c.CommitteeId)
+                .ToListAsync();
+
+            // جلب معرفات الطلاب المتواجدين في هذه اللجان أو المرتبطين بهذه الجلسة الامتحانية
+            var studentIdsInHall = await _context.Students
+                .Where(s => (s.CommitteeId != null && activeCommitteeIds.Contains(s.CommitteeId.Value)) || s.ExamScheduleId == examScheduleId)
+                .Select(s => s.StudentId)
+                .ToListAsync();
+
+            // تحديد الموظفين الذين لديهم صلة قرابة بهؤلاء الطلاب
+            var excludedPersonIdsDueToRelatives = await _context.Relatives
+                .Where(r => studentIdsInHall.Contains(r.StudentId))
+                .Select(r => r.PersonId)
+                .Distinct()
+                .ToListAsync();
+            // -------------------------------------------------------------
+
             var busyPersonIds = await _context.CommitteesAssignments
                 .Include(a => a.ExamSchedule).ThenInclude(es => es.Exam)
                 .Where(a => a.ExamSchedule.ExamId == examId)
                 .Select(a => a.PersonId).ToListAsync();
 
+            // تعديل شرط جلب الموظفين المتاحين ليستبعد أصحاب صلات القرابة أيضاً
             var allAvailableStaff = await _context.Persons
                 .Include(p => p.Role)
-                .Where(p => !busyPersonIds.Contains(p.PersonId) && p.IsActiveForAssignment)
+                .Where(p => !busyPersonIds.Contains(p.PersonId)
+                            && !excludedPersonIdsDueToRelatives.Contains(p.PersonId) // استبعاد الأقارب هنا
+                            && p.IsActiveForAssignment)
                 .ToListAsync();
 
             var staffWhoWorkedInThisHallToday = await _context.CommitteesAssignments
@@ -221,7 +248,7 @@ namespace projectweb.Services
                 }
             }
 
-            // 3. توزيع مراقب احتياطي واحد فقط للصالة (يكون من فئة "مدرس" ومسؤول عنه رئيس الصالة)
+            // 3. توزيع مراقب احتياطي واحد فقط للصالة
             var reserveLeader = poolLeaders.FirstOrDefault();
             if (reserveLeader != null)
             {
@@ -231,11 +258,11 @@ namespace projectweb.Services
                     ExamScheduleId = examScheduleId,
                     RoleId = reserveLeader.RoleId,
                     HallId = hallId,
-                    BlockId = null, 
+                    BlockId = null,
                     AssignmentType = "Auto",
                     RoleType = "مراقب احتياطي للصالة (تحت إدارة رئيس الصالة)"
                 });
-                poolLeaders.Remove(reserveLeader); 
+                poolLeaders.Remove(reserveLeader);
             }
 
             // حساب الـ 5% ملاحظين احتياطيين
@@ -329,7 +356,7 @@ namespace projectweb.Services
                             ExamScheduleId = examScheduleId,
                             RoleId = reserveNote.RoleId,
                             HallId = hallId,
-                            BlockId = block.BlockId, 
+                            BlockId = block.BlockId,
                             AssignmentType = "Auto",
                             RoleType = "ملاحظ احتياطي للكلية (تحت إدارة المراقب)"
                         });

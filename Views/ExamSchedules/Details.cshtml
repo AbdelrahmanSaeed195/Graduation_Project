@@ -3,10 +3,10 @@
 @using System.Reflection
 
 @{
-    ViewData["Title"] = "تفاصيل توزيع الجلسة";
+    ViewData["Title"] = "تفاصيل  جلسة توزيع الصالات";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    // 🌟 لوجيك مطور ومؤمن تماماً لقراءة الـ Display Name العربي للـ Enum ومنع الرموز الإنجليزية أو الـ Null
+  
     string arabicLevelName = "غير محدد";
     if (Model.Exam?.Subject != null)
     {
@@ -56,7 +56,7 @@
                                     <i class="bi bi-building me-2 text-primary"></i> @(Model.Block?.BlockName ?? "غير محدد")
                                 </span>
                                 <span class="text-muted small fw-bold">
-                                    <i class="bi bi-geo-alt text-danger me-1"></i> كافة لجان البلوك تتبع هذا الامتحان
+                                    <i class="bi bi-geo-alt text-danger me-1"></i> كافة لجان صالات تتبع هذا الامتحان
                                 </span>
                             </div>
                         </div>
@@ -97,13 +97,10 @@
 
                     </div>
 
-                    <div class="mt-5 d-flex justify-content-center gap-3 border-top pt-4">
-                        @if (User.IsInRole("Admin"))
-                        {
+                    <div class="mt-5 d-flex justify-content-center gap-3 border-top pt-4">                      
                             <a asp-action="Edit" asp-route-id="@Model.ExamScheduleId" class="btn btn-lg px-5 text-white shadow-sm" style="background-color: #1a3a5a; border-radius: 8px; font-size: 1rem; font-weight: 600;">
                                 <i class="bi bi-pencil-square me-2"></i> تعديل التوزيع
                             </a>
-                        }
                         <a asp-action="Index" class="btn btn-lg btn-outline-secondary px-4 shadow-sm" style="border-radius: 8px; font-size: 1rem;">
                             العودة للقائمة
                         </a>

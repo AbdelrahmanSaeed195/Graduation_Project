@@ -56,6 +56,7 @@ namespace projectweb.Controllers
             if (id == null) return NotFound();
 
             var report = await _context.Reports
+                .Include(r => r.Committee) 
                 .Include(r => r.ExamSchedule).ThenInclude(s => s.Exam).ThenInclude(e => e.Subject)
                 .Include(r => r.ExamSchedule).ThenInclude(s => s.Block)
                 .Include(r => r.ReportPersons).ThenInclude(rp => rp.Person)
@@ -223,7 +224,6 @@ namespace projectweb.Controllers
                         ? SelectedStaffIds[0]
                         : _context.Persons.Select(p => p.PersonId).FirstOrDefault();
 
-                    // 🌟 الحماية والدمج أيضاً عند التعديل لمنع الـ Tracking Instance Conflict
                     if (SelectedStudentId.HasValue && fallbackPersonId > 0)
                     {
                         _context.ReportPersons.Add(new ReportPerson
@@ -360,7 +360,7 @@ namespace projectweb.Controllers
             var committees = await _context.ExamSchedules
                 .Include(s => s.Block)
                 .Where(s => s.ExamId == examId && s.Block != null)
-                .Select(s => new { id = s.ExamScheduleId, name = "مبنى / بلوك: " + s.Block.BlockName })
+                .Select(s => new { id = s.ExamScheduleId, name = " صالة: " + s.Block.BlockName })
                 .ToListAsync();
 
             return Json(committees);

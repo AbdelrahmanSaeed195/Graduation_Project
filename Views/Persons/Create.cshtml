@@ -28,7 +28,7 @@
                             <input asp-for="Phone" class="form-control academic-input" maxlength="11" />
                             <span asp-validation-for="Phone" class="text-danger small mt-1 d-block"></span>
                         </div>                       
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <label asp-for="JobRole" class="form-label academic-label required">الدور أو الوظيفة</label>
                             <select asp-for="JobRole" asp-items="Html.GetEnumSelectList<projectweb.Models.JobTitle>()" class="form-select academic-input"></select>
                             <span asp-validation-for="JobRole" class="text-danger small mt-1 d-block"></span>

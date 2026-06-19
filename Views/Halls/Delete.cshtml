@@ -1,7 +1,7 @@
 @model projectweb.Models.Hall
 
 @{
-    ViewData["Title"] = "تأكيد حذف الصالة";
+    ViewData["Title"] = "تأكيد حذف الجراش";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     bool hasBlocks = Model.Blocks != null && Model.Blocks.Any();
@@ -13,16 +13,16 @@
             <div class="card-body p-4 bg-white">
                 <div class="text-center mb-4">
                     <i class="bi bi-exclamation-octagon text-danger" style="font-size: 4rem;"></i>
-                    <h3 class="academic-heading fw-bold mt-2">تأكيد الحذف</h3>
+                    <h3 class="academic-heading fw-bold mt-2">تأكيد حذف الجراش</h3>
                 </div>
 
                 @if (hasBlocks)
                 {
                     <div class="alert alert-danger border-0 mb-4 shadow-sm">
                         <i class="bi bi-x-circle-fill fs-5 me-2"></i>
-                        <strong>عفواً، لا يمكن حذف هذه الصالة.</strong>
+                        <strong>عفواً، لا يمكن حذف هذا الجراش.</strong>
                         <p class="mb-0 small opacity-90 mt-1">
-                            النظام يمنع حذف أي صالة تحتوي على بلوكات مرتبطة (يوجد @Model.Blocks.Count بلوك). يرجى حذف البلوكات التابعة أو نقلها أولاً.
+                            النظام يمنع حذف أي جراش يحتوي على صالات مرتبطة (يوجد @Model.Blocks.Count صالة). يرجى حذف الصالات التابعة أو نقلها أولاً.
                         </p>
                     </div>
                 }
@@ -32,7 +32,7 @@
                         <i class="bi bi-exclamation-triangle-fill fs-4"></i>
                         <div>
                             <strong>تنبيه هام!</strong><br />
-                            <span class="small">أنت على وشك حذف الصالة "<strong>@Model.HallName</strong>" نهائياً من النظام. هل أنت متأكد من هذا الإجراء؟</span>
+                            <span class="small">أنت على وشك حذف الجراش "<strong>@Model.HallName</strong>" نهائياً من النظام. هل أنت متأكد من هذا الإجراء؟</span>
                         </div>
                     </div>
                 }
@@ -46,15 +46,15 @@
                     </div>
                     <div class="col-4">
                         <div class="data-panel h-100">
-                            <div class="panel-label">السعة (أقصى بلوكات)</div>
+                            <div class="panel-label">السعة (أقصى عدد صالات)</div>
                             <div class="panel-value mt-1">@Model.MaxBlocks</div>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="data-panel h-100">
-                            <div class="panel-label">البلوكات الحالية</div>
+                            <div class="panel-label">الصالات الحالية</div>
                             <div class="panel-value mt-1 @(hasBlocks ? "text-danger" : "text-success")">
-                                @(Model.Blocks?.Count ?? 0) بلوك
+                                @(Model.Blocks?.Count ?? 0) صالة
                             </div>
                         </div>
                     </div>

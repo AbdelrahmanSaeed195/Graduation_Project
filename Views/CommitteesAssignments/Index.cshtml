@@ -84,8 +84,7 @@
             <tbody>
                 @foreach (var item in Model)
                 {
-                    // منطق تحديد الألوان برمجياً بناءً على مسميات الأدوار والاحتياطيين التابعين لهم لربطهم بصرياً
-                    string rowBadgeStyle = "background-color: #0d6efd; color: #fff;"; // الافتراضي أزرق للملاحظين
+                    string rowBadgeStyle = "background-color: #0d6efd; color: #fff;"; //  أزرق للملاحظين
                     
                     if (item.RoleType.Contains("رئيس صالة أساسي (القطاع الأول)") || item.RoleType.Contains("تبع رئيس 1"))
                     {
@@ -97,11 +96,11 @@
                     }
                     else if (item.RoleType.Contains("رئيس صالة احتياطي"))
                     {
-                        rowBadgeStyle = "background-color: #fd7e14; color: #fff;"; // رئيس صالة احتياطي عام (برتقالي موجه)
+                        rowBadgeStyle = "background-color: #fd7e14; color: #fff;"; // رئيس جراش احتياطي عام (برتقالي موجه)
                     }
                     else if (item.RoleType == "مراقب")
                     {
-                        rowBadgeStyle = "background-color: #198754; color: #fff;"; // معيد مراقب بلوك (أخضر أكاديمي صريح)
+                        rowBadgeStyle = "background-color: #198754; color: #fff;"; // مدرس مراقب صالة (أخضر أكاديمي صريح)
                     }
                     else if (item.RoleType.Contains("الطاقم الطبي") || item.RoleType.Contains("الصالة"))
                     {
@@ -128,14 +127,14 @@
                             @if (item.Hall != null && item.BlockId == null && item.CommitteeId == null)
                             {
                                 <span class="badge px-3 py-2 text-dark" style="background-color: #ffc107; border-radius: 8px;">
-                                    <i class="bi bi-building me-1"></i> نطاق الصالة: @item.Hall.HallName
+                                    <i class="bi bi-building me-1"></i> نطاق الجراش: @item.Hall.HallName
                                 </span>
                             }
                             else if (item.Block != null && item.CommitteeId == null)
                             {
                                 <div class="small text-muted mb-1">@item.Block.Hall?.HallName</div>
                                 <span class="badge px-3 py-2 text-dark" style="background-color: #0dcaf0; border-radius: 8px;">
-                                    <i class="bi bi-grid-3x3 me-1"></i> بلوك: @item.Block.BlockName
+                                    <i class="bi bi-grid-3x3 me-1"></i> صالة: @item.Block.BlockName
                                 </span>
                             }
                             else if (item.Committee != null)
@@ -190,11 +189,8 @@
                         <td>
                             <div class="d-flex justify-content-center gap-1">
                                 <a asp-action="Details" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-info border shadow-sm" title="تفاصيل"><i class="bi bi-eye"></i></a>
-                                @if (User.IsInRole("Admin"))
-                                {
                                    <a asp-action="Edit" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-secondary border shadow-sm" title="تعديل"><i class="bi bi-pencil"></i></a>
                                    <a asp-action="Delete" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-danger border shadow-sm" title="حذف"><i class="bi bi-trash"></i></a>
-                                }
                             </div>
                         </td>
                     </tr>

@@ -1,7 +1,7 @@
 @model projectweb.Models.Block
 
 @{
-    ViewData["Title"] = "تعديل بيانات البلوك";
+    ViewData["Title"] = "تعديل بيانات الصالة";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -13,7 +13,7 @@
             <div class="card-header text-white p-4" style="background-color: #1a2c4e;">
                 <h4 class="mb-0 fw-bold">
                     <i class="bi bi-pencil-square me-2"></i>
-                    تعديل بيانات البلوك (#@Model.BlockId)
+                    تعديل بيانات الصالة (#@Model.BlockId)
                 </h4>
             </div>
 
@@ -42,15 +42,15 @@
 
                       
                         <div class="col-md-4">
-                            <label asp-for="HallId" class="form-label fw-bold" style="color: #4a5568;">الصالة / القاعة التابع لها <span class="text-danger">*</span></label>
+                            <label asp-for="HallId" class="form-label fw-bold" style="color: #4a5568;">الجراش التابع لها <span class="text-danger">*</span></label>
                             <select asp-for="HallId" asp-items="ViewBag.HallId" class="form-select border-light-subtle shadow-sm" style="border-radius: 8px;">
-                                <option value="">-- اختر الصالة --</option>
+                                <option value="">-- اختر الجراش --</option>
                             </select>
                             <span asp-validation-for="HallId" class="text-danger small mt-1 d-block"></span>
                         </div>
 
                         <div class="col-md-4">
-                            <label asp-for="BlockName" class="form-label fw-bold" style="color: #4a5568;">اسم البلوك <span class="text-danger">*</span></label>
+                            <label asp-for="BlockName" class="form-label fw-bold" style="color: #4a5568;">اسم الصالة / القاعة <span class="text-danger">*</span></label>
                             <input asp-for="BlockName" class="form-control border-light-subtle shadow-sm" style="border-radius: 8px;" />
                             <span asp-validation-for="BlockName" class="text-danger small mt-1 d-block fw-bold"></span>
                         </div>

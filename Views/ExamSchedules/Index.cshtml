@@ -19,7 +19,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 fw-bold academic-heading" style="color: #1a3a5a;">
-            <i class="bi bi-building-gear me-2 text-primary"></i> جدول توزيع امتحانات البلوكات
+            <i class="bi bi-building-gear me-2 text-primary"></i> جدول توزيع امتحانات الصالات
         </h1>
         <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm fw-bold" style="background-color: #1a3a5a; color: white; border-radius: 8px; transition: all 0.3s;">
             <i class="bi bi-plus-circle me-1"></i> إضافة توزيع جديد
@@ -32,7 +32,7 @@
                 <thead style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); color: white;">
                     <tr class="text-center">
                         <th class="ps-4 py-3 text-start" style="border: none; font-size: 0.85rem; font-weight: 700;">المادة الدراسية</th>
-                        <th style="border: none; font-size: 0.85rem; font-weight: 700;">المبنى / البلوك المعين</th>
+                        <th style="border: none; font-size: 0.85rem; font-weight: 700;">الصالة المعين</th>
                         <th style="border: none; font-size: 0.85rem; font-weight: 700;">تاريخ الامتحان</th>
                         <th style="border: none; font-size: 0.85rem; font-weight: 700;">التوقيت والفترة</th>
                         <th class="pe-4" style="border: none; font-size: 0.85rem; font-weight: 700;">الإجراءات</th>
@@ -43,7 +43,6 @@
                     {
                         foreach (var item in Model)
                         {
-                            // 🌟 لوجيك مطور ومؤمن تماماً لاستخراج اللفظ العربي للـ Enum ومنع الكراش
                             string arabicLevelName = "غير محدد";
                             if (item.Exam?.Subject != null)
                             {
@@ -93,15 +92,12 @@
                                         <a asp-action="Details" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-white text-info border" title="عرض التفاصيل">
                                             <i class="bi bi-eye-fill"></i>
                                         </a>
-                                        @if (User.IsInRole("Admin"))
-                                        {
                                             <a asp-action="Edit" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-white text-primary border" title="تعديل">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
                                             <a asp-action="Delete" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-white text-danger border" title="حذف">
                                                 <i class="bi bi-trash-fill"></i>
                                             </a>
-                                        }
                                     </div>
                                 </td>
                             </tr>
@@ -114,7 +110,7 @@
                                 <div class="opacity-50 py-4">
                                     <i class="bi bi-folder-x display-4 d-block mb-3" style="color: #a0aec0;"></i>
                                     <h5 class="fw-bold text-secondary">لا توجد توزيعات امتحانات مسجلة حالياً</h5>
-                                    <p class="small mb-0">بإمكانك ربط أول امتحان ببلوك من خلال زر "إضافة توزيع جديد".</p>
+                                    <p class="small mb-0">بإمكانك ربط أول امتحان بصالة من خلال زر "إضافة توزيع جديد"</p>
                                 </div>
                             </td>
                         </tr>

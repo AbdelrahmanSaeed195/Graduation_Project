@@ -72,7 +72,6 @@
             <table class="table academic-table table-hover align-middle mb-0">
                 <thead class="bg-light">
                     <tr class="text-center">
-                        @* <th class="ps-4 text-start" style="width: 100px; border: none; font-weight: 700;">كود</th> *@
                         <th class="text-start" style="border: none; font-weight: 700;">المادة / الامتحان</th>
                         <th style="border: none; font-weight: 700;">اللجنة</th>
                         <th style="border: none; font-weight: 700;">تاريخ الواقعة</th>
@@ -87,7 +86,6 @@
                         foreach (var item in Model)
                         {
                             <tr class="text-center">
-                                @* <td class="ps-4 text-start fw-bold text-primary">#@item.ReportId</td> *@
                                 <td class="text-start">
                                     @if (item.ExamSchedule?.Exam?.Subject != null)
                                     {

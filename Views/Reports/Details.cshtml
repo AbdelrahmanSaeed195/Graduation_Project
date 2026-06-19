@@ -9,127 +9,121 @@
 
 <div class="row justify-content-center" dir="rtl">
     <div class="col-xl-10">
-        <div class="card academic-card shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
+        <div class="card academic-card shadow-sm border-0 mb-4 main-report-card" style="border-radius: 12px; overflow: hidden;">
+
             <div class="card-header text-white p-4 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
                 <div>
-                    <h4 class="mb-0 fw-bold text-white"><i class="bi bi-file-earmark-text-fill me-2"></i> تفاصيل المحضر الرسمي</h4>
+                    <h4 class="mb-0 fw-bold text-white"><i class="bi bi-file-earmark-text-fill ms-2"></i> تفاصيل المحضر الرسمي</h4>
                     <small class="text-white-50">توثيق وقائع الجلسة الامتحانية رقم #@Model.ReportId</small>
                 </div>
                 <div class="text-start">
-                    <span class="badge bg-white text-dark shadow-sm px-3 py-2 fs-6">سجل رقم: @Model.ReportId</span>
+                    <span class="badge bg-white text-dark shadow-sm px-3 py-2 fs-6" style="color: #1a3a5a !important; font-weight: bold;">سجل رقم: @Model.ReportId</span>
                 </div>
             </div>
 
             <div class="card-body p-4 p-md-5" style="background-color: #ffffff;">
 
-                <div class="row g-4 mb-5 text-center">
-                    <div class="col-md-6 col-lg-4 text-start">
-                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm">
-                            <label class="small text-muted d-block mb-1 fw-bold">المادة / الامتحان</label>
-                            <div class="panel-value fw-bold text-navy">
-                                <i class="bi bi-journal-bookmark-fill me-1 text-primary"></i>
+                <div class="row g-4 mb-5 text-center justify-content-center print-row">
+                    <div class="col-md-4 text-center print-col-6">
+                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm d-flex flex-column align-items-center justify-content-center">
+                            <label class="small text-muted d-block mb-1 fw-bold text-center w-100">المادة / الامتحان</label>
+                            <div class="panel-value fw-bold text-navy text-center w-100">
+                                <i class="bi bi-journal-bookmark-fill ms-1 text-primary"></i>
                                 @(Model.ExamSchedule?.Exam?.Subject?.SubjectName ?? "غير محدد")
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-6 col-lg-2">
-                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm text-center">
-                            <label class="small text-muted d-block mb-1 fw-bold">رقم اللجنة</label>
-                            <div class="panel-value fw-bold fs-5">
-                                <span class="badge rounded-pill bg-white text-navy border px-3">
+                    <div class="col-md-2 text-center print-col-6">
+                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm d-flex flex-column align-items-center justify-content-center">
+                            <label class="small text-muted d-block mb-1 fw-bold text-center w-100">رقم اللجنة</label>
+                            <div class="panel-value fw-bold fs-5 mt-1 text-center w-100">
+                                <span class="badge rounded-pill bg-white text-navy border px-3" style="border-color: #1a3a5a !important; color: #1a3a5a !important;">
                                     @(Model.Committee != null ? Model.Committee.CommitteeNumber : 0)
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-6 col-lg-3 text-start">
-                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm">
-                            <label class="small text-muted d-block mb-1 fw-bold">تاريخ التوثيق</label>
-                            <div class="panel-value fw-bold">
-                                <i class="bi bi-clock-history me-1 text-secondary"></i>
+                    <div class="col-md-3 text-center print-col-6">
+                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm d-flex flex-column align-items-center justify-content-center">
+                            <label class="small text-muted d-block mb-1 fw-bold text-center w-100">تاريخ التوثيق</label>
+                            <div class="panel-value fw-bold text-dark small mt-1 text-center w-100">
+                                <i class="bi bi-clock-history ms-1 text-secondary"></i>
                                 @Model.CreatedDate.ToString("yyyy/MM/dd hh:mm tt")
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-6 col-lg-3">
-                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm text-center">
-                            <label class="small text-muted d-block mb-1 fw-bold">تصنيف الحالة</label>
+                    <div class="col-md-3 text-center print-col-6">
+                        <div class="p-3 border rounded bg-light bg-opacity-50 h-100 shadow-sm d-flex flex-column align-items-center justify-content-center">
+                            <label class="small text-muted d-block mb-1 fw-bold text-center w-100">تصنيف الحالة</label>
                             @{
                                 var statusEnum = Model.Status;
                                 var statusName = statusEnum.GetType().GetMember(statusEnum.ToString()).FirstOrDefault()?.GetCustomAttribute<DisplayAttribute>()?.Name ?? statusEnum.ToString();
                                 var statusClass = statusEnum == projectweb.Models.ReportStatus.Normal ? "bg-success" : "bg-danger";
                             }
-                            <span class="badge @statusClass px-3 py-2 shadow-sm w-100" style="border-radius: 8px;">@statusName</span>
+                            <div class="w-100 d-flex justify-content-center">
+                                <span class="badge @statusClass px-3 py-2 shadow-sm w-100 mt-1" style="border-radius: 8px; font-size: 0.90rem; font-weight: bold; max-width: 200px;">@statusName</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 text-primary">
-                    <i class="bi bi-chat-left-text-fill me-2"></i> وقائع وتفاصيل المحضر
+                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 text-primary text-center-print">
+                    <i class="bi bi-chat-left-text-fill ms-2"></i> وقائع وتفاصيل المحضر الرسمي
                 </h5>
-                <div class="p-4 rounded border mb-5 shadow-sm" style="background-color: #fdfdfd; border-right: 5px solid #1a3a5a !important;">
-                    <p class="mb-0 fs-6 lh-lg text-dark" style="white-space: pre-line;">@(string.IsNullOrEmpty(Model.Notes) ? "لا توجد تفاصيل إضافية مسجلة." : Model.Notes)</p>
+                <div class="p-4 rounded border mb-5 shadow-sm print-box" style="background-color: #fdfdfd; border-right: 5px solid #1a3a5a !important;">
+                    <p class="mb-0 fs-6 lh-lg text-dark text-center-print" style="white-space: pre-line;">@(string.IsNullOrEmpty(Model.Notes) ? "لا توجد تفاصيل إضافية مسجلة." : Model.Notes)</p>
                 </div>
 
-                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 text-primary">
-                    <i class="bi bi-people-fill me-2"></i> أطراف المحضر (المكلفون والطلاب)
+                <h5 class="fw-bold academic-heading border-bottom pb-2 mb-3 text-primary text-center-print">
+                    <i class="bi bi-people-fill ms-2"></i> أطراف المحضر المعنيين (المكلفون والطلاب)
                 </h5>
 
                 @if (Model.ReportPersons != null && Model.ReportPersons.Any())
                 {
-                    <div class="table-responsive rounded border shadow-sm mb-4">
-                        <table class="table academic-table align-middle mb-0">
-                            <thead class="bg-light text-center">
+                    <div class="table-container shadow-sm mb-4">
+                        <table class="table table-bordered align-middle mb-0 printable-table">
+                            <thead class="table-light text-center fw-bold">
                                 <tr>
-                                    <th class="ps-3 text-start">الاسم بالكامل</th>
-                                    <th>المسمى الوظيفي</th>
-                                    <th>الدور في المحضر</th>
-                                    <th>وقت التوثيق</th>
-                                    <th class="pe-3">الحالة</th>
+                                    <th class="py-3 text-center">الاسم بالكامل</th>
+                                    <th class="text-center">المسمى الوظيفي</th>
+                                    <th class="text-center">الدور في المحضر</th>
+                                    <th class="text-center">وقت التوثيق</th>
+                                    <th class="text-center">الحالة والتوقيع</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var rp in Model.ReportPersons)
                                 {
                                     <tr class="text-center">
-                                        <td class="ps-3 text-start">
-                                            <div class="d-flex align-items-center">
-                                                @if (rp.StudentId != null)
-                                                {
-                                                    <div class="bg-info bg-opacity-10 text-info rounded-circle p-2 me-2" title="طالب">
-                                                        <i class="bi bi-mortarboard-fill"></i>
-                                                    </div>
-                                                    <span class="fw-bold text-navy">@(rp.Student?.FullName ?? "طالب غير معروف")</span>
-                                                }
-                                                else
-                                                {
-                                                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-2" title="موظف">
-                                                        <i class="bi bi-person-badge-fill"></i>
-                                                    </div>
-                                                    <span class="fw-bold text-navy">@(rp.Person?.FullName ?? "موظف غير معروف")</span>
-                                                }
-                                            </div>
+                                        <td class="text-center fw-bold text-navy">
+                                            @if (rp.StudentId != null)
+                                            {
+                                                <i class="bi bi-mortarboard-fill text-info ms-1 no-print"></i>
+                                                @(rp.Student?.FullName ?? "طالب غير معروف")
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-person-badge-fill text-primary ms-1 no-print"></i>
+                                                @(rp.Person?.FullName ?? "موظف غير معروف")
+                                            }
                                         </td>
-                                        <td>
+                                        <td class="text-center">
                                             @{
                                                 string arabicJob = "—";
-                                                if (rp.StudentId != null)
-                                                {
-                                                    arabicJob = "طالب نظامي";
-                                                }
+                                                if (rp.StudentId != null) { arabicJob = "طالب نظامي"; }
                                                 else if (rp.Person != null)
                                                 {
                                                     var pEnum = rp.Person.JobRole;
                                                     arabicJob = pEnum.GetType().GetMember(pEnum.ToString()).FirstOrDefault()?.GetCustomAttribute<DisplayAttribute>()?.Name ?? pEnum.ToString();
                                                 }
                                             }
-                                            <span class="text-muted small">@arabicJob</span>
+                                            <span class="text-dark">@arabicJob</span>
                                         </td>
-                                        <td>
-                                            <span class="badge bg-light text-dark border px-3 py-2 shadow-none" style="font-weight: 500;">
+                                        <td class="text-center">
+                                            <span class="report-role-badge">
                                                 @{
                                                     string roleArabicName = rp.StudentId != null ? "معني بالواقعة" : "—";
                                                     if (rp.Role != null)
@@ -141,20 +135,25 @@
                                                 @roleArabicName
                                             </span>
                                         </td>
-                                        <td class="text-muted small">@rp.SignedAt.ToString("yyyy/MM/dd hh:mm tt")</td>
-                                        <td class="pe-3">
-                                            @if (!string.IsNullOrEmpty(rp.Signature) && rp.Signature != "Pending" && rp.Signature != "Waiting")
-                                            {
-                                                <span class="text-success small fw-bold">
-                                                    <i class="bi bi-patch-check-fill me-1"></i> تم التوثيق
-                                                </span>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-warning small italic">
-                                                    <i class="bi bi-hourglass-split me-1"></i> بانتظار الإجراء
-                                                </span>
-                                            }
+                                        <td class="text-muted small table-time-cell text-center">
+                                            <span>@rp.SignedAt.ToString("yyyy/MM/dd")</span>
+                                            <span class="d-block mt-1">@rp.SignedAt.ToString("hh:mm tt")</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="screen-status-only">
+                                                @if (!string.IsNullOrEmpty(rp.Signature) && rp.Signature != "Pending" && rp.Signature != "Waiting")
+                                                {
+                                                    <span class="text-success small fw-bold"><i class="bi bi-patch-check-fill ms-1"></i> معتمد</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-warning small fw-bold"><i class="bi bi-hourglass-split ms-1"></i> معلق</span>
+                                                }
+                                            </div>
+                                            <div class="print-signature-only d-none">
+                                                <div class="sig-line"></div>
+                                                <span class="sig-text">التوقيع يدوياً</span>
+                                            </div>
                                         </td>
                                     </tr>
                                 }
@@ -167,7 +166,6 @@
                     <div class="text-center py-5 border rounded-3 bg-light bg-opacity-25 mb-4 border-dashed">
                         <i class="bi bi-people text-muted opacity-50 display-4 d-block mb-3"></i>
                         <h6 class="text-muted fw-bold">لا يوجد أطراف مسجلة على هذا المحضر حالياً</h6>
-                        <p class="small text-muted mb-0">يمكنك إضافة أطراف (مراقبين أو طلاب) من خلال تعديل المحضر.</p>
                     </div>
                 }
 
@@ -175,14 +173,14 @@
                     @if (User.IsInRole("Admin"))
                     {
                         <a asp-action="Edit" asp-route-id="@Model.ReportId" class="btn btn-academic-primary px-5 fw-bold shadow-sm py-2">
-                            <i class="bi bi-pencil-square me-1"></i> تعديل المحضر
+                            <i class="bi bi-pencil-square ms-1"></i> تعديل المحضر
                         </a>
                     }
                     <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 border-0">
-                        <i class="bi bi-arrow-right me-1"></i> العودة للقائمة
+                        <i class="bi bi-arrow-right ms-1"></i> العودة للقائمة
                     </a>
-                    <button onclick="window.print()" class="btn btn-dark px-4 ms-auto shadow-sm py-2">
-                        <i class="bi bi-printer-fill me-1"></i> طباعة المحضر الرسمي
+                    <button onclick="window.print()" class="btn btn-dark px-4 ms-auto shadow-sm py-2" style="background-color: #1a3a5a; border: none;">
+                        <i class="bi bi-printer-fill ms-1"></i> طباعة المحضر الرسمي
                     </button>
                 </div>
             </div>
@@ -191,62 +189,208 @@
 </div>
 
 <style>
-    .text-navy {
-        color: #1a3a5a;
+    .text-navy { color: #1a3a5a; }
+    .btn-academic-primary { background-color: #1a3a5a; color: white; border-radius: 8px; transition: 0.3s; }
+    .btn-academic-primary:hover { background-color: #2e5a88; color: white; transform: translateY(-2px); }
+    .academic-heading { color: #1a3a5a; font-weight: 700; }
+    .table-container { width: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #dee2e6; }
+    
+    .report-role-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        background-color: #f8f9fa;
+        color: #212529;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
     }
 
-    .btn-academic-primary {
-        background-color: #1a3a5a;
-        color: white;
-        border-radius: 8px;
-        transition: 0.3s;
+    .printable-table {
+        width: 100% !important;
+        border-collapse: collapse;
     }
-
-        .btn-academic-primary:hover {
-            background-color: #2e5a88;
-            transform: translateY(-2px);
-        }
-
-    .academic-heading {
-        color: #1a3a5a;
-        font-weight: 700;
-    }
-
-    .border-dashed {
-        border-style: dashed !important;
-        border-width: 2px !important;
+    .printable-table th, .printable-table td {
+        padding: 12px 10px !important;
+        vertical-align: middle;
     }
 
     @@media print {
-        .no-print
-
-    {
-        display: none !important;
-    }
-
-    body {
-        background: white !important;
-    }
-
-    .academic-card {
-        border: none !important;
-        box-shadow: none !important;
-    }
-
-    .card-header {
-        background: #f8f9fa !important;
-        color: black !important;
-        border-bottom: 2px solid black !important;
-    }
-
-        .card-header h4, .card-header small, .badge {
-            color: black !important;
+        @@page {
+            size: A4 portrait;
+            margin: 15mm !important; 
         }
 
-    .badge {
-        border: 1px solid #000 !important;
-        background: transparent !important;
-    }
+        html, body {
+            background: white !important;
+            color: #000 !important;
+            font-size: 11pt; 
+            direction: rtl !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
 
+        footer, .footer, [id*="footer"], [class*="footer"] {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            opacity: 0 !important;
+        }
+
+        .text-center-print {
+            text-align: center !important;
+            justify-content: center !important;
+        }
+
+        .row.justify-content-center {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .col-xl-10 {
+            width: 100% !important;
+            max-width: 100% !important;
+            flex: none !important;
+            padding: 0 !important;
+        }
+
+        .print-row {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 15px !important;
+            width: 100% !important;
+            margin: 0 auto 30px auto !important;
+            float: none !important;
+        }
+
+        .print-col-6 {
+            width: 100% !important;
+            max-width: 450px !important;
+            flex: none !important;
+            margin: 0 auto !important;
+            display: block !important;
+            float: none !important;
+        }
+
+        .print-col-6 > div {
+            width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+
+        .screen-status-only { display: none !important; }
+        .print-signature-only { display: block !important; }
+        .sig-line { border-bottom: 1px solid #000 !important; width: 120px; margin: 15px auto 6px auto; }
+        .sig-text { font-size: 9.5pt !important; color: #000 !important; font-weight: bold; }
+
+        .main-report-card {
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            width: 100% !important;
+        }
+
+        .card-body {
+            padding: 0 !important;
+            background: transparent !important;
+        }
+
+        .card-header {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border-bottom: 3px double #000000 !important;
+            padding: 0 0 5mm 0 !important;
+            margin-bottom: 8mm;
+            display: flex !important;
+            justify-content-between !important;
+            align-items: center !important;
+            text-align: center !important;
+        }
+
+        .card-header h4, .card-header small, .card-header i {
+            color: #000000 !important;
+        }
+
+        .print-box {
+            background-color: #ffffff !important;
+            border: 1px solid #000000 !important;
+            border-right: 5px solid #000000 !important;
+            box-shadow: none !important;
+            padding: 15px !important;
+            text-align: center !important;
+        }
+
+        .table-container {
+            border: none !important;
+            box-shadow: none !important;
+            width: 100% !important;
+            overflow: visible !important;
+            margin-top: 15px;
+        }
+
+        .printable-table {
+            width: 100% !important;
+            table-layout: auto !important;
+            border: 1px solid #000000 !important;
+            border-collapse: collapse !important;
+        }
+
+        .printable-table th {
+            background-color: #f2f2f2 !important;
+            color: #000000 !important;
+            border: 1px solid #000000 !important;
+            font-weight: bold !important;
+            font-size: 11pt !important;
+            padding: 10px 8px !important; 
+            text-align: center !important;
+        }
+
+        .printable-table td {
+            border: 1px solid #000000 !important;
+            background: transparent !important;
+            color: #000000 !important;
+            font-size: 10.5pt !important;
+            padding: 10px 8px !important; 
+            white-space: normal !important;
+            text-align: center !important;
+        }
+
+        .report-role-badge {
+            border: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            font-size: 10.5pt !important;
+            font-weight: normal !important;
+            text-align: center !important;
+        }
+
+        .table-time-cell span {
+            display: inline-block !important;
+            white-space: nowrap !important;
+            text-align: center !important;
+        }
+
+        .badge {
+            border: 1px solid #000000 !important;
+            background: transparent !important;
+            color: #000000 !important;
+            box-shadow: none !important;
+        }
     }
 </style>

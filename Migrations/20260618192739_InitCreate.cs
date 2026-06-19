@@ -195,7 +195,7 @@ namespace projectweb.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FullName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    NationalId = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    NationalId = table.Column<string>(type: "nvarchar(14)", maxLength: 14, nullable: false),
                     JobRole = table.Column<int>(type: "int", nullable: false),
                     RoleId = table.Column<int>(type: "int", nullable: false),
                     IsActiveForAssignment = table.Column<bool>(type: "bit", nullable: false)

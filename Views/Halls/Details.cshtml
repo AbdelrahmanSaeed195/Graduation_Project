@@ -1,7 +1,7 @@
 @model projectweb.Models.Hall
 
 @{
-    ViewData["Title"] = "تفاصيل الصالة";
+    ViewData["Title"] = "تفاصيل الجراش";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -11,10 +11,10 @@
 
             <div class="card-header p-3 d-flex justify-content-between align-items-center" style="background-color: #1a3a5a;">
                 <h5 class="mb-0 fw-bold text-white">
-                    <i class="bi bi-building me-2"></i> بيانات ونطاق الصالة: @Model.HallName
+                    <i class="bi bi-building me-2"></i> بيانات ونطاق الجراش: @Model.HallName
                 </h5>
                 <span class="badge bg-white text-dark fw-bold px-3 py-2" style="font-size: 0.85rem; border-radius: 8px;">
-                    كود الصالة: #@Model.HallId
+                    كود الجراش: #@Model.HallId
                 </span>
             </div>
 
@@ -23,26 +23,26 @@
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
                         <div class="p-3 bg-white rounded shadow-sm border-start border-primary border-4">
-                            <div class="small text-muted mb-1">اسم الصالة / القاعة</div>
+                            <div class="small text-muted mb-1">اسم الجراش</div>
                             <div class="fw-bold text-dark fs-5">@Model.HallName</div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="p-3 bg-white rounded shadow-sm border-start border-info border-4">
-                            <div class="small text-muted mb-1">موقع الصالة</div>
+                            <div class="small text-muted mb-1">موقع الجراش</div>
                             <div class="fw-bold text-dark fs-5">الدور @Model.Floor</div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="p-3 bg-white rounded shadow-sm border-start border-warning border-4">
                             <div class="small text-muted mb-1">السعة القصوى المتاحة</div>
-                            <div class="fw-bold text-dark fs-5">@Model.MaxBlocks بلوكات رئيسية</div>
+                            <div class="fw-bold text-dark fs-5">@Model.MaxBlocks صالات رئيسية</div>
                         </div>
                     </div>
                 </div>
 
                 <h5 class="fw-bold pb-2 mb-3 border-bottom text-secondary" style="font-size: 1.1rem;">
-                    <i class="bi bi-grid-3x3-gap-fill me-2 text-primary"></i> البلوكات والأجزاء التابعة ونطاق لجانها
+                    <i class="bi bi-grid-3x3-gap-fill me-2 text-primary"></i> الصالات التابعة ونطاق لجانها
                 </h5>
 
                 @if (Model.Blocks != null && Model.Blocks.Any())
@@ -55,12 +55,12 @@
                                     <div class="card-body p-3">
                                         <div class="d-flex justify-content-between align-items-center mb-2pb-2 border-bottom">
                                             <div class="fw-bold text-dark">
-                                                <i class="bi bi-box-seam me-1 text-info"></i> بلوك: @block.BlockName
+                                                <i class="bi bi-box-seam me-1 text-info"></i> صالة: @block.BlockName
                                             </div>
                                         </div>
 
                                         <div class="mt-2">
-                                            <div class="small text-muted mb-2">اللجان الامتحانية النشطة داخل هذا الجزء:</div>
+                                            <div class="small text-muted mb-2">اللجان الامتحانية النشطة داخل هذه صالة:</div>
                                             @if (block.Committees != null && block.Committees.Any())
                                             {
                                                 <div class="d-flex flex-wrap gap-1">
@@ -74,7 +74,7 @@
                                             }
                                             else
                                             {
-                                                <span class="text-muted small italic"><i class="bi bi-info-circle me-1"></i> لا توجد لجان مضافة لهذا البلوك بعد.</span>
+                                                <span class="text-muted small italic"><i class="bi bi-info-circle me-1"></i> لا توجد لجان مضافة لهذه الصالة بعد.</span>
                                             }
                                         </div>
                                     </div>
@@ -92,18 +92,15 @@
                 {
                     <div class="alert alert-white border text-center text-muted p-4 mb-0" style="border-radius: 10px; background-color: #fff;">
                         <i class="bi bi-folder-x fs-2 d-block mb-2 text-warning"></i>
-                        لا توجد بلوكات أو أجزاء تنظيمية مسجلة حالياً لهذه الصالة.
+                        لا توجد صالات  تنظيمية مسجلة حالياً لهذه الجراش.
                     </div>
                 }
             </div>
 
             <div class="card-footer bg-white p-3 d-flex justify-content-start gap-2 border-top">
-                @if (User.IsInRole("Admin"))
-                {
                     <a asp-action="Edit" asp-route-id="@Model.HallId" class="btn text-white px-4 fw-bold shadow-sm" style="background-color: #1a3a5a;">
-                        <i class="bi bi-pencil-square me-1"></i> تعديل بيانات الصالة
+                        <i class="bi bi-pencil-square me-1"></i> تعديل بيانات الجراش
                     </a>
-                }
                 <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-bold shadow-sm">
                     <i class="bi bi-arrow-right-circle me-1"></i> العودة للقائمة الرئيسية
                 </a>

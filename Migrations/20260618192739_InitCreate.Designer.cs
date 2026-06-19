@@ -12,7 +12,7 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260617192946_InitCreate")]
+    [Migration("20260618192739_InitCreate")]
     partial class InitCreate
     {
         /// <inheritdoc />
@@ -457,8 +457,8 @@ namespace projectweb.Migrations
 
                     b.Property<string>("NationalId")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(14)
+                        .HasColumnType("nvarchar(14)");
 
                     b.Property<string>("Phone")
                         .IsRequired()

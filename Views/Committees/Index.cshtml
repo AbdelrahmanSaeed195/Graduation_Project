@@ -24,12 +24,9 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-clipboard-check-fill me-2"></i> إدارة اللجان</h1>
-        @if(User.IsInRole("Admin"))
-        {
             <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
                 <i class="bi bi-plus-circle me-1"></i> إضافة لجنة
             </a>
-        }
     </div>
 
     <div class="card academic-card overflow-hidden shadow-sm border-0" style="border-radius: 12px;">
@@ -38,7 +35,7 @@
                 <thead>
                     <tr>
                         <th class="ps-4">رقم اللجنة</th>
-                        <th class="text-center">المكان (القاعة / البلوك)</th>
+                        <th class="text-center">المكان (الجراش / الصالة)</th>
                         <th class="text-center">السعة الطلابية</th>
                         <th class="text-center">الحالة</th>
                         <th class="text-center pe-4">الإجراءات</th>
@@ -56,7 +53,7 @@
                                         <i class="bi bi-geo-alt-fill text-primary me-1"></i>
                                         @if (item.Block != null)
                                         {
-                                            <span>قاعة @(item.Block.Hall?.HallName ?? item.Block.HallId.ToString()) / بلوك @item.Block.BlockName</span>
+                                            <span>جراش @(item.Block.Hall?.HallName ?? item.Block.HallId.ToString()) / صالة @item.Block.BlockName</span>
                                         }
                                         else
                                         {
@@ -89,15 +86,12 @@
                                         <a asp-action="Details" asp-route-id="@item.CommitteeId" class="btn btn-sm btn-outline-info shadow-sm" title="التفاصيل">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                      @if(User.IsInRole("Admin"))
-                                        {
                                             <a asp-action="Edit" asp-route-id="@item.CommitteeId" class="btn btn-sm btn-outline-secondary shadow-sm" title="تعديل">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
                                             <a asp-action="Delete" asp-route-id="@item.CommitteeId" class="btn btn-sm btn-outline-danger shadow-sm" title="حذف">
                                                 <i class="bi bi-trash"></i>
                                             </a>
-                                        }
                                     </div>
                                 </td>
                             </tr>

@@ -41,10 +41,10 @@
                 <div class="row g-3 mb-4">
                     <div class="col-6">
                         <div class="p-3 border rounded shadow-sm h-100" style="background-color: #f8f9fa;">
-                            <div class="small text-muted fw-bold mb-1">الموقع / القاعة</div>
+                            <div class="small text-muted fw-bold mb-1">الصالة / الجراش</div>
                             <div class="fw-bold text-dark mt-1">
                                
-                                @(Model.Block != null ? $"قاعة {Model.Block.Hall?.HallName ?? Model.Block.HallId.ToString()} / بلوك {Model.Block.BlockName}" : "غير محدد")
+                                @(Model.Block != null ? $"جراش {Model.Block.Hall?.HallName ?? Model.Block.HallId.ToString()} / صالة {Model.Block.BlockName}" : "غير محدد")
                             </div>
                         </div>
                     </div>

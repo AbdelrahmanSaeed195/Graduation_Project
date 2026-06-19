@@ -1,7 +1,7 @@
 @model projectweb.Models.Hall
 
 @{
-    ViewData["Title"] = "إضافة صالة جديدة";
+    ViewData["Title"] = "إضافة جراش جديد";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -10,7 +10,7 @@
         <div class="card academic-card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
 
             <div class="card-header text-white p-4" style="background-color: #1a2c4e;">
-                <h4 class="mb-0 fw-bold"><i class="bi bi-plus-square-fill me-2"></i> إضافة صالة / قاعة امتحانات</h4>
+                <h4 class="mb-0 fw-bold"><i class="bi bi-plus-square-fill me-2"></i> إضافة جراش جديد</h4>
             </div>
 
             <div class="card-body p-4 bg-white">
@@ -34,8 +34,8 @@
                     <div class="row g-4 mb-4">
 
                         <div class="col-md-6">
-                            <label asp-for="HallName" class="form-label fw-bold" style="color: #4a5568;">اسم الصالة / القاعة <span class="text-danger">*</span></label>
-                            <input asp-for="HallName" class="form-control border-light-subtle shadow-sm" placeholder="أدخل اسم القاعة (مثال: ل)" maxlength="100" style="border-radius: 8px;" />
+                            <label asp-for="HallName" class="form-label fw-bold" style="color: #4a5568;">اسم الجراش <span class="text-danger">*</span></label>
+                            <input asp-for="HallName" class="form-control border-light-subtle shadow-sm" placeholder="أدخل اسم الجراش (مثال: ل)" maxlength="100" style="border-radius: 8px;" />
                             <span asp-validation-for="HallName" class="text-danger small mt-1 d-block fw-bold"></span>
                         </div>
 
@@ -44,9 +44,8 @@
                             <input asp-for="Floor" class="form-control border-light-subtle shadow-sm text-center" type="number"  style="border-radius: 8px;" />
                             <span asp-validation-for="Floor" class="text-danger small mt-1 d-block"></span>
                         </div>
-
                         <div class="col-md-3">
-                            <label asp-for="MaxBlocks" class="form-label fw-bold" style="color: #4a5568;">السعة (البلوكات) <span class="text-danger">*</span></label>
+                            <label asp-for="MaxBlocks" class="form-label fw-bold" style="color: #4a5568;">السعة أقصى عدد <span class="text-danger">*</span></label>
                             <input asp-for="MaxBlocks" type="number" min="1" max="20" class="form-control border-light-subtle shadow-sm text-center" style="border-radius: 8px;" />
                             <span asp-validation-for="MaxBlocks" class="text-danger small mt-1 d-block"></span>
                         </div>

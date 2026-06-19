@@ -1,7 +1,7 @@
 @model projectweb.Models.Hall
 
 @{
-    ViewData["Title"] = "تعديل صالة";
+    ViewData["Title"] = "تعديل جراش";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -9,7 +9,7 @@
     <div class="col-xl-8">
         <div class="card academic-card">
             <div class="card-header academic-card-header text-white p-4">
-                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-pencil-square me-2"></i> تعديل بيانات الصالة</h4>
+                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-pencil-square me-2"></i> تعديل بيانات الجراش</h4>
             </div>
             <div class="card-body p-4 bg-white">
                 <form asp-action="Edit" method="post">
@@ -18,7 +18,7 @@
 
                     <div class="row g-4 mb-4">
                         <div class="col-md-6">
-                            <label asp-for="HallName" class="form-label academic-label required">اسم الصالة</label>
+                            <label asp-for="HallName" class="form-label academic-label required">اسم الجراش</label>
                             <input asp-for="HallName" class="form-control academic-input" maxlength="100" />
                             <span asp-validation-for="HallName" class="text-danger small mt-1 d-block"></span>
                         </div>
@@ -30,7 +30,7 @@
                         </div>
 
                         <div class="col-md-3">
-                            <label asp-for="MaxBlocks" class="form-label academic-label required">السعة (عدد البلوكات)</label>
+                            <label asp-for="MaxBlocks" class="form-label academic-label required">السعة (عدد الصالات)</label>
                             <input asp-for="MaxBlocks" type="number" min="1" max="20" class="form-control academic-input" />
                             <span asp-validation-for="MaxBlocks" class="text-danger small mt-1 d-block"></span>
                         </div>

@@ -1,7 +1,7 @@
 @model IEnumerable<projectweb.Models.Block>
 
 @{
-    ViewData["Title"] = "إدارة البلوكات";
+    ViewData["Title"] = "إدارة الصالات والقاعات";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -23,11 +23,11 @@
     }
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-collection-fill me-2"></i> إدارة البلوكات</h1>
+        <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-collection-fill me-2"></i> إدارة الصالات والقاعات</h1>
               @if(User.IsInRole("Admin"))
             {
                  <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
-                <i class="bi bi-plus-circle me-1"></i> تكوين بلوك جديد
+                <i class="bi bi-plus-circle me-1"></i> تكوين صالة جديد
                 </a>
              }
       
@@ -38,8 +38,8 @@
             <table class="table academic-table table-hover align-middle mb-0">
                 <thead class="bg-light">
                     <tr>
-                        <th>اسم البلوك</th>
-                        <th>اسم الصالة / القاعة</th> 
+                        <th>اسم الصالة / القاعة</th>
+                        <th>اسم الجراش</th> 
                         <th class="text-center">السعة (أقصى عدد)</th>
                         <th class="text-center">عدد اللجان المرتبطة</th>
                         <th class="text-center pe-4">الإجراءات</th>
@@ -90,7 +90,7 @@
                         <tr>
                             <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                                لا توجد بلوكات مسجلة في النظام.
+                                لا توجد صالة مسجلة في النظام.
                             </td>
                         </tr>
                     }

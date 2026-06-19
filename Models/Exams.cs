@@ -44,6 +44,7 @@ namespace projectweb.Models
         [ValidateNever]
         [Display(Name = "جدول توزيع اللجان")]
         public virtual ICollection<ExamSchedule> ExamSchedules { get; set; }
+
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             var durationMinutes = (EndTime - StartTime).TotalMinutes;

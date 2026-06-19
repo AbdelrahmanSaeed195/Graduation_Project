@@ -25,39 +25,7 @@ namespace projectweb.Controllers
         // ================= OTP STORE =================
         private static Dictionary<string, string> otpStore = new();
 
-        // =========================================================
-        // REGISTER
-        // =========================================================
-        //[HttpGet]
-        //public IActionResult Register() => View();
-
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Register(RegisterViewModel account)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        var user = new IdentityUser
-        //        {
-        //            UserName = account.Email,
-        //            Email = account.Email,
-        //            PhoneNumber = account.PhoneNumber
-        //        };
-
-        //        var result = await UserManager.CreateAsync(user, account.Password);
-
-        //        if (result.Succeeded)
-        //        {
-        //            await SignInManager.SignInAsync(user, false);
-        //            return RedirectToAction("Index", "Home");
-        //        }
-
-        //        foreach (var error in result.Errors)
-        //            ModelState.AddModelError("", error.Description);
-        //    }
-
-        //    return View(account);
-        //}
+      
 
         // =========================================================
         // LOGIN
@@ -100,76 +68,8 @@ namespace projectweb.Controllers
         {
             await SignInManager.SignOutAsync();
             return RedirectToAction("Login");
-        }
-
-        // =========================================================
-        // ADD ADMIN
-        // =========================================================
-        [HttpGet]
-        public IActionResult AddAdmin() => View("Register");
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddAdmin(RegisterViewModel account)
-        {
-            if (!ModelState.IsValid)
-                return View("Register", account);
-
-            // Check Email Exists
-            var existingUser = await UserManager.FindByEmailAsync(account.Email);
-
-            if (existingUser != null)
-            {
-                ModelState.AddModelError("", "Email already exists");
-                return View("Register", account);
-            }
-
-            // Create User
-            var user = new IdentityUser
-            {
-                UserName = account.Email,
-                Email = account.Email,
-                PhoneNumber = account.PhoneNumber,
-                EmailConfirmed = true
-            };
-
-            var createResult = await UserManager.CreateAsync(
-                user,
-                account.Password
-            );
-
-            // Check Create
-            if (!createResult.Succeeded)
-            {
-                foreach (var error in createResult.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
-
-                return View("Register", account);
-            }
-
-            // Add Admin Role
-            var roleResult = await UserManager.AddToRoleAsync(
-                user,
-                "Admin"
-            );
-
-            // Check Role
-            if (!roleResult.Succeeded)
-            {
-                foreach (var error in roleResult.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
-
-                return View("Register", account);
-            }
-
-            TempData["Success"] = "Admin Created Successfully";
-
-            return RedirectToAction("Login");
-        }
+        }      
+       
 
         // =========================================================
         // CHANGE PASSWORD
@@ -303,14 +203,14 @@ namespace projectweb.Controllers
                 return View(model);
             }
 
-            // 🔥 تغيير الباسورد مباشرة
+       
             user.PasswordHash = UserManager.PasswordHasher.HashPassword(user, model.NewPassword);
 
             var result = await UserManager.UpdateAsync(user);
 
             if (result.Succeeded)
             {
-                otpStore.Remove(model.Email); // حذف OTP
+                otpStore.Remove(model.Email); 
                 return RedirectToAction("Login");
             }
 

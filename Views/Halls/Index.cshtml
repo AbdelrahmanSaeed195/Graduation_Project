@@ -1,7 +1,7 @@
 @model IEnumerable<projectweb.Models.Hall>
 
 @{
-    ViewData["Title"] = "إدارة الصالات والقاعات";
+    ViewData["Title"] = "إدارة الجراشات";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -23,13 +23,10 @@
     }
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-building me-2"></i> إدارة الصالات والقاعات</h1>
-        @if(User.IsInRole("Admin"))
-        {
+        <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-building me-2"></i> ادارة الجراشات </h1>
             <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
-                <i class="bi bi-plus-circle me-1"></i> إضافة صالة جديدة
+                <i class="bi bi-plus-circle me-1"></i> إضافة جراش جديد
             </a>
-        }
     </div>
 
     <div class="card academic-card overflow-hidden">
@@ -37,10 +34,10 @@
             <table class="table academic-table table-hover align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>اسم الصالة / القاعة</th>
+                        <th>اسم الجراش </th>
                         <th class="text-center">الدور</th>
-                        <th class="text-center">السعة (أقصى بلوكات)</th>
-                        <th class="text-center">البلوكات الحالية</th>
+                        <th class="text-center">السعة (أقصى عدد صالات)</th>
+                        <th class="text-center">الصالات الحالية</th>
                         <th class="text-center pe-4">الإجراءات</th>
                     </tr>
                 </thead>
@@ -61,7 +58,7 @@
                                 </td>
                                 <td class="text-center">
                                     <span class="badge @(item.Blocks != null && item.Blocks.Any() ? "bg-success" : "bg-secondary") px-3 py-2">
-                                        @(item.Blocks?.Count ?? 0) بلوك
+                                        @(item.Blocks?.Count ?? 0) صالة
                                     </span>
                                 </td>
                                 <td class="text-center pe-4">
@@ -69,15 +66,12 @@
                                         <a asp-action="Details" asp-route-id="@item.HallId" class="btn btn-sm btn-outline-info" title="عرض التفاصيل">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        @if(User.IsInRole("Admin"))
-                                        {
                                             <a asp-action="Edit" asp-route-id="@item.HallId" class="btn btn-sm btn-outline-academic" title="تعديل">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
                                             <a asp-action="Delete" asp-route-id="@item.HallId" class="btn btn-sm btn-outline-danger" title="حذف">
                                                 <i class="bi bi-trash"></i>
                                             </a>
-                                        }
                                     </div>
                                 </td>
                             </tr>
@@ -86,7 +80,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">لا توجد صالات مسجلة في النظام.</td>
+                            <td colspan="6" class="text-center py-5 text-muted">لا توجد جراشات مسجلة</td>
                         </tr>
                     }
                 </tbody>
