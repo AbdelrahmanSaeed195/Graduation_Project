@@ -25,24 +25,7 @@ namespace projectweb.Controllers
         // =====================================
         // 1. القائمة الرئيسية - INDEX
         // =====================================
-        public async Task<IActionResult> Index()
-        {
-            var students = await _context.Students
-                .Include(s => s.Committee)
-                .Include(s => s.ExamSchedule)
-                .OrderBy(s => s.AcademicYear)
-                .ThenBy(s => s.Specialization)
-                .ThenBy(s => s.FullName)
-                .ToListAsync();
-
-            return View(students);
-        }
-
-        // =====================================
-        // 2. البحث - SEARCH
-        // =====================================
-        [HttpGet]
-        public async Task<IActionResult> Search(string searchTerm)
+        public async Task<IActionResult> Index(string searchTerm)
         {
             var query = _context.Students
                 .Include(s => s.Committee)
@@ -58,12 +41,44 @@ namespace projectweb.Controllers
 
             var students = await query
                 .OrderBy(s => s.AcademicYear)
+                .ThenBy(s => s.Specialization)
                 .ThenBy(s => s.FullName)
                 .ToListAsync();
 
             ViewBag.Search = searchTerm;
-            return View("Index", students);
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return PartialView("_StudentTablePartial", students);
+
+            return View(students);
         }
+
+        //// =====================================
+        //// 2. البحث - SEARCH
+        //// =====================================
+        //[HttpGet]
+        //public async Task<IActionResult> Search(string searchTerm)
+        //{
+        //    var query = _context.Students
+        //        .Include(s => s.Committee)
+        //        .Include(s => s.ExamSchedule)
+        //        .AsQueryable();
+
+        //    if (!string.IsNullOrEmpty(searchTerm))
+        //    {
+        //        searchTerm = searchTerm.ToLower().Trim();
+        //        query = query.Where(s => s.FullName.ToLower().Contains(searchTerm)
+        //                              || s.NationalId.Contains(searchTerm));
+        //    }
+
+        //    var students = await query
+        //        .OrderBy(s => s.AcademicYear)
+        //        .ThenBy(s => s.FullName)
+        //        .ToListAsync();
+
+        //    ViewBag.Search = searchTerm;
+        //    return View("Index", students);
+        //}
 
         // =====================================
         // 3. التفاصيل - DETAILS

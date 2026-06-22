@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-
 
 namespace projectweb.Controllers
 {
@@ -81,7 +81,6 @@ namespace projectweb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Person person)
         {
-
             if (_context.Persons.Any(p => p.NationalId == person.NationalId))
             {
                 ModelState.AddModelError("NationalId", "عفواً، هذا الرقم القومي مسجل مسبقاً.");
@@ -194,9 +193,9 @@ namespace projectweb.Controllers
                 .ToListAsync();
 
             var yearTimesMap = new Dictionary<string, string>
-    {
-        { "1", "" }, { "2", "" }, { "3", "" }, { "4", "" }
-    };
+            {
+                { "1", "" }, { "2", "" }, { "3", "" }, { "4", "" }
+            };
 
             var groupedRows = new List<AssignmentRowGroup>();
 
@@ -298,54 +297,6 @@ namespace projectweb.Controllers
         }
 
         private bool PersonExists(int id) => _context.Persons.Any(e => e.PersonId == id);
-
-        // =====================================
-        // EXPORT TO EXCEL
-        // =====================================
-        public async Task<IActionResult> ExportToExcel()
-        {
-            var persons = await _context.Persons
-                .OrderBy(p => p.JobRole)
-                .ThenBy(p => p.FullName)
-                .ToListAsync();
-
-            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
-
-            using var package = new ExcelPackage();
-            var sheet = package.Workbook.Worksheets.Add("الموظفين");
-
-            // الهيدر
-            sheet.Cells[1, 1].Value = "الاسم الكامل";
-            sheet.Cells[1, 2].Value = "الرقم القومي";
-            sheet.Cells[1, 3].Value = "رقم الهاتف";
-            sheet.Cells[1, 4].Value = "الوظيفة";
-            sheet.Cells[1, 5].Value = "الحالة";
-
-            // تنسيق الهيدر
-            using (var range = sheet.Cells[1, 1, 1, 5])
-            {
-                range.Style.Font.Bold = true;
-                range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
-            }
-
-            // البيانات
-            int row = 2;
-            foreach (var p in persons)
-            {
-                sheet.Cells[row, 1].Value = p.FullName;
-                sheet.Cells[row, 2].Value = p.NationalId;
-                sheet.Cells[row, 3].Value = p.Phone;
-                sheet.Cells[row, 4].Value = GetArabicJobTitle(p.JobRole);
-                sheet.Cells[row, 5].Value = p.IsActiveForAssignment ? "نشط" : "متوقف";
-                row++;
-            }
-
-            sheet.Cells.AutoFitColumns();
-
-            var fileBytes = package.GetAsByteArray();
-            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Persons_{DateTime.Now:yyyyMMdd}.xlsx");
-        }
 
         // =====================================
         // IMPORT EXCEL - GET

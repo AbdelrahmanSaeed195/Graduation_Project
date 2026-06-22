@@ -25,10 +25,6 @@
                 <a asp-action="ImportExcel" class="btn btn-outline-success shadow-sm">
                     <i class="bi bi-file-earmark-excel-fill me-1"></i> استيراد
                 </a>
-
-                <a asp-action="ExportToExcel" class="btn btn-outline-primary shadow-sm">
-                    <i class="bi bi-file-earmark-arrow-down-fill me-1"></i> تصدير
-                </a>
             }
         </div>
     </div>
@@ -72,108 +68,108 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
-            let timeout = null;
+        let timeout = null;
 
-            $('#searchInput').on('input', function () {
-                clearTimeout(timeout);
-                let searchValue = $(this).val();
+        $('#searchInput').on('input', function () {
+        clearTimeout(timeout);
+        let searchValue = $(this).val();
 
-                timeout = setTimeout(function () {
-                    $.ajax({
-                        url: '@Url.Action("Index", "Persons")',
-                        type: 'GET',
-                        data: { search: searchValue },
-                        beforeSend: function () {
-                            $('#tableContainer').css('opacity', '0.6');
-                        },
-                        success: function (data) {
-                            let newTable = $(data).find('#tableContainer').html();
-                            $('#tableContainer').html(newTable);
-                            $('#tableContainer').css('opacity', '1');
-                        },
-                        error: function () {
-                            console.error("حدث خطأ أثناء محاولة جلب البيانات.");
-                            $('#tableContainer').css('opacity', '1');
-                        }
-                    });
-                }, 300);
-            });
+        timeout = setTimeout(function () {
+        $.ajax({
+        url: '@Url.Action("Index", "Persons")',
+        type: 'GET',
+        data: { search: searchValue },
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        beforeSend: function () {
+        $('#tableContainer').css('opacity', '0.6');
+        },
+        success: function (data) {
+        $('#tableContainer').html(data);
+        $('#tableContainer').css('opacity', '1');
+        },
+        error: function () {
+        console.error("حدث خطأ أثناء محاولة جلب البيانات.");
+        $('#tableContainer').css('opacity', '1');
+        }
+        });
+        }, 300);
+        });
         });
     </script>
 
     <style>
         .academic-input:focus {
-            border-color: #1a3a5a;
-            box-shadow: 0 0 0 0.25rem rgba(26, 58, 90, 0.1);
+        border-color: #1a3a5a;
+        box-shadow: 0 0 0 0.25rem rgba(26, 58, 90, 0.1);
         }
 
         .btn-academic-primary {
-            background-color: #1a3a5a;
-            color: white;
-            transition: all 0.3s;
-            border: none;
+        background-color: #1a3a5a;
+        color: white;
+        transition: all 0.3s;
+        border: none;
         }
 
-            .btn-academic-primary:hover {
-                background-color: #2e5a88;
-                color: white;
-                transform: translateY(-1px);
-            }
+        .btn-academic-primary:hover {
+        background-color: #2e5a88;
+        color: white;
+        transform: translateY(-1px);
+        }
 
         #tableContainer {
-            transition: opacity 0.2s ease-in-out;
+        transition: opacity 0.2s ease-in-out;
         }
 
         .style-badge {
-            min-width: 120px;
-            font-size: 0.9rem;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-            border: none !important;
+        min-width: 120px;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        border: none !important;
         }
 
         .job-badge-professor-emeritus {
-            background-color: #1a3a5a !important;
-            color: #ffffff !important;
+        background-color: #1a3a5a !important;
+        color: #ffffff !important;
         }
 
         .job-badge-assistant-prof {
-            background-color: #0c59cf !important;
-            color: #ffffff !important;
+        background-color: #0c59cf !important;
+        color: #ffffff !important;
         }
 
         .job-badge-professor {
-            background-color: #0b4699 !important; 
-            color: #ffffff !important;
+        background-color: #0b4699 !important;
+        color: #ffffff !important;
         }
 
         .job-badge-lecturer {
-            background-color: #0d6efd !important; 
-            color: #ffffff !important;
+        background-color: #0d6efd !important;
+        color: #ffffff !important;
         }
 
         .job-badge-assistant-staff {
-            background-color: #6c757d !important; 
-            color: #ffffff !important;
+        background-color: #6c757d !important;
+        color: #ffffff !important;
         }
 
         .job-badge-assistant {
-            color: #000000 !important;
+        color: #000000 !important;
         }
 
         .job-badge-employee {
-            background-color: #ffc107 !important; 
-            color: #000000 !important;
+        background-color: #ffc107 !important;
+        color: #000000 !important;
         }
 
         .job-badge-doctor {
-            background-color: #198754 !important;
-            color: #ffffff !important;
+        background-color: #198754 !important;
+        color: #ffffff !important;
         }
 
         .job-badge-nurse {
-            background-color: #20c997 !important; 
-            color: #ffffff !important;
+        background-color: #20c997 !important;
+        color: #ffffff !important;
         }
     </style>
 }
