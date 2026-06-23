@@ -69,16 +69,13 @@
                             <div class="btn-group shadow-sm" role="group">
                                 <a asp-action="PrintAssignments" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-success" title="تكليف">
                                     <i class="bi bi-printer"></i>
-                                </a>
-                                @if (User.IsInRole("Admin"))
-                                {
+                                </a>                             
                                     <a asp-action="Edit" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-dark" title="تعديل">
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     <a asp-action="Delete" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-danger" title="حذف">
                                         <i class="bi bi-trash"></i>
                                     </a>
-                                }
                                 <a asp-action="Details" asp-route-id="@p.PersonId" class="btn btn-sm btn-outline-info" title="تفاصيل">
                                     <i class="bi bi-eye"></i>
                                 </a>

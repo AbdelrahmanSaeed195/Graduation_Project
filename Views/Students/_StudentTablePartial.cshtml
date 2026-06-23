@@ -4,7 +4,6 @@
     <table class="table academic-table table-hover align-middle mb-0 text-center">
         <thead>
             <tr>
-                <th>كود</th>
                 <th>الاسم</th>
                 <th>الرقم القومي</th>
                 <th>السنة الدراسية</th>
@@ -20,7 +19,6 @@
                 foreach (var s in Model)
                 {
                     <tr>
-                        <td>@s.StudentId</td>
                         <td class="fw-bold text-start ps-3">@s.FullName</td>
                         <td><span style="color: var(--text-muted);">@s.NationalId</span></td>
                         <td>
@@ -79,16 +77,13 @@
                                 </a>
                                 <a asp-action="Details" asp-route-id="@s.StudentId" class="btn btn-sm btn-info text-white" title="التفاصيل">
                                     <i class="bi bi-eye"></i>
-                                </a>
-                                @if (User.IsInRole("Admin"))
-                                {
+                                </a>                              
                                     <a asp-action="Edit" asp-route-id="@s.StudentId" class="btn btn-sm btn-warning" title="تعديل">
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     <a asp-action="Delete" asp-route-id="@s.StudentId" class="btn btn-sm btn-danger" title="حذف">
                                         <i class="bi bi-trash"></i>
                                     </a>
-                                }
                             </div>
                         </td>
                     </tr>

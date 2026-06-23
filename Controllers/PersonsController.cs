@@ -157,21 +157,51 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
-            var person = await _context.Persons.FirstOrDefaultAsync(m => m.PersonId == id);
+
+          
+            var person = await _context.Persons
+                .Include(p => p.CommitteesAssignments)
+                .Include(p => p.ReportPersons)
+                .FirstOrDefaultAsync(m => m.PersonId == id);
+
             if (person == null) return NotFound();
+
+            if (person.CommitteesAssignments.Any() || person.ReportPersons.Any())
+            {
+                ViewBag.CanDelete = false;
+                ViewBag.Message = "تنبيه: هذا الموظف لديه تكليفات مراقبة قائمة على محاضر؛ لن تتمكن من حذفه حتى يتم إلغاء تكليفاته أولاً.";
+            }
+            else
+            {
+                ViewBag.CanDelete = true;
+            }
+
             return View(person);
         }
 
+        // ==================================================
+        // Delete
+        //==================================================
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var person = await _context.Persons.FindAsync(id);
-            if (person != null)
+            var person = await _context.Persons
+                .Include(p => p.CommitteesAssignments)
+                .Include(p => p.ReportPersons)
+                .FirstOrDefaultAsync(p => p.PersonId == id);
+
+            if (person == null) return NotFound();
+
+            if (person.CommitteesAssignments.Any() || person.ReportPersons.Any())
             {
-                _context.Persons.Remove(person);
-                await _context.SaveChangesAsync();
+                TempData["ErrorMessage"] = "عفواً، لا يمكن حذف الموظف لارتباطه بسجلات أخرى في النظام.";
+                return RedirectToAction(nameof(Index));
             }
+
+            _context.Persons.Remove(person);
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "تم حذف الموظف بنجاح.";
             return RedirectToAction(nameof(Index));
         }
 

@@ -9,15 +9,13 @@
 }
 
 <div class="content-body" dir="rtl">
-    @* الرأس (Header) *@
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <h1 class="h3 mb-0 fw-bold academic-heading">
             <i class="bi bi-people-fill me-2"></i> إدارة الأشخاص والموظفين
         </h1>
 
         <div class="d-flex gap-2">
-            @if (User.IsInRole("Admin"))
-            {
+         
                 <a asp-action="Create" class="btn btn-academic-primary shadow-sm">
                     <i class="bi bi-person-plus-fill me-1"></i> إضافة شخص
                 </a>
@@ -25,11 +23,10 @@
                 <a asp-action="ImportExcel" class="btn btn-outline-success shadow-sm">
                     <i class="bi bi-file-earmark-excel-fill me-1"></i> استيراد
                 </a>
-            }
+         
         </div>
     </div>
 
-    @* قسم البحث اللحظي *@
     <div class="card academic-card mb-4 shadow-sm border-0">
         <div class="card-body p-3 bg-white rounded">
             <div class="row g-2 align-items-center">
@@ -57,8 +54,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
-
-    @* حاوية الجدول الرئيسية *@
     <div id="tableContainer" class="card academic-card overflow-hidden shadow-sm border-0">
         <partial name="_PersonTablePartial" model="Model" />
     </div>
