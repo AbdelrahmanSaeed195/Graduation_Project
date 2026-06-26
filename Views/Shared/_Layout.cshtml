@@ -16,7 +16,6 @@
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
@@ -31,35 +30,39 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <nav class="navbar-nav me-auto mb-2 mb-lg-0">
                     @if (SignInManager.IsSignedIn(User))
                     {
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">
-                               لوحة التحكم
+                                لوحة التحكم
                             </a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button">
-                               إدارة شؤون الأفراد
+                                إدارة شؤون الأفراد
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" asp-controller="Persons" asp-action="Index"> الموظفين</a></li>
-                                <li><a class="dropdown-item" asp-controller="Students" asp-action="Index"> الطلاب</a></li>
+                                <li><a class="dropdown-item" asp-controller="Persons" asp-action="Index"><i class="bi bi-person-badge me-2"></i> الموظفين</a></li>
+                                <li><a class="dropdown-item" asp-controller="Students" asp-action="Index"><i class="bi bi-mortarboard me-2"></i> الطلاب</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" asp-controller="Relatives" asp-action="Index"> الأقارب</a></li>
+                                <li><a class="dropdown-item" asp-controller="Relatives" asp-action="Index"><i class="bi bi-diagram-3 me-2"></i> صلات القرابة</a></li>
                             </ul>
                         </li>
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button">
-                                 اماكن الامتحانات
+                                أماكن الامتحانات 
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" asp-controller="Halls" asp-action="Index"> الجراشات</a></li>
-                                <li><a class="dropdown-item" asp-controller="Blocks" asp-action="Index"> القاعات</a></li>
-                                <li><a class="dropdown-item" asp-controller="Committees" asp-action="Index"> اللجان</a></li>
+                                <li><a class="dropdown-item" asp-controller="ExamLocations" asp-action="Index"><i class="bi bi-layers-half me-2"></i> استعراض الهيكل الموحد</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="ExamLocations" asp-action="Index" asp-route-locationType="Hall"><i class="bi bi-building me-2"></i> المقرات الرئيسية (الجراشات)</a></li>
+                                <li><a class="dropdown-item" asp-controller="ExamLocations" asp-action="Index" asp-route-locationType="Block"><i class="bi bi-grid-3x3 me-2"></i> الصالات الفرعية</a></li>
+                                <li><a class="dropdown-item" asp-controller="ExamLocations" asp-action="Index" asp-route-locationType="Committee"><i class="bi bi-person-workspace me-2"></i> اللجان الدقيقة</a></li>
                             </ul>
                         </li>
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button">
                                 إعداد الامتحانات
@@ -72,16 +75,16 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="CommitteesAssignments" asp-action="Index">
-                                 التوزيعات
+                                التوزيعات
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Reports" asp-action="Index">
-                                 التقارير
+                                التقارير والمحاضر
                             </a>
                         </li>
                     }
-                </ul>
+                </nav>
 
                 <div class="d-flex align-items-center">
                     @if (SignInManager.IsSignedIn(User))
@@ -128,7 +131,7 @@
     <footer class="footer-academic py-3 mt-auto">
         <div class="container text-center">
             <span class="text-muted small fw-semibold">
-                &copy; @DateTime.Now.Year - نظام إدارة لجنة الامتحانات الأكاديمية
+                &copy; @DateTime.Now.Year - نظام إدارة لجنة الامتحانات الأكاديمية الموحد
             </span>
         </div>
     </footer>

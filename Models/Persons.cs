@@ -31,7 +31,15 @@ namespace projectweb.Models
 
         [Required(ErrorMessage = "يجب تحديد التخصص/الوظيفة")]
         [Display(Name = "الوظيفة")]
-        public JobTitle JobRole { get; set; } 
+        public JobTitle JobRole { get; set; }
+
+        [Display(Name = "حالة النشاط في التكليفات")]
+        public bool IsActiveForAssignment { get; set; } = true;
+
+
+        // ========================================================
+        // navigation properties
+        // ========================================================
 
         [Required(ErrorMessage = "يجب تحديد التخصص/الوظيفة")]
         [Display(Name = "الوظيفة")]
@@ -40,10 +48,7 @@ namespace projectweb.Models
         [ForeignKey("RoleId")]
         [Display(Name = "بيانات الوظيفة")]
         public virtual Role Role { get; set; }
-
-        [Display(Name = "حالة النشاط في التكليفات")]
-        public bool IsActiveForAssignment { get; set; } = true;
-
+     
         [ValidateNever]
         [Display(Name = "تكليفات المراقبة")]
         public virtual ICollection<CommitteesAssignment> CommitteesAssignments { get; set; }

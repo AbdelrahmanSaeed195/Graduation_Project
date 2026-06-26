@@ -1,0 +1,110 @@
+@model projectweb.Models.ExamLocation
+
+@{
+    ViewData["Title"] = "إنشاء مكان جديد";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .dependency-field {
+        display: none;
+    }
+</style>
+
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-xl-9">
+        <div class="card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+            <div class="card-header text-white p-4" style="background-color: #1a2c4e;">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-plus-circle-fill me-2"></i> إضافة مكان جديد في النظام</h4>
+            </div>
+
+            <div class="card-body p-4 bg-white">
+                <form asp-action="Create" method="post">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="Type" class="form-label fw-bold text-primary">نوع الكيان <span class="text-danger">*</span></label>
+                            <select asp-for="Type" id="locationTypeSelect" asp-items="Html.GetEnumSelectList<LocationType>()" class="form-select border-primary shadow-sm" style="border-radius: 8px;">
+                                <option value="">-- اختر النوع --</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="LocationName" class="form-label fw-bold">اسم أو رقم المكان <span class="text-danger">*</span></label>
+                            <input asp-for="LocationName" class="form-control shadow-sm" placeholder="مثال: جراش 1 / صالة أ / لجنة 5" style="border-radius: 8px;" />
+                        </div>
+
+                        <div class="col-md-6 dependency-field parent-location-container">
+                            <label asp-for="ParentLocationId" class="form-label fw-bold">المكان الرئيسي التابع له</label>
+                            <select asp-for="ParentLocationId" id="parentLocationSelect" class="form-select shadow-sm" style="border-radius: 8px;">
+                                <option value="">-- اختر الأب التراتبي --</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 dependency-field hall-fields">
+                            <label asp-for="Floor" class="form-label fw-bold">رقم الدور</label>
+                            <input asp-for="Floor" class="form-control text-center shadow-sm" type="number" placeholder="مثال: 1" style="border-radius: 8px;" />
+                        </div>
+
+                        <div class="col-md-6 dependency-field capacity-fields">
+                            <label asp-for="MaxSubLocations" id="maxSubLabel" class="form-label fw-bold">أقصى سعة فرعية</label>
+                            <input asp-for="MaxSubLocations" type="number" class="form-control text-center shadow-sm" placeholder="مثال: 5" style="border-radius: 8px;" />
+                        </div>
+
+                        <div class="col-md-3 dependency-field committee-fields">
+                            <label asp-for="StudentCapacity" class="form-label fw-bold">سعة استيعاب الطلاب</label>
+                            <input asp-for="StudentCapacity" type="number" class="form-control text-center shadow-sm" placeholder="مثال: 30" style="border-radius: 8px;" />
+                        </div>
+
+                        <div class="col-md-3 dependency-field committee-fields">
+                            <label asp-for="Status" class="form-label fw-bold">الحالة الإدارية</label>
+                            <select asp-for="Status" asp-items="ViewBag.StatusList" class="form-select shadow-sm" style="border-radius: 8px;"></select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
+                        <button type="submit" class="btn px-5 fw-bold text-white shadow-sm" style="background-color: #1a2c4e; border-radius: 8px;">حفظ المكان</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        var allLocations = @Html.Raw(ViewBag.AllLocationsJson ?? "[]");
+
+        function adjustFields() {
+            var type = $("#locationTypeSelect").val();
+            var parentSelect = $("#parentLocationSelect");
+
+            $(".dependency-field").hide();
+            parentSelect.empty().append('<option value="">-- اختر الأب --</option>');
+
+            if (type == "1") { // جراش
+                $(".hall-fields, .capacity-fields").show();
+                $("#maxSubLabel").text("أقصى عدد صالات داخل الجراش");
+            }
+            else if (type == "2") { // صالة
+                $(".parent-location-container, .capacity-fields").show();
+                $("#maxSubLabel").text("أقصى عدد لجان داخل الصالة");
+                allLocations.filter(l => l.Type == 1).forEach(l => {
+                    parentSelect.append(`<option value="${l.LocationId}">جراش: ${l.LocationName}</option>`);
+                });
+            }
+            else if (type == "3") { // لجنة
+                $(".parent-location-container, .committee-fields").show();
+                allLocations.filter(l => l.Type == 2).forEach(l => {
+                    var parentHall = allLocations.find(hall => hall.LocationId == l.ParentLocationId);
+                    var hallName = parentHall ? `(جراش: ${parentHall.LocationName})` : "";
+                    parentSelect.append(`<option value="${l.LocationId}">صالة: ${l.LocationName} ${hallName}</option>`);
+                });
+            }
+        }
+
+        $("#locationTypeSelect").change(adjustFields);
+        adjustFields();
+    </script>
+}

@@ -1,4 +1,6 @@
 ﻿@model projectweb.Models.Report
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
 
 @{
     ViewData["Title"] = "إنشاء محضر جديد";
@@ -31,6 +33,8 @@
                 <form asp-action="Create" method="post" id="reportForm">
                     @Html.AntiForgeryToken()
 
+                    <input type="hidden" asp-for="LocationId" value="0" />
+
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label academic-label required fw-bold mb-2">اختر المادة / الامتحان</label>
@@ -44,7 +48,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="ScheduleId" class="form-label academic-label required fw-bold mb-2">اللجنة المختصة (المبنى)</label>
+                            <label asp-for="ScheduleId" class="form-label academic-label required fw-bold mb-2">الصالة / المقر الامتحاني المعين</label>
                             <div class="input-group" style="flex-direction: row-reverse;">
                                 <select asp-for="ScheduleId" id="committeeSelect" class="form-select academic-input border-end-0" disabled style="border-radius: 0 8px 8px 0 !important;">
                                     <option value="">-- اختر المادة أولاً --</option>

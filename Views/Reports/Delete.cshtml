@@ -56,9 +56,9 @@
                     </div>
                     <div class="col-md-3">
                         <div class="rounded p-3 border bg-light text-center h-100 shadow-sm">
-                            <div class="small text-muted mb-1 fw-bold">رقم اللجنة</div>
+                            <div class="small text-muted mb-1 fw-bold">اللجنة / المقر</div>
                             <div class="fw-bold fs-5 text-dark">
-                                @(Model.Committee != null ? "لجنة " + Model.Committee.CommitteeNumber : "غير محدد")
+                                @(Model.ExamLocation != null ? Model.ExamLocation.LocationName : "محضر عام")
                             </div>
                         </div>
                     </div>

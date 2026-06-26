@@ -73,31 +73,23 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
+@section Scripts 
+{
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-               $(document).ready(function () {
+        $(document).ready(function () {
+            // جلب السنة الدراسية
             $('#SubjectSelect').on('change', function () {
                 var subjectId = $(this).val();
                 var $yearField = $('#AcademicYearField');
-
                 if (subjectId) {
                     $.ajax({
                         url: '@Url.Action("GetSubjectYear", "Exams")',
                         type: 'GET',
                         data: { subjectId: subjectId },
                         success: function (data) {
-                            // 🌟 قراءة النص العربي المترجم القادم من السيرفر مباشرة
-                            if (data && data.academicYear) {
-                                $yearField.val(data.academicYear);
-                            } else {
-                                $yearField.val('غير محددة');
-                            }
-                        },
-                        error: function() {
-                            $yearField.val('خطأ في الاتصال');
+                            $yearField.val(data ? data.academicYear : 'غير محددة');
                         }
                     });
                 } else {
@@ -105,6 +97,7 @@
                 }
             });
 
+            // التحقق من التداخل الزمني
             function checkConstraints() {
                 var date = $('#ExamDate').val();
                 var start = $('#StartTime').val();
@@ -114,24 +107,19 @@
                 var submitBtn = $('#submitBtn');
 
                 if (date && start && end) {
+                    // التحقق من أن وقت النهاية بعد البدء وأن المدة لا تتجاوز 3 ساعات
                     var startTime = new Date("1970-01-01T" + start);
                     var endTime = new Date("1970-01-01T" + end);
                     var diffMinutes = (endTime - startTime) / (1000 * 60);
 
-                    if (diffMinutes <= 0) {
-                        errorMessage.text("خطأ: يجب أن يكون وقت انتهاء الامتحان بعد وقت البدء.");
+                    if (diffMinutes <= 0 || diffMinutes > 180) {
+                        errorMessage.text(diffMinutes <= 0 ? "خطأ: وقت الانتهاء يجب أن يكون بعد البدء." : "عفواً، لا يمكن أن تتجاوز مدة الامتحان 3 ساعات.");
                         errorDiv.show();
                         submitBtn.prop('disabled', true);
                         return;
                     }
 
-                    if (diffMinutes > 180) {
-                        errorMessage.text("عفواً، لا يمكن أن تتجاوز مدة الامتحان 3 ساعات.");
-                        errorDiv.show();
-                        submitBtn.prop('disabled', true);
-                        return;
-                    }
-
+                    // استدعاء السيرفر للتأكد من عدم وجود تداخل مع امتحانات أخرى
                     $.get('@Url.Action("CheckConstraints", "Exams")', { date: date, start: start, end: end }, function (data) {
                         if (data.isOverlapping) {
                             errorMessage.text("تنبيه: يوجد امتحان آخر مسجل في نفس هذا الموعد والتاريخ.");
@@ -147,22 +135,16 @@
 
             $('#ExamDate, #StartTime, #EndTime').on('change', checkConstraints);
 
+            // منع الإرسال إذا كان الزر معطلاً أو هناك خطأ ظاهر
             $('#examForm').on('submit', function (e) {
-                var start = $('#StartTime').val();
-                var end = $('#EndTime').val();
-                if (start && end) {
-                    var st = new Date("1970-01-01T" + start);
-                    var et = new Date("1970-01-01T" + end);
-                    var duration = (et - st) / (1000 * 60);
-                    if (duration > 180 || duration <= 0) {
-                        e.preventDefault();
-                        alert("يرجى تصحيح الوقت قبل الحفظ.");
-                    }
+                if ($('#submitBtn').prop('disabled')) {
+                    e.preventDefault();
+                    alert("لا يمكن حفظ الامتحان بسبب وجود تعارض في الوقت أو التاريخ.");
                 }
             });
         });
     </script>
-
+}
     <style>
         .text-navy {
             color: #1a3a5a;

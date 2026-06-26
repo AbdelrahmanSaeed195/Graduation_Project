@@ -16,24 +16,34 @@ namespace projectweb.Services
             _context = context;
         }
 
+        // ========================================================================
+        // 1. CheckTimeConflictAsync: فحص تعارضات الوقت في المقر الموحد
+        // ========================================================================
         public async Task<string> CheckTimeConflictAsync(int examScheduleId)
         {
             var current = await _context.ExamSchedules
                 .Include(s => s.Exam).ThenInclude(e => e.Subject)
-                .Include(s => s.Block)
+                .Include(s => s.ExamLocation) // التحديث للمقر الموحد
                 .FirstOrDefaultAsync(s => s.ExamScheduleId == examScheduleId);
 
-            if (current == null || current.Exam == null) return "الجلسة المطلوبة غير موجودة.";
+            if (current == null || current.Exam == null || current.ExamLocation == null)
+                return "الجلسة المطلوبة غير موجودة.";
 
-            var hallId = current.Block.HallId;
+            // جلب معرف الموقع الأعلى (الموقع الأب أو الحالي إذا كان هو الأب)
+            var currentLocId = current.LocationId;
+            var parentLocId = current.ExamLocation.ParentLocationId;
             var examDate = current.Exam.ExamDate.Date;
             var startTime = current.Exam.StartTime;
             var endTime = current.Exam.EndTime;
 
             var conflict = await _context.CommitteesAssignments
                 .Include(a => a.ExamSchedule).ThenInclude(es => es.Exam).ThenInclude(e => e.Subject)
+                .Include(a => a.ExamLocation)
                 .Where(a => a.ExamSchedule.ExamId != current.ExamId &&
-                            ((a.HallId == hallId) || (a.Block.HallId == hallId) || (a.Committee.Block.HallId == hallId)) &&
+                            (a.LocationId == currentLocId ||
+                             a.LocationId == parentLocId ||
+                             a.ExamLocation.ParentLocationId == currentLocId ||
+                             a.ExamLocation.ParentLocationId == parentLocId) &&
                             a.ExamSchedule.Exam.ExamDate.Date == examDate &&
                             ((startTime >= a.ExamSchedule.Exam.StartTime && startTime < a.ExamSchedule.Exam.EndTime) ||
                              (endTime > a.ExamSchedule.Exam.StartTime && endTime <= a.ExamSchedule.Exam.EndTime)))
@@ -43,30 +53,35 @@ namespace projectweb.Services
 
             if (conflict != null)
             {
-                return $"عفواً، لا يمكن إجراء التوزيع. هذه الصالة مشغولة حالياً بامتحان مادة ({conflict}) في نفس الفترة الزمنية.";
+                return $"عفواً، لا يمكن إجراء التوزيع. هذا المقر مشغول حالياً بامتحان مادة ({conflict}) في نفس الفترة الزمنية.";
             }
 
             return null;
         }
 
+        // ========================================================================
+        // 2. RunAssignmentAsync: تشغيل ماكينة التوزيع التلقائي وهندسة المقاعد والأقارب
+        // ========================================================================
         public async Task<bool> RunAssignmentAsync(int examScheduleId)
         {
             var currentSchedule = await _context.ExamSchedules
                 .Include(s => s.Exam)
-                .Include(s => s.Block)
+                .Include(s => s.ExamLocation)
                 .FirstOrDefaultAsync(s => s.ExamScheduleId == examScheduleId);
 
-            if (currentSchedule == null || currentSchedule.Exam == null) return false;
+            if (currentSchedule == null || currentSchedule.Exam == null || currentSchedule.ExamLocation == null)
+                return false;
 
-            var hallId = currentSchedule.Block.HallId;
+            var currentLocId = currentSchedule.LocationId;
             var examId = currentSchedule.ExamId;
             var examDate = currentSchedule.Exam.ExamDate.Date;
 
-            // 1. تنظيف التوزيع التلقائي القديم لهذه المادة في هذه الصالة اليوم
+            // 1. تنظيف التوزيع التلقائي القديم لهذه المادة في هذا المقر الموحد اليوم
             var oldAutoAssignments = await _context.CommitteesAssignments
                 .Include(a => a.ExamSchedule)
+                .Include(a => a.ExamLocation)
                 .Where(a => a.ExamSchedule.ExamId == examId &&
-                            ((a.HallId == hallId) || (a.Block.HallId == hallId) || (a.Committee.Block.HallId == hallId)) &&
+                            (a.LocationId == currentLocId || a.ExamLocation.ParentLocationId == currentLocId || a.ExamLocation.ParentLocation.ParentLocationId == currentLocId) &&
                             a.AssignmentType == "Auto")
                 .ToListAsync();
 
@@ -76,61 +91,64 @@ namespace projectweb.Services
                 await _context.SaveChangesAsync();
             }
 
+            // جلب جداول التوزيع المرتبطة بالجلسة والموقع الحالي (أو المواقع الفرعية التابعة له)
             var scheduledSchedules = await _context.ExamSchedules
-                .Include(es => es.Block)
-                .Where(es => es.ExamId == examId && es.Block.HallId == hallId)
+                .Include(es => es.ExamLocation)
+                .Where(es => es.ExamId == examId && (es.LocationId == currentLocId || es.ExamLocation.ParentLocationId == currentLocId))
                 .ToListAsync();
 
             if (!scheduledSchedules.Any()) return false;
 
+            // فلترة المقرات المصنفة كـ صالات/بلوكات نشطة (Block) داخل نطاق التوزيع الحالي
             var activeBlocks = scheduledSchedules
-                .Select(es => es.Block)
-                .GroupBy(b => b.BlockId)
+                .Select(es => es.ExamLocation.Type == LocationType.Block ? es.ExamLocation : es.ExamLocation.ParentLocation)
+                .Where(l => l != null && l.Type == LocationType.Block)
+                .GroupBy(l => l.LocationId)
                 .Select(g => g.First())
-                .OrderBy(b => b.BlockName)
+                .OrderBy(l => l.LocationName)
                 .ToList();
 
-            // -------------------------------------------------------------
-            // تحديث: جلب الموظفين المستبعدين بسبب صلات القرابة مع طلاب الصالة/المادة
-            // -------------------------------------------------------------
-            // جلب معرفات اللجان النشطة في هذه الصالة لهذه الجلسة
-            var activeBlockIds = activeBlocks.Select(b => b.BlockId).ToList();
-            var activeCommitteeIds = await _context.Committees
-                .Where(c => activeBlockIds.Contains(c.BlockId))
-                .Select(c => c.CommitteeId)
+            if (!activeBlocks.Any()) return false;
+
+            // جلب معرفات اللجان النشطة (Committees) التابعة لهذه الصالات
+            var activeBlockIds = activeBlocks.Select(b => b.LocationId).ToList();
+            var activeCommitteeIds = await _context.ExamLocations
+                .Where(l => l.ParentLocationId != null && activeBlockIds.Contains(l.ParentLocationId.Value) && l.Type == LocationType.Committee)
+                .Select(l => l.LocationId)
                 .ToListAsync();
 
-            // جلب معرفات الطلاب المتواجدين في هذه اللجان أو المرتبطين بهذه الجلسة الامتحانية
+            // جلب معرفات الطلاب المتواجدين في نطاق هذه المقرات
             var studentIdsInHall = await _context.Students
-                .Where(s => (s.CommitteeId != null && activeCommitteeIds.Contains(s.CommitteeId.Value)) || s.ExamScheduleId == examScheduleId)
+                .Where(s => (s.LocationId != null && activeCommitteeIds.Contains(s.LocationId.Value)) || s.ExamScheduleId == examScheduleId)
                 .Select(s => s.StudentId)
                 .ToListAsync();
 
-            // تحديد الموظفين الذين لديهم صلة قرابة بهؤلاء الطلاب
+            // تحديد ومنع تعارض صلات القرابة بدقة متناهية لحماية أرشيف الامتحانات
             var excludedPersonIdsDueToRelatives = await _context.Relatives
                 .Where(r => studentIdsInHall.Contains(r.StudentId))
                 .Select(r => r.PersonId)
                 .Distinct()
                 .ToListAsync();
-            // -------------------------------------------------------------
 
+            // جلب المنشغلين الفعليين في نفس الجلسة
             var busyPersonIds = await _context.CommitteesAssignments
-                .Include(a => a.ExamSchedule).ThenInclude(es => es.Exam)
+                .Include(a => a.ExamSchedule)
                 .Where(a => a.ExamSchedule.ExamId == examId)
                 .Select(a => a.PersonId).ToListAsync();
 
-            // تعديل شرط جلب الموظفين المتاحين ليستبعد أصحاب صلات القرابة أيضاً
+            // جلب القوى البشرية الفعالة والمتاحة للفرز
             var allAvailableStaff = await _context.Persons
                 .Include(p => p.Role)
                 .Where(p => !busyPersonIds.Contains(p.PersonId)
-                            && !excludedPersonIdsDueToRelatives.Contains(p.PersonId) // استبعاد الأقارب هنا
+                            && !excludedPersonIdsDueToRelatives.Contains(p.PersonId) 
                             && p.IsActiveForAssignment)
                 .ToListAsync();
 
             var staffWhoWorkedInThisHallToday = await _context.CommitteesAssignments
                 .Include(a => a.ExamSchedule).ThenInclude(es => es.Exam)
+                .Include(a => a.ExamLocation)
                 .Where(a => a.ExamSchedule.Exam.ExamDate.Date == examDate &&
-                            ((a.HallId == hallId) || (a.Block.HallId == hallId) || (a.Committee.Block.HallId == hallId)))
+                            (a.LocationId == currentLocId || a.ExamLocation.ParentLocationId == currentLocId || a.ExamLocation.ParentLocation.ParentLocationId == currentLocId))
                 .Select(a => a.PersonId)
                 .Distinct()
                 .ToListAsync();
@@ -138,8 +156,8 @@ namespace projectweb.Services
             var yesterday = examDate.AddDays(-1).Date;
             var yesterdayAssignments = await _context.CommitteesAssignments
                 .Include(a => a.ExamSchedule).ThenInclude(es => es.Exam)
-                .Where(a => a.ExamSchedule.Exam.ExamDate.Date == yesterday && a.CommitteeId != null)
-                .Select(a => new { a.PersonId, a.CommitteeId })
+                .Where(a => a.ExamSchedule.Exam.ExamDate.Date == yesterday && a.LocationId != null)
+                .Select(a => new { a.PersonId, LocationId = a.LocationId.Value })
                 .ToListAsync();
 
             var finalAssignments = new List<CommitteesAssignment>();
@@ -165,12 +183,13 @@ namespace projectweb.Services
                 }
             }
 
-            // تجميع الخزانات بناءً على الهيكل الجديد
+            // تجميع وتوزيع الخزانات البشرية (Pools) حسب المسمى الوظيفي والوزن التراكمي
             var poolManagers = new List<Person>();
-            poolManagers.AddRange(currentDayHallPriorityStaff.Where(p => p.JobRole == JobTitle.Professor || p.JobRole == JobTitle.AssistantProfessor || p.JobRole == JobTitle.ProfessorEmeritus).OrderBy(p => random.Next()));
-            poolManagers.AddRange(historyPriorityStaff.Where(p => p.JobRole == JobTitle.Professor || p.JobRole == JobTitle.AssistantProfessor || p.JobRole == JobTitle.ProfessorEmeritus).OrderBy(p => random.Next()));
-            poolManagers.AddRange(normalStaff.Where(p => p.JobRole == JobTitle.Professor || p.JobRole == JobTitle.AssistantProfessor || p.JobRole == JobTitle.ProfessorEmeritus).OrderBy(p => random.Next()));
-            poolManagers.AddRange(lowPriorityStaff.Where(p => p.JobRole == JobTitle.Professor || p.JobRole == JobTitle.AssistantProfessor || p.JobRole == JobTitle.ProfessorEmeritus).OrderBy(p => random.Next()));
+            var managerRoles = new HashSet<JobTitle> { JobTitle.Professor, JobTitle.AssistantProfessor, JobTitle.ProfessorEmeritus };
+            poolManagers.AddRange(currentDayHallPriorityStaff.Where(p => managerRoles.Contains(p.JobRole)).OrderBy(p => random.Next()));
+            poolManagers.AddRange(historyPriorityStaff.Where(p => managerRoles.Contains(p.JobRole)).OrderBy(p => random.Next()));
+            poolManagers.AddRange(normalStaff.Where(p => managerRoles.Contains(p.JobRole)).OrderBy(p => random.Next()));
+            poolManagers.AddRange(lowPriorityStaff.Where(p => managerRoles.Contains(p.JobRole)).OrderBy(p => random.Next()));
 
             var poolLeaders = new List<Person>();
             poolLeaders.AddRange(currentDayHallPriorityStaff.Where(p => p.JobRole == JobTitle.StaffObserver).OrderBy(p => random.Next()));
@@ -179,16 +198,14 @@ namespace projectweb.Services
             poolLeaders.AddRange(lowPriorityStaff.Where(p => p.JobRole == JobTitle.StaffObserver).OrderBy(p => random.Next()));
 
             var poolObservers = new List<Person>();
-            poolObservers.AddRange(currentDayHallPriorityStaff.Where(p => p.JobRole == JobTitle.Assistant || p.JobRole == JobTitle.AssistantStaff || p.JobRole == JobTitle.Employee).OrderBy(p => random.Next()));
-            poolObservers.AddRange(historyPriorityStaff.Where(p => p.JobRole == JobTitle.Assistant || p.JobRole == JobTitle.AssistantStaff || p.JobRole == JobTitle.Employee).OrderBy(p => random.Next()));
-            poolObservers.AddRange(normalStaff.Where(p => p.JobRole == JobTitle.Assistant || p.JobRole == JobTitle.AssistantStaff || p.JobRole == JobTitle.Employee).OrderBy(p => random.Next()));
-            poolObservers.AddRange(lowPriorityStaff.Where(p => p.JobRole == JobTitle.Assistant || p.JobRole == JobTitle.AssistantStaff || p.JobRole == JobTitle.Employee).OrderBy(p => random.Next()));
+            var observerRoles = new HashSet<JobTitle> { JobTitle.Assistant, JobTitle.AssistantStaff, JobTitle.Employee };
+            poolObservers.AddRange(currentDayHallPriorityStaff.Where(p => observerRoles.Contains(p.JobRole)).OrderBy(p => random.Next()));
+            poolObservers.AddRange(historyPriorityStaff.Where(p => observerRoles.Contains(p.JobRole)).OrderBy(p => random.Next()));
+            poolObservers.AddRange(normalStaff.Where(p => observerRoles.Contains(p.JobRole)).OrderBy(p => random.Next()));
+            poolObservers.AddRange(lowPriorityStaff.Where(p => observerRoles.Contains(p.JobRole)).OrderBy(p => random.Next()));
 
-            var poolDoctors = new List<Person>();
-            poolDoctors.AddRange(allAvailableStaff.Where(p => p.JobRole == JobTitle.Doctor).OrderBy(p => random.Next()));
-
-            var poolNurses = new List<Person>();
-            poolNurses.AddRange(allAvailableStaff.Where(p => p.JobRole == JobTitle.Nurse).OrderBy(p => random.Next()));
+            var poolDoctors = allAvailableStaff.Where(p => p.JobRole == JobTitle.Doctor).OrderBy(p => random.Next()).ToList();
+            var poolNurses = allAvailableStaff.Where(p => p.JobRole == JobTitle.Nurse).OrderBy(p => random.Next()).ToList();
 
             int totalActiveBlocks = activeBlocks.Count;
             int half = (int)Math.Ceiling((double)totalActiveBlocks / 2);
@@ -196,14 +213,13 @@ namespace projectweb.Services
             var firstSectionBlocks = activeBlocks.Take(half).ToList();
             var secondSectionBlocks = activeBlocks.Skip(half).ToList();
 
-            // 2. توزيع رؤساء الصالات (أساتذة)
+            // 2. توزيع طاقم الإشراف ورؤساء القطاعات (الأساتذة)
             var selectedManagers = poolManagers.Take(3).ToList();
             if (selectedManagers.Count < 2) return false;
 
             for (int i = 0; i < selectedManagers.Count; i++)
             {
                 var manager = selectedManagers[i];
-
                 if (i == 0)
                 {
                     var firstBlock = firstSectionBlocks.FirstOrDefault();
@@ -212,10 +228,9 @@ namespace projectweb.Services
                         PersonId = manager.PersonId,
                         ExamScheduleId = examScheduleId,
                         RoleId = manager.RoleId,
-                        HallId = hallId,
-                        BlockId = firstBlock?.BlockId,
+                        LocationId = currentLocId, 
                         AssignmentType = "Auto",
-                        RoleType = "رئيس صالة أساسي (القطاع الأول)"
+                        RoleType = "رئيس جراش أساسي (القطاع الأول)"
                     });
                 }
                 else if (i == 1)
@@ -226,10 +241,9 @@ namespace projectweb.Services
                         PersonId = manager.PersonId,
                         ExamScheduleId = examScheduleId,
                         RoleId = manager.RoleId,
-                        HallId = hallId,
-                        BlockId = firstBlockOfSecondSection?.BlockId,
+                        LocationId = currentLocId,
                         AssignmentType = "Auto",
-                        RoleType = "رئيس صالة أساسي (القطاع الثاني)"
+                        RoleType = "رئيس جراش أساسي (القطاع الثاني)"
                     });
                 }
                 else if (i == 2)
@@ -239,16 +253,14 @@ namespace projectweb.Services
                         PersonId = manager.PersonId,
                         ExamScheduleId = examScheduleId,
                         RoleId = manager.RoleId,
-                        HallId = hallId,
-                        BlockId = null,
-                        CommitteeId = null,
+                        LocationId = currentLocId,
                         AssignmentType = "Auto",
-                        RoleType = "رئيس صالة احتياطي"
+                        RoleType = "رئيس جراش احتياطي"
                     });
                 }
             }
 
-            // 3. توزيع مراقب احتياطي واحد فقط للصالة
+            // 3. توزيع مراقب احتياطي واحد للمقر الرئيسي
             var reserveLeader = poolLeaders.FirstOrDefault();
             if (reserveLeader != null)
             {
@@ -257,37 +269,36 @@ namespace projectweb.Services
                     PersonId = reserveLeader.PersonId,
                     ExamScheduleId = examScheduleId,
                     RoleId = reserveLeader.RoleId,
-                    HallId = hallId,
-                    BlockId = null,
+                    LocationId = currentLocId,
                     AssignmentType = "Auto",
-                    RoleType = "مراقب احتياطي للصالة (تحت إدارة رئيس الصالة)"
+                    RoleType = "مراقب احتياطي للجراش"
                 });
                 poolLeaders.Remove(reserveLeader);
             }
 
-            // حساب الـ 5% ملاحظين احتياطيين
-            var totalCommitteesCount = await _context.ExamSchedules
-                .Include(es => es.Block)
-                .Where(es => es.ExamId == examId && es.Block.HallId == hallId)
+            // حساب الـ 5% ملاحظين احتياطيين بناءً على إجمالي لجان التوزيع الفعلي
+            int totalCommitteesCount = await _context.ExamSchedules
+                .Include(es => es.ExamLocation)
+                .Where(es => es.ExamId == examId && (es.LocationId == currentLocId || es.ExamLocation.ParentLocationId == currentLocId))
                 .CountAsync();
 
             int requiredReserveObserversCount = (int)Math.Ceiling(totalCommitteesCount * 0.05);
             if (requiredReserveObserversCount < 1) requiredReserveObserversCount = 1;
 
-            // تأمين الدكاترة والممرضين
+            // توزيع الطاقم الطبي
             var doctor = poolDoctors.FirstOrDefault();
             if (doctor != null)
             {
-                finalAssignments.Add(new CommitteesAssignment { PersonId = doctor.PersonId, ExamScheduleId = examScheduleId, HallId = hallId, BlockId = null, CommitteeId = null, AssignmentType = "Auto", RoleType = "دكتور الصالة", RoleId = doctor.RoleId });
+                finalAssignments.Add(new CommitteesAssignment { PersonId = doctor.PersonId, ExamScheduleId = examScheduleId, LocationId = currentLocId, AssignmentType = "Auto", RoleType = "دكتور", RoleId = doctor.RoleId });
             }
 
             var nurse = poolNurses.FirstOrDefault();
             if (nurse != null)
             {
-                finalAssignments.Add(new CommitteesAssignment { PersonId = nurse.PersonId, ExamScheduleId = examScheduleId, HallId = hallId, BlockId = null, CommitteeId = null, AssignmentType = "Auto", RoleType = "ممرض الصالة", RoleId = nurse.RoleId });
+                finalAssignments.Add(new CommitteesAssignment { PersonId = nurse.PersonId, ExamScheduleId = examScheduleId, LocationId = currentLocId, AssignmentType = "Auto", RoleType = "مساعد دكتور", RoleId = nurse.RoleId });
             }
 
-            // 4. توزيع المراقبين الأساسيين والملاحظين على البلوكات واللجان
+            // 4. توزيع المراقبين الأساسيين والملاحظين على الصالات (Blocks) واللجان (Committees)
             foreach (var block in activeBlocks)
             {
                 var blockLeader = poolLeaders.FirstOrDefault();
@@ -297,8 +308,7 @@ namespace projectweb.Services
                     {
                         PersonId = blockLeader.PersonId,
                         ExamScheduleId = examScheduleId,
-                        BlockId = block.BlockId,
-                        HallId = hallId,
+                        LocationId = block.LocationId, // ربط مباشر بالصالة الفرعية
                         AssignmentType = "Auto",
                         RoleType = "مراقب",
                         RoleId = blockLeader.RoleId
@@ -306,14 +316,15 @@ namespace projectweb.Services
                     poolLeaders.Remove(blockLeader);
                 }
 
-                var activeCommitteesInBlock = await _context.Committees
-                    .Where(c => c.BlockId == block.BlockId)
+                var activeCommitteesInBlock = await _context.ExamLocations
+                    .Where(c => c.ParentLocationId == block.LocationId && c.Type == LocationType.Committee)
                     .ToListAsync();
 
                 foreach (var com in activeCommitteesInBlock)
                 {
+                    // تطبيق شرط عدم تكرار مراقبة نفس اللجنة ليومين متتاليين لضمان النزاهة والأمان الدراسي
                     var obs = poolObservers
-                        .FirstOrDefault(p => !yesterdayAssignments.Any(y => y.PersonId == p.PersonId && y.CommitteeId == com.CommitteeId));
+                        .FirstOrDefault(p => !yesterdayAssignments.Any(y => y.PersonId == p.PersonId && y.LocationId == com.LocationId));
 
                     if (obs == null)
                     {
@@ -326,9 +337,7 @@ namespace projectweb.Services
                         {
                             PersonId = obs.PersonId,
                             ExamScheduleId = examScheduleId,
-                            CommitteeId = com.CommitteeId,
-                            BlockId = block.BlockId,
-                            HallId = hallId,
+                            LocationId = com.LocationId, // التسكين المباشر بكود اللجنة الموحد
                             AssignmentType = "Auto",
                             RoleType = "ملاحظ لجنة",
                             RoleId = obs.RoleId
@@ -338,7 +347,7 @@ namespace projectweb.Services
                 }
             }
 
-            // 5. توزيع الملاحظين الاحتياطيين بنسبة 5% على البلوكات
+            // 5. توزيع الملاحظين الاحتياطيين بنسبة 5% على مستوى الصالات الفرعية النشطة
             int distributedReserves = 0;
             while (distributedReserves < requiredReserveObserversCount && poolObservers.Any())
             {
@@ -355,10 +364,9 @@ namespace projectweb.Services
                             PersonId = reserveNote.PersonId,
                             ExamScheduleId = examScheduleId,
                             RoleId = reserveNote.RoleId,
-                            HallId = hallId,
-                            BlockId = block.BlockId,
+                            LocationId = block.LocationId, 
                             AssignmentType = "Auto",
-                            RoleType = "ملاحظ احتياطي للكلية (تحت إدارة المراقب)"
+                            RoleType = "ملاحظ احتياطي للصالة (تحت إدارة المراقب)"
                         });
                         poolObservers.Remove(reserveNote);
                         distributedReserves++;
@@ -375,6 +383,9 @@ namespace projectweb.Services
             return false;
         }
 
+        // ========================================================================
+        // 3. GetStaffPriorityWeightAsync: حساب الأوزان التراكمية لتوزيع ميزان العبء الدوري
+        // ========================================================================
         private async Task<int> GetStaffPriorityWeightAsync(int personId, DateTime currentExamDate)
         {
             var yesterday = currentExamDate.AddDays(-1).Date;

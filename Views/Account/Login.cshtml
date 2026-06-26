@@ -20,14 +20,12 @@
 
                 <div asp-validation-summary="ModelOnly" class="text-danger small mb-3 text-center fw-bold"></div>
 
-                <!-- Email -->
                 <div class="mb-3">
                     <label asp-for="Email" class="form-label fw-bold small text-secondary">البريد الإلكتروني</label>
                     <input asp-for="Email" class="form-control academic-input" placeholder="example@email.com" type="email" />
                     <span asp-validation-for="Email" class="text-danger small"></span>
                 </div>
 
-                <!-- Password -->
                 <div class="mb-3">
                     <label asp-for="Password" class="form-label fw-bold small text-secondary">كلمة المرور</label>
 
@@ -46,7 +44,6 @@
                     <span asp-validation-for="Password" class="text-danger small"></span>
                 </div>
 
-                <!-- Remember Me -->
                 <div class="form-check mb-3">
                     <input asp-for="IsPrisist" class="form-check-input" />
                     <label asp-for="IsPrisist" class="form-check-label small text-muted">
@@ -54,14 +51,12 @@
                     </label>
                 </div>
 
-                <!-- Login Button -->
                 <div class="d-grid">
                     <button type="submit" class="btn btn-primary fw-bold py-2" style="background:#1a3a5a; border:none;">
                         دخول
                     </button>
                 </div>
 
-                <!-- Forgot Password -->
                 <div class="text-center mt-3">
                     <a asp-action="ForgotPassword" asp-controller="Account"
                        class="small text-decoration-none fw-bold"

@@ -31,7 +31,7 @@
                                 <small class="text-muted fw-bold fs-6">(@(ViewBag.ArabicAcademicYear ?? "غير محدد"))</small>
                             </h5>
 
-                            <p class="mb-2"><strong><i class="bi bi-building me-1 text-secondary"></i> الصالة المعين:</strong> @(Model.Block?.BlockName ?? "غير محدد")</p>
+                            <p class="mb-2"><strong><i class="bi bi-building me-1 text-secondary"></i> الصالة المعينة:</strong> @(Model.ExamLocation?.LocationName ?? "غير محدد")</p>
                             <p class="mb-2"><strong><i class="bi bi-calendar3 me-1 text-secondary"></i> التاريخ المقرر:</strong> @(Model.Exam?.ExamDate.ToString("yyyy / MM / dd") ?? "—")</p>
 
                             <p class="mb-0">

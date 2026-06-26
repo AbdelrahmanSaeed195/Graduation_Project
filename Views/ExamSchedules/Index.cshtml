@@ -3,7 +3,7 @@
 @using System.Reflection
 
 @{
-    ViewData["Title"] = "إدارة توزيع اللجان والبلوكات";
+    ViewData["Title"] = "إدارة توزيع اللجان والصالات";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -32,7 +32,7 @@
                 <thead style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); color: white;">
                     <tr class="text-center">
                         <th class="ps-4 py-3 text-start" style="border: none; font-size: 0.85rem; font-weight: 700;">المادة الدراسية</th>
-                        <th style="border: none; font-size: 0.85rem; font-weight: 700;">الصالة المعين</th>
+                        <th style="border: none; font-size: 0.85rem; font-weight: 700;">الصالة المعينة</th>
                         <th style="border: none; font-size: 0.85rem; font-weight: 700;">تاريخ الامتحان</th>
                         <th style="border: none; font-size: 0.85rem; font-weight: 700;">التوقيت والفترة</th>
                         <th class="pe-4" style="border: none; font-size: 0.85rem; font-weight: 700;">الإجراءات</th>
@@ -63,7 +63,7 @@
                                 <td>
                                     <span class="badge bg-light border px-3 py-2 text-dark shadow-sm" style="border-radius: 8px; font-weight: 600; background-color: #f8f9fa !important;">
                                         <i class="bi bi-building me-1 text-primary"></i>
-                                        @(item.Block?.BlockName ?? "غير محدد")
+                                        @(item.ExamLocation?.LocationName ?? "غير محدد")
                                     </span>
                                 </td>
                                 <td>
@@ -79,11 +79,11 @@
                                         {
                                             var start = DateTime.Today.Add(item.Exam.StartTime).ToString("hh:mm tt");
                                             var end = DateTime.Today.Add(item.Exam.EndTime).ToString("hh:mm tt");
-                                            @($"{start} - {end}")
+                                            <span>@start - @end</span>
                                         }
                                         else
                                         {
-                                            @:غير محدد
+                                            <span>غير محدد</span>
                                         }
                                     </span>
                                 </td>
@@ -92,12 +92,12 @@
                                         <a asp-action="Details" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-white text-info border" title="عرض التفاصيل">
                                             <i class="bi bi-eye-fill"></i>
                                         </a>
-                                            <a asp-action="Edit" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-white text-primary border" title="تعديل">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </a>
-                                            <a asp-action="Delete" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-white text-danger border" title="حذف">
-                                                <i class="bi bi-trash-fill"></i>
-                                            </a>
+                                        <a asp-action="Edit" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-white text-primary border" title="تعديل">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.ExamScheduleId" class="btn btn-sm btn-white text-danger border" title="حذف">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>

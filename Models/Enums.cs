@@ -33,7 +33,7 @@ namespace projectweb.Models
     }
     public enum StaffPosition
     {
-        [Display(Name = "رئيس صالة")]
+        [Display(Name = "رئيس جراش")]
         HallManager = 1,
 
         [Display(Name = "مراقب")]
@@ -42,10 +42,10 @@ namespace projectweb.Models
         [Display(Name = "ملاحظ")]
         CommitteeObserver = 3,
 
-        [Display(Name = "طبيب")]
+        [Display(Name = "دكتور")]
         Doctor = 4,
 
-        [Display(Name = "ممرض")]
+        [Display(Name = "مساعد دكتور")]
         Nurse = 5,
 
     }
@@ -84,7 +84,18 @@ namespace projectweb.Models
         Employee = 7,
         [Display(Name = "دكتور")]
         Doctor = 8,
-        [Display(Name = "ممرض")]
+        [Display(Name = "مساعد دكتور")]
         Nurse = 9
+    }
+    public enum LocationType
+    {
+        [Display(Name = "جراش")]
+        Hall = 1,
+
+        [Display(Name = "صالة")]
+        Block = 2,
+
+        [Display(Name = "لجنة")]
+        Committee = 3
     }
 }

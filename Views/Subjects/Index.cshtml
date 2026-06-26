@@ -54,7 +54,6 @@
                 {
                     foreach (var item in Model)
                     {
-                        // 🌟 لوجيك ذكي لقراءة الـ Display Name العربي الخاص بالـ Enum الحالي لكل مادة في الجدول
                         var enumType = item.AcademicYear.GetType();
                         var memberInfo = enumType.GetMember(item.AcademicYear.ToString());
                         var displayAttribute = memberInfo.Length > 0 ? memberInfo[0].GetCustomAttribute<DisplayAttribute>() : null;

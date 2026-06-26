@@ -1,0 +1,103 @@
+@model projectweb.Models.ExamLocation
+
+@{
+    ViewData["Title"] = "تأكيد حذف الكيان";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool canDelete = ViewBag.CanDelete ?? false;
+}
+
+<div class="row justify-content-center mt-5" dir="rtl">
+    <div class="col-xl-6">
+        <div class="card academic-card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+            <div class="card-header bg-danger text-white p-4 border-0 text-center">
+                <i class="bi bi-exclamation-octagon-fill fs-1"></i>
+                <h3 class="fw-bold mt-2 text-white">تأكيد حذف السجل</h3>
+            </div>
+
+            <div class="card-body p-4 p-md-5 bg-white">
+
+                @if (!canDelete)
+                {
+                    <div class="alert alert-danger border-0 mb-4 shadow-sm text-start" style="border-radius: 10px; border-right: 6px solid #dc3545 !important;">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-shield-lock-fill fs-4 me-2"></i>
+                            <strong class="fs-5 ms-2">إجراء محظور</strong>
+                        </div>
+                        <p class="mb-0 small">@ViewBag.Message</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning border-0 mb-4 shadow-sm text-start" style="border-radius: 10px; border-right: 6px solid #ffc107 !important;">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-exclamation-triangle-fill fs-4 text-warning me-2"></i>
+                            <strong class="text-dark fs-5 ms-2">تنبيه أمني أخير!</strong>
+                        </div>
+                        <p class="mb-0 text-dark small">
+                            أنت على وشك مسح الكيان <strong>"@Model.LocationName"</strong> نهائياً. هذا الإجراء <strong>لا يمكن التراجع عنه</strong>.
+                        </p>
+                    </div>
+                }
+
+                <div class="row g-3 mb-4 text-center">
+                    <div class="col-6">
+                        <div class="rounded p-3 border shadow-sm bg-light h-100">
+                            <div class="small text-muted fw-bold mb-1">اسم / رقم المكان</div>
+                            <div class="fw-bold text-primary fs-5">@Model.LocationName</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="rounded p-3 border shadow-sm bg-light h-100">
+                            <div class="small text-muted fw-bold mb-1">النوع الهيكلي</div>
+                            <div class="fw-bold text-dark mt-1">
+                                @switch (Model.Type)
+                                {
+                                    case LocationType.Hall:
+                                        <span>جراش</span>
+                                        break;
+                                    case LocationType.Block:
+
+                                        <span>صالة</span>
+                                        break;
+                                    case LocationType.Committee:
+
+                                        <span>لجنة</span>
+                                        break;
+                                    default:
+
+                                        <span>غير معروف</span>
+                                        break;
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="LocationId" />
+
+                    <div class="d-flex justify-content-center gap-2 mt-4 pt-3 border-top">
+                        @if (canDelete)
+                        {
+                            <button type="submit" class="btn btn-danger px-5 fw-bold shadow-sm" style="border-radius: 8px;">
+                                <i class="bi bi-trash-fill me-1"></i> تأكيد الحذف النهائي
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-secondary px-5 fw-bold shadow-sm" style="border-radius: 8px;" disabled>
+                                <i class="bi bi-lock-fill me-1"></i> حذف معطل
+                            </button>
+                        }
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-bold shadow-sm" style="border-radius: 8px;">تراجع</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <p class="text-center mt-3 text-muted small">
+            <i class="bi bi-info-circle me-1"></i> ملاحظة: النظام يحتفظ بسجل للعمليات لضمان أمان البيانات.
+        </p>
+    </div>
+</div>

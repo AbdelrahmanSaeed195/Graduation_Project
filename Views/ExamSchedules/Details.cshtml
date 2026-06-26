@@ -3,10 +3,9 @@
 @using System.Reflection
 
 @{
-    ViewData["Title"] = "تفاصيل  جلسة توزيع الصالات";
+    ViewData["Title"] = "تفاصيل جلسة توزيع الصالات";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-  
     string arabicLevelName = "غير محدد";
     if (Model.Exam?.Subject != null)
     {
@@ -53,7 +52,7 @@
                             <label class="form-label fw-bold small text-muted mb-1">المبنى والمقر الامتحاني المعين</label>
                             <div class="p-3 border rounded-3 bg-light-subtle shadow-sm d-flex justify-content-between align-items-center" style="background-color: #f8f9fa;">
                                 <span class="fw-bold text-primary fs-5" style="color: #1a3a5a !important;">
-                                    <i class="bi bi-building me-2 text-primary"></i> @(Model.Block?.BlockName ?? "غير محدد")
+                                    <i class="bi bi-building me-2 text-primary"></i> @(Model.ExamLocation?.LocationName ?? "غير محدد")
                                 </span>
                                 <span class="text-muted small fw-bold">
                                     <i class="bi bi-geo-alt text-danger me-1"></i> كافة لجان صالات تتبع هذا الامتحان
@@ -97,10 +96,10 @@
 
                     </div>
 
-                    <div class="mt-5 d-flex justify-content-center gap-3 border-top pt-4">                      
-                            <a asp-action="Edit" asp-route-id="@Model.ExamScheduleId" class="btn btn-lg px-5 text-white shadow-sm" style="background-color: #1a3a5a; border-radius: 8px; font-size: 1rem; font-weight: 600;">
-                                <i class="bi bi-pencil-square me-2"></i> تعديل التوزيع
-                            </a>
+                    <div class="mt-5 d-flex justify-content-center gap-3 border-top pt-4">
+                        <a asp-action="Edit" asp-route-id="@Model.ExamScheduleId" class="btn btn-lg px-5 text-white shadow-sm" style="background-color: #1a3a5a; border-radius: 8px; font-size: 1rem; font-weight: 600;">
+                            <i class="bi bi-pencil-square me-2"></i> تعديل التوزيع
+                        </a>
                         <a asp-action="Index" class="btn btn-lg btn-outline-secondary px-4 shadow-sm" style="border-radius: 8px; font-size: 1rem;">
                             العودة للقائمة
                         </a>

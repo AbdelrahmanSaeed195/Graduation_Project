@@ -15,11 +15,11 @@
             </div>
 
             <div class="card-body p-4 bg-white">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm border-0" style="border-radius: 8px;"></div>
+
                 <form asp-action="Edit" method="post" id="editExamForm">
                     @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="ExamId" />
-
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3 border-0 shadow-sm" style="border-radius: 8px;"></div>
+                    <input type="hidden" asp-for="ExamId" id="ExamId" />
 
                     <div class="row g-4 mb-4">
                         <div class="col-md-6">
@@ -36,14 +36,12 @@
                                    class="form-control bg-light shadow-sm border-0 fw-bold text-navy"
                                    readonly
                                    style="border-radius: 8px;"
-                                   placeholder="سيتم تحديدها آلياً..."
-                                   @* 🌟 تم التعديل هنا ليقرأ اللفظ العربي المترجم فور تحميل الصفحة *@
                                    value="@ViewBag.InitialAcademicYear" />
                         </div>
 
                         <div class="col-md-4">
                             <label asp-for="ExamDate" class="form-label fw-bold text-secondary">تاريخ الامتحان <span class="text-danger">*</span></label>
-                            <input asp-for="ExamDate" class="form-control border-light-subtle shadow-sm academic-input" type="date" style="border-radius: 8px;" />
+                            <input asp-for="ExamDate" id="ExamDate" class="form-control border-light-subtle shadow-sm academic-input" type="date" style="border-radius: 8px;" />
                             <span asp-validation-for="ExamDate" class="text-danger small mt-1 d-block fw-bold"></span>
                         </div>
 
@@ -61,7 +59,7 @@
                     </div>
 
                     <div class="d-flex flex-wrap gap-2 mt-2 pt-4 border-top">
-                        <button type="submit" class="btn btn-academic-primary px-5 fw-bold shadow-sm py-2">
+                        <button type="submit" id="submitBtn" class="btn btn-academic-primary px-5 fw-bold shadow-sm py-2">
                             <i class="bi bi-save me-1"></i> حفظ التعديلات
                         </button>
                         <a asp-action="Index" class="btn btn-outline-secondary px-4 shadow-sm py-2 border-0" style="border-radius: 8px;">
@@ -79,11 +77,11 @@
 
     <script>
         $(document).ready(function () {
-            // 🌟 تحديث جلب السنة الدراسية لتقرأ النص العربي المترجم الصريح عند تغيير المادة
+            // تحديث السنة عند تغيير المادة
             $('#SubjectDropdown').change(function () {
                 var subjectId = $(this).val();
                 if (subjectId) {
-                    $.getJSON('@Url.Action("GetSubjectYear")', { subjectId: subjectId }, function (data) {
+                    $.getJSON('@Url.Action("GetSubjectYear", "Exams")', { subjectId: subjectId }, function (data) {
                         $('#AcademicYearDisplay').val(data.academicYear);
                     });
                 } else {
@@ -91,34 +89,46 @@
                 }
             });
 
-            $('#editExamForm').submit(function (e) {
+            // التحقق من التداخل الزمني لحظياً
+            function validateExam() {
+                var date = $('#ExamDate').val();
                 var start = $('#StartTime').val();
                 var end = $('#EndTime').val();
+                var id = $('#ExamId').val(); // الحصول على ID الامتحان الحالي
+                var submitBtn = $('#submitBtn');
 
-                if (start && end) {
-                    var startTime = new Date("1970-01-01 " + start);
-                    var endTime = new Date("1970-01-01 " + end);
-
+                if (date && start && end) {
+                    // فحص المدة
+                    var startTime = new Date("1970-01-01T" + start);
+                    var endTime = new Date("1970-01-01T" + end);
                     var diffMinutes = (endTime - startTime) / (1000 * 60);
 
-                    if (diffMinutes <= 0) {
-                        e.preventDefault();
-                        alert("خطأ: يجب أن يكون وقت الانتهاء بعد وقت البدء.");
-                        $('#EndTime').addClass('is-invalid');
-                        return false;
+                    if (diffMinutes <= 0 || diffMinutes > 180) {
+                        submitBtn.prop('disabled', true);
+                        return;
                     }
 
-                    if (diffMinutes > 180) {
-                        e.preventDefault();
-                        alert("خطأ: لا يمكن أن تتجاوز مدة الامتحان 3 ساعات (180 دقيقة). المدة المدخلة حالياً هي: " + (diffMinutes / 60).toFixed(1) + " ساعة.");
-                        $('#EndTime').addClass('is-invalid');
-                        return false;
-                    }
+                    // فحص التداخل عبر الـ Controller مع استثناء هذا الامتحان
+                    $.get('@Url.Action("CheckConstraints", "Exams")',
+                    { date: date, start: start, end: end, excludeId: id },
+                    function (data) {
+                        if (data.isOverlapping) {
+                            alert("تنبيه: هذا الموعد يتعارض مع امتحان آخر مسجل في نفس اليوم.");
+                            submitBtn.prop('disabled', true);
+                        } else {
+                            submitBtn.prop('disabled', false);
+                        }
+                    });
                 }
-            });
+            }
 
-            $('#EndTime, #StartTime').on('change', function() {
-                $(this).removeClass('is-invalid');
+            $('#ExamDate, #StartTime, #EndTime').on('change', validateExam);
+
+            $('#editExamForm').submit(function (e) {
+                if ($('#submitBtn').prop('disabled')) {
+                    e.preventDefault();
+                    alert("لا يمكن حفظ التعديلات بسبب وجود تعارض في الوقت.");
+                }
             });
         });
     </script>
@@ -144,6 +154,11 @@
                 background-color: #2e5a88;
                 color: white;
                 transform: translateY(-2px);
+            }
+
+            .btn-academic-primary:disabled {
+                background-color: #95a5a6;
+                cursor: not-allowed;
             }
     </style>
 }

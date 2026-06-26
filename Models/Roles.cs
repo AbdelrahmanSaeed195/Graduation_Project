@@ -19,16 +19,21 @@ namespace projectweb.Models
         [DataType(DataType.MultilineText)]
         public string RoleDescription { get; set; }
 
+        // ========================================================
+        //  Navigation properties
+        // ========================================================
+
         [ValidateNever]
         [Display(Name = "الموظفين بهذا الدور")]
         public virtual ICollection<Person> Persons { get; set; }
+
         [ValidateNever]
         [Display(Name = "التكليفات المرتبطة")]
         public virtual ICollection<CommitteesAssignment> CommitteesAssignments { get; set; }
+
         [ValidateNever]
         [Display(Name = "المحاضر المرتبطة")]
         public virtual ICollection<ReportPerson> ReportPersons { get; set; }
-
 
     }
 }

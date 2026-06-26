@@ -1,7 +1,7 @@
 @model projectweb.ViewModel.StudentCommitteeViewModel
 
 @{
-    ViewData["Title"] = "لجنة الطالب";
+    ViewData["Title"] = "لجنة الطالب الموحدة";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -9,7 +9,7 @@
     <div class="col-lg-7">
         <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
             <div class="card-header text-white p-4 text-center" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
-                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-building-check me-2"></i> إشعار توزيع اللجنة</h4>
+                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-building-check me-2"></i> إشعار توزيع اللجنة الموحد</h4>
             </div>
             <div class="card-body p-4 bg-white">
                 <div class="text-center mb-4">
@@ -33,21 +33,21 @@
 
                 <div class="row g-3">
                     <div class="col-4">
-                        <div class="p-3 border rounded text-center bg-light bg-opacity-50 shadow-sm">
-                            <div class="small text-muted fw-bold mb-1">رقم اللجنة</div>
-                            <div class="fw-bold fs-3 text-dark">@Model.CommitteeNumber</div>
+                        <div class="p-3 border rounded text-center bg-light bg-opacity-50 shadow-sm h-100 d-flex flex-column justify-content-center">
+                            <div class="small text-muted fw-bold mb-1">اسم / رقم اللجنة</div>
+                            <div class="fw-bold fs-4 text-dark mt-1">@Model.LocationName</div>
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="p-3 border rounded text-center bg-light bg-opacity-50 shadow-sm">
+                        <div class="p-3 border rounded text-center bg-light bg-opacity-50 shadow-sm h-100 d-flex flex-column justify-content-center">
                             <div class="small text-muted fw-bold mb-1">رقم الجلوس</div>
-                            <div class="fw-bold fs-3 text-primary">@Model.SeatNumber</div>
+                            <div class="fw-bold fs-3 text-primary mt-1">@Model.SeatNumber</div>
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="p-3 border rounded text-center bg-light bg-opacity-50 shadow-sm">
+                        <div class="p-3 border rounded text-center bg-light bg-opacity-50 shadow-sm h-100 d-flex flex-column justify-content-center">
                             <div class="small text-muted fw-bold mb-1">سعة اللجنة</div>
-                            <div class="fw-bold fs-3 text-secondary">@Model.NumberOfStudent</div>
+                            <div class="fw-bold fs-3 text-secondary mt-1">@Model.StudentCapacity</div>
                         </div>
                     </div>
                 </div>

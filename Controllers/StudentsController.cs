@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +29,7 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Index(string searchTerm)
         {
             var query = _context.Students
-                .Include(s => s.Committee)
+                .Include(s => s.ExamLocation) // تحديث للموقع الموحد
                 .Include(s => s.ExamSchedule)
                 .AsQueryable();
 
@@ -53,40 +54,13 @@ namespace projectweb.Controllers
             return View(students);
         }
 
-        //// =====================================
-        //// 2. البحث - SEARCH
-        //// =====================================
-        //[HttpGet]
-        //public async Task<IActionResult> Search(string searchTerm)
-        //{
-        //    var query = _context.Students
-        //        .Include(s => s.Committee)
-        //        .Include(s => s.ExamSchedule)
-        //        .AsQueryable();
-
-        //    if (!string.IsNullOrEmpty(searchTerm))
-        //    {
-        //        searchTerm = searchTerm.ToLower().Trim();
-        //        query = query.Where(s => s.FullName.ToLower().Contains(searchTerm)
-        //                              || s.NationalId.Contains(searchTerm));
-        //    }
-
-        //    var students = await query
-        //        .OrderBy(s => s.AcademicYear)
-        //        .ThenBy(s => s.FullName)
-        //        .ToListAsync();
-
-        //    ViewBag.Search = searchTerm;
-        //    return View("Index", students);
-        //}
-
         // =====================================
         // 3. التفاصيل - DETAILS
         // =====================================
         public async Task<IActionResult> Details(int id)
         {
             var student = await _context.Students
-                .Include(s => s.Committee)
+                .Include(s => s.ExamLocation) // تحديث للموقع الموحد
                 .Include(s => s.Relatives)
                 .FirstOrDefaultAsync(s => s.StudentId == id);
 
@@ -100,7 +74,13 @@ namespace projectweb.Controllers
         // =====================================
         public async Task<IActionResult> Create()
         {
-            ViewData["CommitteeId"] = new SelectList(await _context.Committees.OrderBy(c => c.CommitteeNumber).ToListAsync(), "CommitteeId", "CommitteeNumber");
+            // جلب الأماكن التي تمثل لجان امتحانية فقط وتمريرها للشاشة
+            var committees = await _context.ExamLocations
+                .Where(l => l.Type == LocationType.Committee)
+                .OrderBy(l => l.LocationName)
+                .ToListAsync();
+
+            ViewData["LocationId"] = new SelectList(committees, "LocationId", "LocationName");
             return View();
         }
 
@@ -116,7 +96,8 @@ namespace projectweb.Controllers
                 if (exists)
                 {
                     ModelState.AddModelError("NationalId", "هذا الرقم القومي مسجل بالفعل");
-                    ViewData["CommitteeId"] = new SelectList(await _context.Committees.OrderBy(c => c.CommitteeNumber).ToListAsync(), "CommitteeId", "CommitteeNumber", model.CommitteeId);
+                    var committeesList = await _context.ExamLocations.Where(l => l.Type == LocationType.Committee).OrderBy(l => l.LocationName).ToListAsync();
+                    ViewData["LocationId"] = new SelectList(committeesList, "LocationId", "LocationName", model.LocationId);
                     return View(model);
                 }
 
@@ -126,7 +107,7 @@ namespace projectweb.Controllers
                     NationalId = model.NationalId,
                     AcademicYear = model.AcademicYear,
                     Specialization = model.Specialization,
-                    CommitteeId = model.CommitteeId,
+                    LocationId = model.LocationId, // التغيير هنا لـ LocationId
                     SeatNumber = 0,
                     ExamScheduleId = null
                 };
@@ -134,15 +115,16 @@ namespace projectweb.Controllers
                 _context.Add(student);
                 await _context.SaveChangesAsync();
 
-                if (student.CommitteeId.HasValue)
+                if (student.LocationId.HasValue)
                 {
-                    await RecalculateSeatNumbersByCommittee(student.CommitteeId.Value);
+                    await RecalculateSeatNumbersByCommittee(student.LocationId.Value);
                 }
 
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["CommitteeId"] = new SelectList(await _context.Committees.OrderBy(c => c.CommitteeNumber).ToListAsync(), "CommitteeId", "CommitteeNumber", model.CommitteeId);
+            var committeesRollback = await _context.ExamLocations.Where(l => l.Type == LocationType.Committee).OrderBy(l => l.LocationName).ToListAsync();
+            ViewData["LocationId"] = new SelectList(committeesRollback, "LocationId", "LocationName", model.LocationId);
             return View(model);
         }
 
@@ -160,11 +142,12 @@ namespace projectweb.Controllers
                 NationalId = student.NationalId,
                 AcademicYear = student.AcademicYear,
                 Specialization = student.Specialization,
-                CommitteeId = student.CommitteeId
+                LocationId = student.LocationId // التغيير هنا لـ LocationId
             };
 
             ViewBag.StudentId = student.StudentId;
-            ViewData["CommitteeId"] = new SelectList(await _context.Committees.OrderBy(c => c.CommitteeNumber).ToListAsync(), "CommitteeId", "CommitteeNumber", student.CommitteeId);
+            var committees = await _context.ExamLocations.Where(l => l.Type == LocationType.Committee).OrderBy(l => l.LocationName).ToListAsync();
+            ViewData["LocationId"] = new SelectList(committees, "LocationId", "LocationName", student.LocationId);
             return View(model);
         }
 
@@ -182,36 +165,38 @@ namespace projectweb.Controllers
                 if (exists)
                 {
                     ModelState.AddModelError("NationalId", "هذا الرقم القومي مستخدم لطالب آخر");
-                    ViewData["CommitteeId"] = new SelectList(await _context.Committees.OrderBy(c => c.CommitteeNumber).ToListAsync(), "CommitteeId", "CommitteeNumber", model.CommitteeId);
+                    var committeesList = await _context.ExamLocations.Where(l => l.Type == LocationType.Committee).OrderBy(l => l.LocationName).ToListAsync();
+                    ViewData["LocationId"] = new SelectList(committeesList, "LocationId", "LocationName", model.LocationId);
                     return View(model);
                 }
 
                 var student = await _context.Students.FindAsync(id);
                 if (student == null) return NotFound();
 
-                int? oldCommitteeId = student.CommitteeId;
+                int? oldLocationId = student.LocationId;
 
                 student.FullName = model.FullName;
                 student.NationalId = model.NationalId;
                 student.AcademicYear = model.AcademicYear;
                 student.Specialization = model.Specialization;
-                student.CommitteeId = model.CommitteeId;
+                student.LocationId = model.LocationId; 
 
                 _context.Update(student);
                 await _context.SaveChangesAsync();
 
-                if (oldCommitteeId != student.CommitteeId)
+                if (oldLocationId != student.LocationId)
                 {
-                    if (oldCommitteeId.HasValue)
-                        await RecalculateSeatNumbersByCommittee(oldCommitteeId.Value);
-                    if (student.CommitteeId.HasValue)
-                        await RecalculateSeatNumbersByCommittee(student.CommitteeId.Value);
+                    if (oldLocationId.HasValue)
+                        await RecalculateSeatNumbersByCommittee(oldLocationId.Value);
+                    if (student.LocationId.HasValue)
+                        await RecalculateSeatNumbersByCommittee(student.LocationId.Value);
                 }
 
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["CommitteeId"] = new SelectList(await _context.Committees.OrderBy(c => c.CommitteeNumber).ToListAsync(), "CommitteeId", "CommitteeNumber", model.CommitteeId);
+            var committeesRollback = await _context.ExamLocations.Where(l => l.Type == LocationType.Committee).OrderBy(l => l.LocationName).ToListAsync();
+            ViewData["LocationId"] = new SelectList(committeesRollback, "LocationId", "LocationName", model.LocationId);
             return View(model);
         }
 
@@ -223,7 +208,7 @@ namespace projectweb.Controllers
             if (id == null) return BadRequest();
 
             var student = await _context.Students
-                .Include(s => s.Committee)
+                .Include(s => s.ExamLocation) 
                 .FirstOrDefaultAsync(m => m.StudentId == id);
 
             if (student == null) return NotFound();
@@ -238,23 +223,22 @@ namespace projectweb.Controllers
             var student = await _context.Students.FindAsync(id);
             if (student == null) return NotFound();
 
-            int? committeeId = student.CommitteeId;
+            int? locationId = student.LocationId;
 
             _context.Students.Remove(student);
             await _context.SaveChangesAsync();
 
-            if (committeeId.HasValue)
-                await RecalculateSeatNumbersByCommittee(committeeId.Value);
+            if (locationId.HasValue)
+                await RecalculateSeatNumbersByCommittee(locationId.Value);
 
             return RedirectToAction(nameof(Index));
         }
 
         // ======================================================================
-        // 7. التوزيع التلقائي للطلاب على اللجان المتاحة بالترتيب الأبجدي
+        // 7. التوزيع التلقائي للطلاب مع فحص منع تعارض صلة القرابة (محدث بالكامل)
         // ======================================================================
         public async Task<IActionResult> DistributeStudents()
         {
-            // 1. جلب كافة الطلاب
             var allStudents = await _context.Students.ToListAsync();
             if (!allStudents.Any())
             {
@@ -262,39 +246,39 @@ namespace projectweb.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // 2. جلب كافة اللجان
-            var allCommittees = await _context.Committees.OrderBy(c => c.CommitteeNumber).ToListAsync();
+            // سحب الأماكن المصنفة كـ لجان امتحانية فقط (Type == Committee)
+            var allCommittees = await _context.ExamLocations
+                .Where(l => l.Type == LocationType.Committee)
+                .OrderBy(l => l.LocationName)
+                .ToListAsync();
+
             if (!allCommittees.Any())
             {
-                TempData["ErrorMessage"] = "فشل التوزيع: لا توجد لجان امتحانية.";
+                TempData["ErrorMessage"] = "فشل التوزيع: لا توجد لجان امتحانية مضافة بالنظام الموحد.";
                 return RedirectToAction(nameof(Index));
             }
 
-            
             foreach (var student in allStudents)
             {
-                student.CommitteeId = null;
+                student.LocationId = null;
             }
 
-            // 3. بناء مصفوفة التعارض (Conflict Map)
+            // مصفوفة فحص التعارضات
             var studentConflictMap = new Dictionary<int, HashSet<int>>();
-
-            // جلب كل علاقات القرابة
             var allRelatives = await _context.Relatives.ToListAsync();
 
-            // جلب كل الملاحظين/الموظفين المعينين فعلياً في اللجان (تصفية آمنة)
+            // فحص التكليفات في جدول التكليفات بناءً على الحقل الموحد LocationId
             var committeeStaff = await _context.CommitteesAssignments
-                .Where(ca => ca.CommitteeId != null)
-                .Select(ca => new { ca.PersonId, CommitteeId = ca.CommitteeId.Value })
-                .Distinct() // منع التكرار لتحسين الأداء
+                .Where(ca => ca.LocationId != null)
+                .Select(ca => new { ca.PersonId, LocationId = ca.LocationId.Value })
+                .Distinct()
                 .ToListAsync();
 
             foreach (var rel in allRelatives)
             {
-                // البحث عن اللجان التي تم تعيين هذا الموظف القريب فيها
                 var forbiddenCommittees = committeeStaff
                     .Where(cs => cs.PersonId == rel.PersonId)
-                    .Select(cs => cs.CommitteeId)
+                    .Select(cs => cs.LocationId)
                     .ToList();
 
                 if (forbiddenCommittees.Any())
@@ -302,59 +286,53 @@ namespace projectweb.Controllers
                     if (!studentConflictMap.ContainsKey(rel.StudentId))
                         studentConflictMap[rel.StudentId] = new HashSet<int>();
 
-                    foreach (var comId in forbiddenCommittees)
-                        studentConflictMap[rel.StudentId].Add(comId);
+                    foreach (var locId in forbiddenCommittees)
+                        studentConflictMap[rel.StudentId].Add(locId);
                 }
             }
 
-            // 4. خوارزمية توزيع الطلاب
+            // تشغيل خوارزمية التسكين
             var orderedStudents = allStudents.OrderBy(s => s.AcademicYear).ThenBy(s => s.FullName).ToList();
-            var committeeOccupancy = allCommittees.ToDictionary(c => c.CommitteeId, c => 0);
+            var committeeOccupancy = allCommittees.ToDictionary(c => c.LocationId, c => 0);
 
             int totalAssigned = 0;
 
             foreach (var student in orderedStudents)
             {
-                bool distributed = false;
-
                 foreach (var targetCommittee in allCommittees)
                 {
-                    int currentCount = committeeOccupancy[targetCommittee.CommitteeId];
+                    int currentCount = committeeOccupancy[targetCommittee.LocationId];
 
-                    // هل يوجد تعارض قرابة؟
                     bool hasConflict = studentConflictMap.ContainsKey(student.StudentId) &&
-                                       studentConflictMap[student.StudentId].Contains(targetCommittee.CommitteeId);
+                                       studentConflictMap[student.StudentId].Contains(targetCommittee.LocationId);
 
-                    // التحقق من السعة الاستيعابية وعدم وجود تعارض
-                    if (currentCount < targetCommittee.NumberOfStudent && !hasConflict)
+                    // استخدام الحقل الجديد StudentCapacity المخزن بجدول أماكن الامتحانات الموحد
+                    if (currentCount < targetCommittee.StudentCapacity && !hasConflict)
                     {
-                        student.CommitteeId = targetCommittee.CommitteeId;
-                        committeeOccupancy[targetCommittee.CommitteeId] = currentCount + 1;
+                        student.LocationId = targetCommittee.LocationId;
+                        committeeOccupancy[targetCommittee.LocationId] = currentCount + 1;
                         totalAssigned++;
-                        distributed = true;
-                        break; // الانتقال للطالب التالي بعد التسكين بنجاح
+                        break;
                     }
                 }
             }
 
-            // 5. حفظ التعديلات وإعادة حساب أرقام الجلوس
             if (totalAssigned > 0)
             {
                 await _context.SaveChangesAsync();
 
-                // جلب معرفات اللجان التي تم تسكين طلاب بها فعلياً لتحديث أرقام جلوسها
-                var affectedCommitteeIds = allStudents
-                    .Where(s => s.CommitteeId != null)
-                    .Select(s => s.CommitteeId.Value)
+                var affectedLocationIds = allStudents
+                    .Where(s => s.LocationId != null)
+                    .Select(s => s.LocationId.Value)
                     .Distinct()
                     .ToList();
 
-                foreach (var committeeId in affectedCommitteeIds)
+                foreach (var locId in affectedLocationIds)
                 {
-                    await RecalculateSeatNumbersByCommittee(committeeId);
+                    await RecalculateSeatNumbersByCommittee(locId);
                 }
 
-                TempData["SuccessMessage"] = $"تم التوزيع لـ {totalAssigned} طالب بنجاح مع تفعيل فحص منع تعارض صلة القرابة.";
+                TempData["SuccessMessage"] = $"تم التوزيع لـ {totalAssigned} طالب بنجاح مع تفعيل فحص منع تعارض صلة القرابة التراتبي.";
             }
             else
             {
@@ -365,21 +343,22 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // 8. عرض لجنة الطالب - COMMITTEE
+        // 8. عرض لجنة الطالب - COMMITTEE (معدل)
         // =====================================
         public async Task<IActionResult> Committee(int id)
         {
             var student = await _context.Students
-                .Include(s => s.Committee)
+                .Include(s => s.ExamLocation) 
                 .FirstOrDefaultAsync(s => s.StudentId == id);
 
             if (student == null) return NotFound();
 
-            if (student.CommitteeId == null || student.CommitteeId == 0 || student.Committee == null)
+            if (student.LocationId == null || student.LocationId == 0 || student.ExamLocation == null)
             {
                 ViewBag.Message = $"عفواً، الطالب ({student.FullName}) لم يتم تسكينه في أي لجنة ثابتة حتى الآن.";
                 return View("NoCommittee");
             }
+
 
             var viewModel = new StudentCommitteeViewModel
             {
@@ -387,16 +366,15 @@ namespace projectweb.Controllers
                 FullName = student.FullName,
                 AcademicYear = student.AcademicYear,
                 SeatNumber = student.SeatNumber,
-                CommitteeId = student.Committee.CommitteeId,
-                CommitteeNumber = student.Committee.CommitteeNumber,
-                NumberOfStudent = student.Committee.NumberOfStudent
+                LocationId = student.ExamLocation?.LocationId ?? 0,
+                LocationName = student.ExamLocation?.LocationName ?? "غير محدد",
+                StudentCapacity = student.ExamLocation?.StudentCapacity ?? 0
             };
 
             return View(viewModel);
         }
-
         // =====================================
-        // 9. استيراد Excel - IMPORT
+        // 9. استيراد Excel - IMPORT (معدل ومصحح)
         // =====================================
         public IActionResult ImportExcel()
         {
@@ -435,6 +413,7 @@ namespace projectweb.Controllers
                 if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(nationalId))
                 { skipped++; continue; }
 
+                // التحقق من عدم تكرار الرقم القومي
                 if (_context.Students.Any(s => s.NationalId == nationalId))
                 { skipped++; continue; }
 
@@ -467,7 +446,7 @@ namespace projectweb.Controllers
                     AcademicYear = academicYear,
                     Specialization = specialization,
                     SeatNumber = seatNumber,
-                    CommitteeId = null,
+                    LocationId = null, 
                     ExamScheduleId = null
                 });
 
@@ -481,10 +460,10 @@ namespace projectweb.Controllers
         // =====================================
         // 10. مساعد: إعادة ترقيم المقاعد
         // =====================================
-        private async Task RecalculateSeatNumbersByCommittee(int committeeId)
+        private async Task RecalculateSeatNumbersByCommittee(int locationId)
         {
             var studentsInCommittee = await _context.Students
-                .Where(s => s.CommitteeId == committeeId)
+                .Where(s => s.LocationId == locationId)
                 .OrderBy(s => s.FullName)
                 .ToListAsync();
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using projectweb.Models;
+using System.Linq;
 
 namespace projectweb.Models
 {
@@ -15,10 +16,11 @@ namespace projectweb.Models
         public DbSet<Student> Students { get; set; }
         public DbSet<Relative> Relatives { get; set; }
         public DbSet<Role> Roles { get; set; }
-        public DbSet<Committee> Committees { get; set; }
+
+        // الجدول الموحد البديل للهيكل المكاني
+        public DbSet<ExamLocation> ExamLocations { get; set; }
+
         public DbSet<CommitteesAssignment> CommitteesAssignments { get; set; }
-        public DbSet<Hall> Halls { get; set; }
-        public DbSet<Block> Blocks { get; set; }
         public DbSet<Exam> Exams { get; set; }
         public DbSet<Subject> Subjects { get; set; }
         public DbSet<ExamSchedule> ExamSchedules { get; set; }
@@ -29,16 +31,17 @@ namespace projectweb.Models
         {
             base.OnModelCreating(modelBuilder);
 
+            // بيانات الأدوار الثابتة
             modelBuilder.Entity<Role>().HasData(
-                new Role { RoleID = 1, RoleName = StaffPosition.HallManager, RoleDescription = "رئيس صالة (أستاذ)" },
-                new Role { RoleID = 2, RoleName = StaffPosition.HallManager, RoleDescription = "رئيس صالة (أستاذ مساعد)" },
-                new Role { RoleID = 3, RoleName = StaffPosition.HallManager, RoleDescription = "رئيس صالة (أستاذ متفرغ)" },
-                new Role { RoleID = 4, RoleName = StaffPosition.BlockGroupLeader, RoleDescription = "مراقب (مدرس)" },
-                new Role { RoleID = 5, RoleName = StaffPosition.CommitteeObserver, RoleDescription = "ملاحظ (معيد)" },
-                new Role { RoleID = 6, RoleName = StaffPosition.CommitteeObserver, RoleDescription = "ملاحظ (مدرس مساعد)" },
-                new Role { RoleID = 7, RoleName = StaffPosition.CommitteeObserver, RoleDescription = "ملاحظ (موظف)" },
-                new Role { RoleID = 8, RoleName = StaffPosition.Doctor, RoleDescription = "طبيب" },
-                new Role { RoleID = 9, RoleName = StaffPosition.Nurse, RoleDescription = "ممرض" }
+                 new Role { RoleID = 1, RoleName = StaffPosition.HallManager, RoleDescription = "رئيس جراش (أستاذ)" },
+                 new Role { RoleID = 2, RoleName = StaffPosition.HallManager, RoleDescription = "رئيس جراش (أستاذ مساعد)" },
+                 new Role { RoleID = 3, RoleName = StaffPosition.HallManager, RoleDescription = "رئيس جراش (أستاذ متفرغ)" },
+                 new Role { RoleID = 4, RoleName = StaffPosition.BlockGroupLeader, RoleDescription = "مراقب (مدرس)" },
+                 new Role { RoleID = 5, RoleName = StaffPosition.CommitteeObserver, RoleDescription = "ملاحظ (معيد)" },
+                 new Role { RoleID = 6, RoleName = StaffPosition.CommitteeObserver, RoleDescription = "ملاحظ (مدرس مساعد)" },
+                 new Role { RoleID = 7, RoleName = StaffPosition.CommitteeObserver, RoleDescription = "ملاحظ (موظف)" },
+                 new Role { RoleID = 8, RoleName = StaffPosition.Doctor, RoleDescription = "دكتور" },
+                 new Role { RoleID = 9, RoleName = StaffPosition.Nurse, RoleDescription = " مساعد دكتور" }
             );
 
             modelBuilder.Entity<Exam>()
@@ -47,6 +50,22 @@ namespace projectweb.Models
                 .HasForeignKey(e => e.SubjectID)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // ========================================================
+            // ضبط علاقات الجدول الموحد الجديد (ExamLocation)
+            // ========================================================
+
+            // 1. علاقة الربط الذاتي الهرمية (Self-Referencing)
+            modelBuilder.Entity<ExamLocation>()
+                .HasOne(l => l.ParentLocation)
+                .WithMany(l => l.SubLocations)
+                .HasForeignKey(l => l.ParentLocationId)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+         
+
+            // ========================================================
+            // تحديث علاقات التكليفات (CommitteesAssignment)
+            // ========================================================
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasKey(ca => ca.AssignmentId);
 
@@ -72,27 +91,17 @@ namespace projectweb.Models
                 .HasForeignKey(ca => ca.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // تعديل ربط التكليفات بجدول الأماكن الموحد بدلاً من الـ 3 جداول الفرعية
             modelBuilder.Entity<CommitteesAssignment>()
-                .HasOne(ca => ca.Hall)
-                .WithMany()
-                .HasForeignKey(ca => ca.HallId)
+                .HasOne(ca => ca.ExamLocation)
+                .WithMany(l => l.CommitteesAssignments)
+                .HasForeignKey(ca => ca.LocationId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<CommitteesAssignment>()
-                .HasOne(ca => ca.Block)
-                .WithMany()
-                .HasForeignKey(ca => ca.BlockId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<CommitteesAssignment>()
-                .HasOne(ca => ca.Committee)
-                .WithMany(c => c.CommitteesAssignments)
-                .HasForeignKey(ca => ca.CommitteeId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.Restrict);
-
+            // ========================================================
+            // ضبط علاقات الأقارب والطلاب والمستندات الزمنية
+            // ========================================================
             modelBuilder.Entity<Relative>()
                 .HasOne(r => r.Student)
                 .WithMany(s => s.Relatives)
@@ -105,24 +114,14 @@ namespace projectweb.Models
                 .HasForeignKey(r => r.PersonId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Hall>()
-                .HasOne(h => h.HallSupervisor)
-                .WithMany()
-                .HasForeignKey(h => h.HallSupervisorId)
+            // تعديل ربط جدول الطلاب بالمكان الموحد (اللجنة)
+            modelBuilder.Entity<Student>()
+                .HasOne(s => s.ExamLocation)
+                .WithMany(l => l.Students)
+                .HasForeignKey(s => s.LocationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Block>()
-                .HasOne(b => b.Hall)
-                .WithMany(h => h.Blocks)
-                .HasForeignKey(b => b.HallId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Committee>()
-                .HasOne(c => c.Block)
-                .WithMany(b => b.Committees)
-                .HasForeignKey(c => c.BlockId)
-                .OnDelete(DeleteBehavior.Restrict);
-
+            // تعديل ربط جدول جدول الامتحانات (ExamSchedule) بالمكان الموحد (الصالة/البلوك)
             modelBuilder.Entity<ExamSchedule>()
                 .HasOne(es => es.Exam)
                 .WithMany(e => e.ExamSchedules)
@@ -130,15 +129,18 @@ namespace projectweb.Models
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ExamSchedule>()
-                .HasOne(es => es.Block)
-                .WithMany()
-                .HasForeignKey(es => es.BlockId)
+                .HasOne(es => es.ExamLocation)
+                .WithMany(l => l.ExamSchedules)
+                .HasForeignKey(es => es.LocationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ExamSchedule>()
-                .HasIndex(es => new { es.ExamId, es.BlockId })
+                .HasIndex(es => new { es.ExamId, es.LocationId })
                 .IsUnique();
 
+            // ========================================================
+            // التقارير والمسؤولين عنها
+            // ========================================================
             modelBuilder.Entity<Report>()
                 .HasOne(r => r.ExamSchedule)
                 .WithMany(es => es.Reports)

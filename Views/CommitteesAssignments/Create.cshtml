@@ -48,31 +48,29 @@
 
                     <div class="col-md-12 my-3 p-4 rounded-3 border shadow-sm" style="background-color: #f8faff; border-radius: 12px !important;">
                         <h6 class="fw-bold border-bottom pb-2 mb-3 text-primary">
-                            <i class="bi bi-geo-alt-fill me-1"></i> تحديد نطاق وتوزيع المسئولية
+                            <i class="bi bi-geo-alt-fill me-1"></i> تحديد نطاق وتوزيع المسئولية (المكان)
                         </h6>
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="small text-muted fw-bold d-block mb-2">صالة كاملة</label>
-                                <select asp-for="HallId" id="hallSelect" class="form-select form-select-sm shadow-sm"
-                                        asp-items="@(ViewBag.HallId as SelectList ?? new SelectList(Enumerable.Empty<SelectListItem>()))" style="border-radius: 6px;">
+                                <label class="small text-muted fw-bold d-block mb-2">جراش رئيسي</label>
+                                <select asp-for="LocationId" id="hallSelect" class="form-select form-select-sm shadow-sm"
+                                        asp-items="@(ViewBag.LocationId as SelectList ?? new SelectList(Enumerable.Empty<SelectListItem>()))" style="border-radius: 6px;">
                                     <option value="">-- لا يوجد --</option>
                                 </select>
                                 <small class="text-muted d-block mt-2 fw-bold" style="font-size: 0.7rem; color: #718096 !important;">(رئيس صالة / دكتور / ممرض)</small>
                             </div>
 
                             <div class="col-md-4">
-                                <label class="small text-muted fw-bold d-block mb-2">بلوك محدد</label>
-                                <select asp-for="BlockId" id="blockSelect" class="form-select form-select-sm shadow-sm"
-                                        asp-items="@(ViewBag.BlockId as SelectList ?? new SelectList(Enumerable.Empty<SelectListItem>()))" style="border-radius: 6px;">
+                                <label class="small text-muted fw-bold d-block mb-2">صالة / بلوك محدد</label>
+                                <select id="blockSelect" name="BlockLocationId" class="form-select form-select-sm shadow-sm" style="border-radius: 6px;">
                                     <option value="">-- لا يوجد --</option>
                                 </select>
                                 <small class="text-muted d-block mt-2 fw-bold" style="font-size: 0.7rem; color: #718096 !important;">(لمراقب البلوك والمبنى)</small>
                             </div>
 
                             <div class="col-md-4">
-                                <label class="small text-muted fw-bold d-block mb-2">لجنة فرعية</label>
-                                <select asp-for="CommitteeId" id="committeeSelect" class="form-select form-select-sm shadow-sm"
-                                        asp-items="@(ViewBag.CommitteeId as SelectList ?? new SelectList(Enumerable.Empty<SelectListItem>()))" style="border-radius: 6px;">
+                                <label class="small text-muted fw-bold d-block mb-2">لجنة فرعية دقيقة</label>
+                                <select id="committeeSelect" name="CommitteeLocationId" class="form-select form-select-sm shadow-sm" style="border-radius: 6px;">
                                     <option value="">-- لا يوجد --</option>
                                 </select>
                                 <small class="text-muted d-block mt-2 fw-bold" style="font-size: 0.7rem; color: #718096 !important;">(لملاحظ القاعة الفرعية)</small>
@@ -113,7 +111,7 @@
                 blockSelect.prop('disabled', false);
                 committeeSelect.prop('disabled', false);
 
-                if (roleText.includes("رئيس صالة") || roleText.includes("طبيب") || roleText.includes("ممرض")) {
+                if (roleText.includes("رئيس صالة") || roleText.includes("طبيب") || roleText.includes("ممرض") || roleText.includes("دكتور")) {
                     blockSelect.val("");
                     committeeSelect.val("");
                     blockSelect.prop('disabled', true);
@@ -124,6 +122,19 @@
                     committeeSelect.prop('disabled', true);
                 }
             }
+
+            // ميكانيكية مزامنة وحقن القيمة الأكثر دقة في الكيان الشجري لـ LocationId قبل الـ Post
+            $('form').submit(function() {
+                let finalLocationId = hallSelect.val();
+
+                if (committeeSelect.val()) {
+                    finalLocationId = committeeSelect.val();
+                } else if (blockSelect.val()) {
+                    finalLocationId = blockSelect.val();
+                }
+
+                hallSelect.val(finalLocationId);
+            });
 
             $('#personSelect').change(function () {
                 const selectedText = $(this).find("option:selected").text();
@@ -139,6 +150,7 @@
 
             roleSelect.change(updateFieldsAvailability);
 
+            // تفعيل التحميل الشجري التراكمي عبر دالة الـ GetHallDetails الفعالة
             hallSelect.change(function () {
                 const hallId = $(this).val();
 
@@ -147,7 +159,7 @@
 
                 if (!hallId) return;
 
-                $.getJSON('/CommitteesAssignments/GetHallDetails', { hallId: hallId }, function (data) {
+                $.getJSON('@Url.Action("GetHallDetails")', { hallId: hallId }, function (data) {
                     if(data.blocks) {
                         $.each(data.blocks, function(i, b) {
                             blockSelect.append($('<option>', { value: b.id, text: b.name }));

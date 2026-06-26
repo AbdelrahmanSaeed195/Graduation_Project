@@ -12,7 +12,7 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260618192739_InitCreate")]
+    [Migration("20260625140639_InitCreate")]
     partial class InitCreate
     {
         /// <inheritdoc />
@@ -223,73 +223,6 @@ namespace projectweb.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("projectweb.Models.Block", b =>
-                {
-                    b.Property<int>("BlockId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BlockId"));
-
-                    b.Property<string>("BlockName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("HallId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxCommittees")
-                        .HasColumnType("int");
-
-                    b.HasKey("BlockId");
-
-                    b.HasIndex("BlockName")
-                        .IsUnique();
-
-                    b.HasIndex("HallId");
-
-                    b.ToTable("Blocks");
-                });
-
-            modelBuilder.Entity("projectweb.Models.Committee", b =>
-                {
-                    b.Property<int>("CommitteeId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommitteeId"));
-
-                    b.Property<int>("BlockId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CommitteeNumber")
-                        .HasColumnType("int");
-
-                    b.Property<int>("NumberOfStudent")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RequiredHeads")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RequiredMentors")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RequiredObservers")
-                        .HasColumnType("int");
-
-                    b.Property<string>("StatusOfCommittee")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("CommitteeId");
-
-                    b.HasIndex("BlockId");
-
-                    b.HasIndex("CommitteeNumber")
-                        .IsUnique();
-
-                    b.ToTable("Committees");
-                });
-
             modelBuilder.Entity("projectweb.Models.CommitteesAssignment", b =>
                 {
                     b.Property<int>("AssignmentId")
@@ -301,19 +234,10 @@ namespace projectweb.Migrations
                     b.Property<string>("AssignmentType")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("BlockId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("BlockId1")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CommitteeId")
-                        .HasColumnType("int");
-
                     b.Property<int>("ExamScheduleId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("HallId")
+                    b.Property<int?>("LocationId")
                         .HasColumnType("int");
 
                     b.Property<int>("PersonId")
@@ -327,15 +251,9 @@ namespace projectweb.Migrations
 
                     b.HasKey("AssignmentId");
 
-                    b.HasIndex("BlockId");
-
-                    b.HasIndex("BlockId1");
-
-                    b.HasIndex("CommitteeId");
-
                     b.HasIndex("ExamScheduleId");
 
-                    b.HasIndex("HallId");
+                    b.HasIndex("LocationId");
 
                     b.HasIndex("RoleId");
 
@@ -372,6 +290,43 @@ namespace projectweb.Migrations
                     b.ToTable("Exams");
                 });
 
+            modelBuilder.Entity("projectweb.Models.ExamLocation", b =>
+                {
+                    b.Property<int>("LocationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LocationId"));
+
+                    b.Property<int?>("Floor")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LocationName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("MaxSubLocations")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ParentLocationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("StudentCapacity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("LocationId");
+
+                    b.HasIndex("ParentLocationId");
+
+                    b.ToTable("ExamLocations");
+                });
+
             modelBuilder.Entity("projectweb.Models.ExamSchedule", b =>
                 {
                     b.Property<int>("ExamScheduleId")
@@ -380,13 +335,10 @@ namespace projectweb.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExamScheduleId"));
 
-                    b.Property<int>("BlockId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CommitteeId")
-                        .HasColumnType("int");
-
                     b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LocationId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ScheduledDate")
@@ -394,46 +346,12 @@ namespace projectweb.Migrations
 
                     b.HasKey("ExamScheduleId");
 
-                    b.HasIndex("BlockId");
+                    b.HasIndex("LocationId");
 
-                    b.HasIndex("CommitteeId");
-
-                    b.HasIndex("ExamId", "BlockId")
+                    b.HasIndex("ExamId", "LocationId")
                         .IsUnique();
 
                     b.ToTable("ExamSchedules");
-                });
-
-            modelBuilder.Entity("projectweb.Models.Hall", b =>
-                {
-                    b.Property<int>("HallId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HallId"));
-
-                    b.Property<int>("Floor")
-                        .HasColumnType("int");
-
-                    b.Property<string>("HallName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int?>("HallSupervisorId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxBlocks")
-                        .HasColumnType("int");
-
-                    b.HasKey("HallId");
-
-                    b.HasIndex("HallName")
-                        .IsUnique();
-
-                    b.HasIndex("HallSupervisorId");
-
-                    b.ToTable("Halls");
                 });
 
             modelBuilder.Entity("projectweb.Models.Person", b =>
@@ -517,11 +435,11 @@ namespace projectweb.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReportId"));
 
-                    b.Property<int?>("CommitteeId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -534,7 +452,7 @@ namespace projectweb.Migrations
 
                     b.HasKey("ReportId");
 
-                    b.HasIndex("CommitteeId");
+                    b.HasIndex("LocationId");
 
                     b.HasIndex("ScheduleId");
 
@@ -599,19 +517,19 @@ namespace projectweb.Migrations
                         new
                         {
                             RoleID = 1,
-                            RoleDescription = "رئيس صالة (أستاذ)",
+                            RoleDescription = "رئيس جراش (أستاذ)",
                             RoleName = 1
                         },
                         new
                         {
                             RoleID = 2,
-                            RoleDescription = "رئيس صالة (أستاذ مساعد)",
+                            RoleDescription = "رئيس جراش (أستاذ مساعد)",
                             RoleName = 1
                         },
                         new
                         {
                             RoleID = 3,
-                            RoleDescription = "رئيس صالة (أستاذ متفرغ)",
+                            RoleDescription = "رئيس جراش (أستاذ متفرغ)",
                             RoleName = 1
                         },
                         new
@@ -641,13 +559,13 @@ namespace projectweb.Migrations
                         new
                         {
                             RoleID = 8,
-                            RoleDescription = "طبيب",
+                            RoleDescription = "دكتور",
                             RoleName = 4
                         },
                         new
                         {
                             RoleID = 9,
-                            RoleDescription = "ممرض",
+                            RoleDescription = " مساعد دكتور",
                             RoleName = 5
                         });
                 });
@@ -663,9 +581,6 @@ namespace projectweb.Migrations
                     b.Property<int>("AcademicYear")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CommitteeId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("ExamScheduleId")
                         .HasColumnType("int");
 
@@ -673,6 +588,9 @@ namespace projectweb.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
 
                     b.Property<string>("NationalId")
                         .IsRequired()
@@ -687,9 +605,9 @@ namespace projectweb.Migrations
 
                     b.HasKey("StudentId");
 
-                    b.HasIndex("CommitteeId");
-
                     b.HasIndex("ExamScheduleId");
+
+                    b.HasIndex("LocationId");
 
                     b.HasIndex("NationalId")
                         .IsUnique();
@@ -773,53 +691,17 @@ namespace projectweb.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("projectweb.Models.Block", b =>
-                {
-                    b.HasOne("projectweb.Models.Hall", "Hall")
-                        .WithMany("Blocks")
-                        .HasForeignKey("HallId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Hall");
-                });
-
-            modelBuilder.Entity("projectweb.Models.Committee", b =>
-                {
-                    b.HasOne("projectweb.Models.Block", "Block")
-                        .WithMany("Committees")
-                        .HasForeignKey("BlockId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Block");
-                });
-
             modelBuilder.Entity("projectweb.Models.CommitteesAssignment", b =>
                 {
-                    b.HasOne("projectweb.Models.Block", "Block")
-                        .WithMany()
-                        .HasForeignKey("BlockId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("projectweb.Models.Block", null)
-                        .WithMany("CommitteesAssignments")
-                        .HasForeignKey("BlockId1");
-
-                    b.HasOne("projectweb.Models.Committee", "Committee")
-                        .WithMany("CommitteesAssignments")
-                        .HasForeignKey("CommitteeId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("projectweb.Models.ExamSchedule", "ExamSchedule")
                         .WithMany()
                         .HasForeignKey("ExamScheduleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("projectweb.Models.Hall", "Hall")
-                        .WithMany()
-                        .HasForeignKey("HallId")
+                    b.HasOne("projectweb.Models.ExamLocation", "ExamLocation")
+                        .WithMany("CommitteesAssignments")
+                        .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("projectweb.Models.Person", "Person")
@@ -834,13 +716,9 @@ namespace projectweb.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Block");
-
-                    b.Navigation("Committee");
+                    b.Navigation("ExamLocation");
 
                     b.Navigation("ExamSchedule");
-
-                    b.Navigation("Hall");
 
                     b.Navigation("Person");
 
@@ -858,37 +736,33 @@ namespace projectweb.Migrations
                     b.Navigation("Subject");
                 });
 
+            modelBuilder.Entity("projectweb.Models.ExamLocation", b =>
+                {
+                    b.HasOne("projectweb.Models.ExamLocation", "ParentLocation")
+                        .WithMany("SubLocations")
+                        .HasForeignKey("ParentLocationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ParentLocation");
+                });
+
             modelBuilder.Entity("projectweb.Models.ExamSchedule", b =>
                 {
-                    b.HasOne("projectweb.Models.Block", "Block")
-                        .WithMany()
-                        .HasForeignKey("BlockId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("projectweb.Models.Committee", null)
-                        .WithMany("ExamSchedules")
-                        .HasForeignKey("CommitteeId");
-
                     b.HasOne("projectweb.Models.Exam", "Exam")
                         .WithMany("ExamSchedules")
                         .HasForeignKey("ExamId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Block");
+                    b.HasOne("projectweb.Models.ExamLocation", "ExamLocation")
+                        .WithMany("ExamSchedules")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Exam");
-                });
 
-            modelBuilder.Entity("projectweb.Models.Hall", b =>
-                {
-                    b.HasOne("projectweb.Models.Person", "HallSupervisor")
-                        .WithMany()
-                        .HasForeignKey("HallSupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("HallSupervisor");
+                    b.Navigation("ExamLocation");
                 });
 
             modelBuilder.Entity("projectweb.Models.Person", b =>
@@ -923,9 +797,9 @@ namespace projectweb.Migrations
 
             modelBuilder.Entity("projectweb.Models.Report", b =>
                 {
-                    b.HasOne("projectweb.Models.Committee", "Committee")
+                    b.HasOne("projectweb.Models.ExamLocation", "ExamLocation")
                         .WithMany()
-                        .HasForeignKey("CommitteeId");
+                        .HasForeignKey("LocationId");
 
                     b.HasOne("projectweb.Models.ExamSchedule", "ExamSchedule")
                         .WithMany("Reports")
@@ -933,7 +807,7 @@ namespace projectweb.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Committee");
+                    b.Navigation("ExamLocation");
 
                     b.Navigation("ExamSchedule");
                 });
@@ -973,33 +847,18 @@ namespace projectweb.Migrations
 
             modelBuilder.Entity("projectweb.Models.Student", b =>
                 {
-                    b.HasOne("projectweb.Models.Committee", "Committee")
-                        .WithMany("Students")
-                        .HasForeignKey("CommitteeId");
-
                     b.HasOne("projectweb.Models.ExamSchedule", "ExamSchedule")
                         .WithMany("Students")
                         .HasForeignKey("ExamScheduleId");
 
-                    b.Navigation("Committee");
+                    b.HasOne("projectweb.Models.ExamLocation", "ExamLocation")
+                        .WithMany("Students")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ExamLocation");
 
                     b.Navigation("ExamSchedule");
-                });
-
-            modelBuilder.Entity("projectweb.Models.Block", b =>
-                {
-                    b.Navigation("Committees");
-
-                    b.Navigation("CommitteesAssignments");
-                });
-
-            modelBuilder.Entity("projectweb.Models.Committee", b =>
-                {
-                    b.Navigation("CommitteesAssignments");
-
-                    b.Navigation("ExamSchedules");
-
-                    b.Navigation("Students");
                 });
 
             modelBuilder.Entity("projectweb.Models.Exam", b =>
@@ -1007,16 +866,22 @@ namespace projectweb.Migrations
                     b.Navigation("ExamSchedules");
                 });
 
+            modelBuilder.Entity("projectweb.Models.ExamLocation", b =>
+                {
+                    b.Navigation("CommitteesAssignments");
+
+                    b.Navigation("ExamSchedules");
+
+                    b.Navigation("Students");
+
+                    b.Navigation("SubLocations");
+                });
+
             modelBuilder.Entity("projectweb.Models.ExamSchedule", b =>
                 {
                     b.Navigation("Reports");
 
                     b.Navigation("Students");
-                });
-
-            modelBuilder.Entity("projectweb.Models.Hall", b =>
-                {
-                    b.Navigation("Blocks");
                 });
 
             modelBuilder.Entity("projectweb.Models.Person", b =>

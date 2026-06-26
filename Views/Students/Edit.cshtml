@@ -14,7 +14,8 @@
             <div class="card-body p-4 bg-white">
                 <form asp-action="Edit" method="post" id="editStudentForm">
                     @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" value="@ViewBag.StudentId" />
+
+                    <input type="hidden" name="StudentId" value="@ViewBag.StudentId" />
 
                     <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
@@ -52,6 +53,8 @@
                             </select>
                             <span asp-validation-for="Specialization" class="text-danger small"></span>
                         </div>
+
+                        <input type="hidden" asp-for="LocationId" />
                     </div>
 
                     <div class="alert alert-info mt-4 small border-0" style="background-color: rgba(26, 58, 90, 0.08); color: #1a3a5a; border-radius: 8px;">
@@ -77,7 +80,8 @@
         $(document).ready(function () {
             function toggleSpecialization() {
                 var level = $('#levelSelect').val();
-                if (level === "1" || level === "2" || level === "") {
+                // تعديل قيم المقارنة لتتوافق مع الـ Enum (غالباً الـ Enums تبدأ من 0 أو 1، تأكد من مطابقتها لكود الـ Model)
+                if (level == "1" || level == "2" || level === "") {
                     $('#specializationSelect').val("1");
                     $('#specializationSelect option[value="2"], #specializationSelect option[value="3"], #specializationSelect option[value="4"]').hide();
                 } else {

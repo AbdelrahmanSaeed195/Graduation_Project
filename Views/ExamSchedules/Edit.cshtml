@@ -1,7 +1,7 @@
 ﻿@model projectweb.Models.ExamSchedule
 
 @{
-    ViewData["Title"] = "تعديل  جلسة توزيع الصالات";
+    ViewData["Title"] = "تعديل جلسة توزيع الصالات";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -23,34 +23,20 @@
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4 rounded-3 @(ViewData.ModelState.IsValid ? "d-none" : "")"></div>
 
                         <div class="row g-4">
-
-                            <div class="col-md-7 mb-3">
+                            <div class="col-12 mb-3">
                                 <label asp-for="ExamId" class="form-label fw-bold small text-muted mb-1">اسم المادة / الامتحان المقرر <span class="text-danger">*</span></label>
                                 <select asp-for="ExamId" id="ExamSelect" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.ExamId" style="border-radius: 8px; font-size: 0.95rem;">
                                 </select>
                                 <span asp-validation-for="ExamId" class="text-danger small mt-1 d-block fw-bold"></span>
                             </div>
 
-                            <div class="col-md-5 mb-3">
-                                <label class="form-label fw-bold small text-muted mb-1 text-center d-block">السنة الدراسية</label>
-                                <div id="AcademicYearDisplay" class="p-2 border rounded-3 bg-light text-center fw-bold shadow-sm" style="font-size: 1.1rem; height: calc(3.5rem + 2px); display: flex; align-items: center; justify-content: center; color: #1a3a5a;">
-                                    جاري القراءة...
-                                </div>
-                            </div>
-
                             <div class="col-12 mb-3">
-                                <label asp-for="BlockId" class="form-label fw-bold small text-muted mb-1">الصالة المختص <span class="text-danger">*</span></label>
-                                <select asp-for="BlockId" id="BlockSelect" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="@(ViewBag.BlockId as SelectList)" style="border-radius: 8px; font-size: 0.95rem;">
+                                <label asp-for="LocationId" class="form-label fw-bold small text-muted mb-1">الصالة المختصة <span class="text-danger">*</span></label>
+                                <select asp-for="LocationId" id="LocationSelect" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="@(ViewBag.LocationId as SelectList)" style="border-radius: 8px; font-size: 0.95rem;">
                                 </select>
-                                <span asp-validation-for="BlockId" class="text-danger small mt-1 d-block fw-bold"></span>
+                                <span asp-validation-for="LocationId" class="text-danger small mt-1 d-block fw-bold"></span>
                             </div>
 
-                            <div class="col-12">
-                                <div class="alert alert-info border-0 shadow-sm mb-0" style="border-radius: 8px;">
-                                    <i class="bi bi-info-circle-fill me-2"></i>
-                                    تنبيه: يتم تحديث قائمة الصالات المتاحة تلقائياً عند تغيير الامتحان لضمان عدم حدوث تضارب في الجراشات والصالات.
-                                </div>
-                            </div>
                         </div>
 
                         <div class="border-top mt-5 pt-4">
@@ -77,44 +63,30 @@
 
     <script>
         $(document).ready(function () {
-
-            var currentBlockId = '@Model.BlockId';
-
-            function updateAcademicYearDisplay() {
-                var selectedText = $('#ExamSelect').find("option:selected").text();
-                var academicYear = "غير محدد";
-                var regExp = /\(([^)]+)\)/;
-                var matches = regExp.exec(selectedText);
-
-                if (matches && matches.length > 1) {
-                    academicYear = matches[1];
-                }
-                $('#AcademicYearDisplay').text(academicYear);
-            }
+            var currentLocationId = '@Model.LocationId';
 
             function handleExamChange(examId, isInitialLoad) {
                 if (!examId) return;
 
-                updateAcademicYearDisplay();
-
-                var blockSelect = $('#BlockSelect');
+                var locationSelect = $('#LocationSelect');
 
                 if (!isInitialLoad) {
-                    blockSelect.empty().append('<option value="">-- جاري تحميل الصالات المتاحة --</option>');
+                    locationSelect.empty().append('<option value="">-- جاري تحميل الصالات المتاحة --</option>');
 
-                    $.getJSON('@Url.Action("GetAvailableBlocks")', { examId: examId }, function (data) {
-                        blockSelect.empty();
-                        blockSelect.append('<option value="">-- اختر الصالة --</option>');
+                    $.getJSON('@Url.Action("GetAvailableLocations")', { examId: examId }, function (data) {
+                        locationSelect.empty();
+                        locationSelect.append('<option value="">-- اختر الصالة --</option>');
                         $.each(data, function (i, item) {
-                            blockSelect.append($('<option>', { value: item.id, text: item.name }));
+                            locationSelect.append($('<option>', { value: item.id, text: item.name }));
                         });
                     });
                 } else {
-         
-                    $.getJSON('@Url.Action("GetAvailableBlocks")', { examId: examId }, function (data) {
+                    // في التحميل الأولي، نكتفي بالتأكد من جلب البيانات وتعبئتها إذا لزم الأمر
+                    $.getJSON('@Url.Action("GetAvailableLocations")', { examId: examId }, function (data) {
+                        // المنطق هنا للتأكد من بقاء القيمة المختارة كما هي
                         $.each(data, function (i, item) {
-                            if (item.id != currentBlockId && blockSelect.find('option[value="' + item.id + '"]').length === 0) {
-                                blockSelect.append($('<option>', { value: item.id, text: item.name }));
+                            if (item.id != currentLocationId && locationSelect.find('option[value="' + item.id + '"]').length === 0) {
+                                locationSelect.append($('<option>', { value: item.id, text: item.name }));
                             }
                         });
                     });

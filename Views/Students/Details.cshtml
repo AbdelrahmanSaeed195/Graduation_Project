@@ -78,9 +78,9 @@
                         <div class="p-3 border rounded bg-light bg-opacity-50">
                             <div class="small text-muted mb-1 fw-bold">اللجنة التابع لها طوال العام</div>
                             <div class="fw-bold text-success">
-                                @if (Model.Committee != null)
+                                @if (Model.ExamLocation != null)
                                 {
-                                    <span><i class="bi bi-building-check me-1"></i> لجنة رقم @Model.Committee.CommitteeNumber</span>
+                                    <span><i class="bi bi-building-check me-1"></i> @Model.ExamLocation.LocationName</span>
                                 }
                                 else
                                 {
@@ -117,15 +117,12 @@
                 </div>
 
                 <div class="d-flex flex-wrap gap-2 mt-5 pt-4 border-top" style="border-color: #dee2e6 !important;">
-                    @if (User.IsInRole("Admin"))
-                    {
-                        <a asp-action="Edit" asp-route-id="@Model.StudentId" class="btn btn-academic-primary px-5 fw-bold text-white" style="background-color: #1a3a5a; border-radius: 8px;">
-                            <i class="bi bi-pencil-square me-1"></i> تعديل البيانات
-                        </a>
-                        <a asp-action="Delete" asp-route-id="@Model.StudentId" class="btn btn-danger px-4" style="border-radius: 8px;">
-                            <i class="bi bi-trash me-1"></i> حذف الطالب
-                        </a>
-                    }
+                    <a asp-action="Edit" asp-route-id="@Model.StudentId" class="btn btn-academic-primary px-5 fw-bold text-white" style="background-color: #1a3a5a; border-radius: 8px;">
+                        <i class="bi bi-pencil-square me-1"></i> تعديل البيانات
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.StudentId" class="btn btn-danger px-4" style="border-radius: 8px;">
+                        <i class="bi bi-trash me-1"></i> حذف الطالب
+                    </a>
                     <a asp-action="Index" class="btn btn-outline-secondary px-4 ms-auto" style="border-radius: 8px;">العودة للقائمة الرئيسية</a>
                 </div>
             </div>

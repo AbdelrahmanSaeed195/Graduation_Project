@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "تفاصيل التكليف";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container mt-5 text-end" dir="rtl">
@@ -35,23 +36,30 @@
                         <label class="text-muted d-block mb-3 fw-bold text-uppercase small">نطاق التكليف والمسئولية الجغرافية</label>
 
                         <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
-                            @if (Model.Committee != null)
+                            @if (Model.ExamLocation != null)
                             {
-                                <div class="text-muted">صالة: @(Model.Committee.Block?.Hall?.HallName ?? "ل")</div>
-                                <i class="bi bi-chevron-left text-primary mx-1"></i>
-                                <div class="text-muted">بلوك: @(Model.Committee.Block?.BlockName ?? "م")</div>
-                                <i class="bi bi-chevron-left text-primary mx-1"></i>
-                                <h4 class="mb-0 text-dark fw-bold">لجنة رقم (@Model.Committee.CommitteeNumber)</h4>
+                                if (Model.ExamLocation.Type == projectweb.Models.LocationType.Hall)
+                                {
+                                    <h4 class="mb-0 text-dark fw-bold"><i class="bi bi-building me-1 text-primary"></i> كامل نطاق الجراش الرئيسي: (@Model.ExamLocation.LocationName)</h4>
+                                }
+                                else if (Model.ExamLocation.Type == projectweb.Models.LocationType.Block)
+                                {
+                                    <div class="text-muted">الجراش: @(Model.ExamLocation.ParentLocation?.LocationName ?? "عام")</div>
+                                    <i class="bi bi-chevron-left text-primary mx-1"></i>
+                                    <h4 class="mb-0 text-dark fw-bold"><i class="bi bi-grid-3x3 me-1 text-info"></i> كامل نطاق الصالة / البلوك: (@Model.ExamLocation.LocationName)</h4>
+                                }
+                                else if (Model.ExamLocation.Type == projectweb.Models.LocationType.Committee)
+                                {
+                                    <div class="text-muted">الجراش: @(Model.ExamLocation.ParentLocation?.ParentLocation?.LocationName ?? "عام")</div>
+                                    <i class="bi bi-chevron-left text-primary mx-1"></i>
+                                    <div class="text-muted">الصالة: @(Model.ExamLocation.ParentLocation?.LocationName ?? "عام")</div>
+                                    <i class="bi bi-chevron-left text-primary mx-1"></i>
+                                    <h4 class="mb-0 text-dark fw-bold"><i class="bi bi-person-workspace me-1 text-success"></i> @Model.ExamLocation.LocationName</h4>
+                                }
                             }
-                            else if (Model.Block != null)
+                            else
                             {
-                                <div class="text-muted">صالة: @(Model.Block.Hall?.HallName ?? "ل")</div>
-                                <i class="bi bi-chevron-left text-primary mx-1"></i>
-                                <h4 class="mb-0 text-dark fw-bold">كامل بلوك: (@Model.Block.BlockName)</h4>
-                            }
-                            else if (Model.Hall != null)
-                            {
-                                <h4 class="mb-0 text-dark fw-bold">كامل صالة: (@Model.Hall.HallName)</h4>
+                                <h4 class="mb-0 text-muted fw-bold">قوة احتياطية عامة (ملاحظ احتياطي بالكلية)</h4>
                             }
                         </div>
                     </div>
@@ -93,12 +101,9 @@
         </div>
 
         <div class="card-footer bg-light border-0 d-flex justify-content-center gap-3 py-4" style="border-radius: 0 0 15px 15px;">
-            @if (User.IsInRole("Admin"))
-           {
-                <a asp-action="Edit" asp-route-id="@Model.AssignmentId" class="btn btn-primary px-5 shadow-sm btn-hover-effect">
+            <a asp-action="Edit" asp-route-id="@Model.AssignmentId" class="btn btn-primary px-5 shadow-sm btn-hover-effect">
                 <i class="bi bi-pencil-square me-1"></i> تعديل التكليف
-                 </a>
-           }
+            </a>
             <a asp-action="Index" asp-route-examId="@Model.ExamSchedule?.ExamId" class="btn btn-outline-dark px-5 shadow-sm bg-white btn-hover-effect-outline">
                 <i class="bi bi-arrow-right-circle me-1"></i> العودة للجدول
             </a>
@@ -144,7 +149,6 @@
             transform: scale(1.02);
         }
 
-  
     .btn-hover-effect {
         transition: all 0.3s ease;
     }
@@ -164,7 +168,6 @@
             color: white !important;
             transform: translateX(5px);
         }
-
 
     .badge-animate {
         animation: pulse 2s infinite;

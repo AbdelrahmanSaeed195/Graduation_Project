@@ -72,7 +72,7 @@
                     </div>
                 </div>
 
-                <form asp-action="Delete" asp-route-id="@Model.StudentId" method="post">
+                <form asp-action="Delete" method="post">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.StudentId" />
 

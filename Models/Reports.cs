@@ -6,7 +6,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace projectweb.Models
 {
-   
     public class Report
     {
         [Key]
@@ -25,25 +24,29 @@ namespace projectweb.Models
         [DataType(DataType.MultilineText)]
         public string? Notes { get; set; }
 
+        // ========================================================
+        // Navigation property 
+        // ========================================================
+
         [Required(ErrorMessage = "يجب ربط المحضر بجلسة امتحان")]
         [Display(Name = "جلسة الامتحان")]
         public int ScheduleId { get; set; }
+
         [ValidateNever]
         [ForeignKey("ScheduleId")]
         [Display(Name = "بيانات جلسة الامتحان")]
         public virtual ExamSchedule ExamSchedule { get; set; }
-        [ValidateNever]
-        [Display(Name = "اللجنة")]
-        public int? CommitteeId { get; set; }
+
+        [Display(Name = "مكان الامتحان (اللجنة/الصالة)")]
+        public int? LocationId { get; set; }
 
         [ValidateNever]
-        [ForeignKey("CommitteeId")]
-        [Display(Name = "بيانات اللجنة")]
-        public virtual Committee Committee { get; set; }
+        [ForeignKey("LocationId")]
+        [Display(Name = "بيانات مكان الامتحان")]
+        public virtual ExamLocation ExamLocation { get; set; }
+
         [ValidateNever]
         [Display(Name = "الموقعون على المحضر")]
         public virtual ICollection<ReportPerson> ReportPersons { get; set; }
-
-       
     }
 }

@@ -11,7 +11,7 @@
             <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
                 <div class="card-header py-3" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border-bottom: none;">
                     <h4 class="card-title mb-0 fw-bold text-white text-center">
-                        <i class="bi bi-calendar-plus me-2"></i> تخصيص مبنى / بلوك لامتحان
+                        <i class="bi bi-calendar-plus me-2"></i> تخصيص مبنى / صالة لامتحان
                     </h4>
                 </div>
 
@@ -30,18 +30,18 @@
                             </div>
 
                             <div class="col-md-12 mb-3">
-                                <label asp-for="BlockId" class="form-label fw-bold" style="color: #4a5568;">البلوك / المبنى المستهدف <span class="text-danger">*</span></label>
-                                <select asp-for="BlockId" id="BlockSelect" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="ViewBag.BlockId" style="font-size: 0.95rem; border-radius: 8px;">
-                                    <option value="">-- اختر الامتحان أولاً لعرض المباني المتاحة --</option>
+                                <label asp-for="LocationId" class="form-label fw-bold" style="color: #4a5568;">الصالات / المباني المتاحة <span class="text-danger">*</span></label>
+                                <select asp-for="LocationId" id="LocationSelect" class="form-select form-select-lg shadow-sm border-light-subtle" style="font-size: 0.95rem; border-radius: 8px;">
+                                    <option value="">-- اختر الامتحان أولاً لعرض الصالات المتاحة --</option>
                                 </select>
-                                <span asp-validation-for="BlockId" class="text-danger small mt-1 d-block fw-bold"></span>
+                                <span asp-validation-for="LocationId" class="text-danger small mt-1 d-block fw-bold"></span>
                             </div>
                         </div>
 
                         <div class="border-top mt-5 pt-4">
                             <div class="d-flex justify-content-center gap-3">
                                 <button type="submit" class="btn btn-lg px-5 py-2 shadow-sm text-white" style="background-color: #1a3a5a; border-radius: 8px; font-size: 1rem; font-weight: 600;">
-                                    <i class="bi bi-check-circle me-2"></i> حفظ لتوزيع
+                                    <i class="bi bi-check-circle me-2"></i> حفظ التوزيع
                                 </button>
                                 <a asp-action="Index" class="btn btn-lg btn-outline-secondary px-5 py-2" style="border-radius: 8px; font-size: 1rem;">
                                     إلغاء
@@ -62,41 +62,42 @@
 
     <script>
         $(document).ready(function () {
-            if ($('.validation-summary-errors ul li').length > 0) {
-                $('.alert-danger').removeClass('d-none');
-            }
-
             $('#ExamSelect').change(function () {
                 var examId = $(this).val();
-                var blockSelect = $('#BlockSelect');
+                var locationSelect = $('#LocationSelect');
 
-                blockSelect.empty();
+                locationSelect.empty();
 
                 if (examId) {
-                    blockSelect.append('<option value="">-- جاري تحميل المباني المتاحة... --</option>');
+                    locationSelect.append('<option value="">-- جاري تحميل الصالات المتاحة... --</option>');
 
                     $.ajax({
-                        url: '@Url.Action("GetAvailableBlocks")',
+                        url: '@Url.Action("GetAvailableLocations", "ExamSchedules")',
                         type: 'GET',
+                        dataType: 'json',
                         data: { examId: examId },
                         success: function (data) {
-                            blockSelect.empty();
-                            blockSelect.append('<option value="">-- اختر البلوك / المبنى المختص --</option>');
-
-                            $.each(data, function (index, item) {
-                                blockSelect.append($('<option>', {
-                                    value: item.id,
-                                    text: item.name
-                                }));
-                            });
+                            locationSelect.empty();
+                            if (data && data.length > 0) {
+                                locationSelect.append('<option value="">-- اختر الصالة / المبنى المختص --</option>');
+                                $.each(data, function (i, item) {
+                                    locationSelect.append($('<option>', {
+                                        value: item.id,
+                                        text: item.name
+                                    }));
+                                });
+                            } else {
+                                locationSelect.append('<option value="">-- لا توجد صالات متاحة في هذا الوقت --</option>');
+                            }
                         },
-                        error: function () {
-                            blockSelect.empty();
-                            blockSelect.append('<option value="">-- خطأ في تحميل البيانات، أعد المحاولة --</option>');
+                        error: function (xhr, status, error) {
+                            console.error("AJAX Error: ", error);
+                            locationSelect.empty();
+                            locationSelect.append('<option value="">-- خطأ في تحميل البيانات --</option>');
                         }
                     });
                 } else {
-                    blockSelect.append('<option value="">-- اختر الامتحان أولاً لعرض المباني المتاحة --</option>');
+                    locationSelect.append('<option value="">-- اختر الامتحان أولاً لعرض الصالات المتاحة --</option>');
                 }
             });
         });

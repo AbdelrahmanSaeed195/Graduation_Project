@@ -3,7 +3,7 @@
 }
 
 <div class="container py-5" dir="rtl">
-   
+
     <div class="text-center mb-5">
         <h2 class="fw-bold text-navy">بوابة الإدارة المركزية</h2>
         <p class="text-muted">نظام إدارة لجان الامتحانات وتوزيع المراقبين</p>
@@ -13,7 +13,7 @@
     </div>
 
     <h4 class="mb-3 fw-bold text-navy border-bottom pb-2">
-       إدارة شؤون الأفراد
+        إدارة شؤون الأفراد
     </h4>
     <div class="row g-4 mb-5">
         <div class="col-md-6 col-lg-4">
@@ -41,7 +41,7 @@
                 <div class="card-body d-flex flex-column">
                     <div class="icon-box bg-warning bg-opacity-10 text-warning mx-auto mb-3"><i class="bi bi-diagram-2-fill fs-1"></i></div>
                     <h5 class="card-title fw-bold text-navy">صلات القرابة</h5>
-                    <p class="text-muted small mb-4 flex-grow-1">إدارة قواعد منع المراقبة بناءً على صلات القرابة بين الموظف والطالب.</p>
+                    <p class="text-muted small mb-4 flex-grow-1">إدارة قواعد منع المراقبة بناءً على صلات القرابة وتجنب مخاطر تعارض المصالح.</p>
                     <a asp-controller="Relatives" asp-action="Index" class="btn btn-academic-primary btn-enter mt-auto">دخول النظام</a>
                 </div>
             </div>
@@ -49,44 +49,49 @@
     </div>
 
     <h4 class="mb-3 fw-bold text-navy border-bottom pb-2">
-      اماكن الامتحانات
+        أماكن ومقرات الامتحانات
     </h4>
     <div class="row g-4 mb-5">
-        <div class="col-md-6 col-lg-4">
-            <div class="card dash-card text-center p-4 h-100 shadow-sm">
-                <div class="card-body d-flex flex-column">
-                    <div class="icon-box bg-info bg-opacity-10 text-info mx-auto mb-3"><i class="bi bi-building-fill fs-1"></i></div>
-                    <h5 class="card-title fw-bold text-navy">إدارة الجراشات</h5>
-                    <p class="text-muted small mb-4 flex-grow-1">تعريف الصالات واللجان، تحديد السعة الاستيعابية لكل جراش.</p>
-                    <a asp-controller="Halls" asp-action="Index" class="btn btn-academic-primary btn-enter mt-auto">دخول النظام</a>
+        <div class="col-lg-12">
+            <div class="card dash-card shadow-sm border-0 p-4" style="background: linear-gradient(145deg, #ffffff, #f4f7fa);">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-7 text-end mb-3 mb-md-0">
+                            <div class="d-flex align-items-center gap-3 mb-2 justify-content-start">
+                                <div class="icon-box bg-info bg-opacity-10 text-info p-2 rounded-3"><i class="bi bi-layers-half fs-2"></i></div>
+                                <h4 class="fw-bold text-navy mb-0">الهيكل التنظيمي للمقرات واللجان</h4>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                تم دمج المستويات المكانية في مستودع بيانات موحد. يمكنك الآن إدارة (الجراشات الرئيسية، الصالات الفرعية، واللجان الدقيقة) من شاشة مركزية واحدة مع التحكم الكامل في السعة الاستيعابية والتبعية التراتبية لكل موقع.
+                            </p>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="d-grid gap-2">
+                                <a asp-controller="ExamLocations" asp-action="Index" class="btn btn-academic-primary py-2 fw-bold">
+                                    <i class="bi bi-eye-fill me-1"></i> استعراض الهيكل الموحد بالكامل
+                                </a>
+                                <div class="btn-group w-100">
+                                    <a asp-controller="ExamLocations" asp-action="Index" asp-route-locationType="Hall" class="btn btn-sm btn-outline-secondary py-2">
+                                        <i class="bi bi-building"></i> الجراشات
+                                    </a>
+                                    <a asp-controller="ExamLocations" asp-action="Index" asp-route-locationType="Block" class="btn btn-sm btn-outline-secondary py-2">
+                                        <i class="bi bi-grid-3x3"></i> الصالات
+                                    </a>
+                                    <a asp-controller="ExamLocations" asp-action="Index" asp-route-locationType="Committee" class="btn btn-sm btn-outline-secondary py-2">
+                                        <i class="bi bi-person-workspace"></i> اللجان
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-4">
-            <div class="card dash-card text-center p-4 h-100 shadow-sm">
-                <div class="card-body d-flex flex-column">
-                    <div class="icon-box bg-secondary bg-opacity-10 text-secondary mx-auto mb-3"><i class="bi bi-collection-fill fs-1"></i></div>
-                    <h5 class="card-title fw-bold text-navy">إدارة الصالات</h5>
-                    <p class="text-muted small mb-4 flex-grow-1">تقسيم اللجان إلى مجموعات لتسهيل عملية التوزيع الجغرافي.</p>
-                    <a asp-controller="Blocks" asp-action="Index" class="btn btn-academic-primary btn-enter mt-auto">دخول النظام</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4">
-            <div class="card dash-card text-center p-4 h-100 shadow-sm">
-                <div class="card-body d-flex flex-column">
-                    <div class="icon-box bg-danger bg-opacity-10 text-danger mx-auto mb-3"><i class="bi bi-clipboard-check-fill fs-1"></i></div>
-                    <h5 class="card-title fw-bold text-navy">إدارة اللجان</h5>
-                    <p class="text-muted small mb-4 flex-grow-1">إنشاء لجان الامتحانات وربطها بالقاعات وتوزيع الطلاب عليها.</p>
-                    <a asp-controller="Committees" asp-action="Index" class="btn btn-academic-primary btn-enter mt-auto">دخول النظام</a>
-                </div>
-            </div>
-        </div>
-        </h4>
     </div>
-        <h4 class="mb-3 fw-bold text-navy border-bottom pb-2">
-            إعداد الامتحان
-         </h4>
+
+    <h4 class="mb-3 fw-bold text-navy border-bottom pb-2">
+        إعداد الامتحان
+    </h4>
     <div class="row g-4 mb-5">
         <div class="col-md-6 col-lg-4">
             <div class="card dash-card text-center p-4 h-100 shadow-sm">
@@ -120,7 +125,7 @@
                 </div>
             </div>
         </div>
-   </div>
+    </div>
 
     <h4 class="mb-3 fw-bold text-navy border-bottom pb-2">
         العمليات والنتائج
@@ -131,7 +136,7 @@
                 <div class="card-body d-flex flex-column">
                     <div class="icon-box mx-auto mb-3" style="background-color: rgba(111, 66, 193, 0.1); color: #6f42c1;"><i class="bi bi-cpu-fill fs-1"></i></div>
                     <h5 class="card-title fw-bold text-navy">التوزيعات (التوزيع التلقائي)</h5>
-                    <p class="text-muted small mb-4 flex-grow-1">خوارزمية التوزيع التلقائي للمراقبين على اللجان مع مراعاة موانع القرابة والقواعد المنظمة.</p>
+                    <p class="text-muted small mb-4 flex-grow-1">خوارزمية التوزيع التلقائي للمراقبين على اللجان مع مراعاة موانع القرابة والحل الذكي للتعارضات.</p>
                     <a asp-controller="CommitteesAssignments" asp-action="Index" class="btn btn-outline-academic btn-enter fw-bold border-2 mt-auto">بدء التوزيع</a>
                 </div>
             </div>

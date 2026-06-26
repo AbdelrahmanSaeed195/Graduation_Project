@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using projectweb.Models; 
+using projectweb.Models;
 
 namespace projectweb.ViewModel
 {
@@ -14,15 +14,19 @@ namespace projectweb.ViewModel
         public AcademicLevel AcademicYear { get; set; }
 
         [Display(Name = "رقم الجلوس")]
-        public int SeatNumber { get; set; } 
+        public int SeatNumber { get; set; }
 
-        [Display(Name = "كود اللجنة")]
-        public int CommitteeId { get; set; }
+        // ========================================================
+        // Navigation properties 
+        // ========================================================
+        [Display(Name = "كود مكان الامتحان (اللجنة)")]
+        public int LocationId { get; set; }
 
-        [Display(Name = "رقم اللجنة")]
-        public int CommitteeNumber { get; set; }
+        [Display(Name = "اسم / رقم اللجنة")]
+        public string LocationName { get; set; } 
 
-        [Display(Name = "عدد الطلاب في اللجنة")]
-        public int NumberOfStudent { get; set; }
+        [Display(Name = "الاستيعاب الأقصى للجنة")]
+        public int? StudentCapacity { get; set; }
+        // ========================================================
     }
 }

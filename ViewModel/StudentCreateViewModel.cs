@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using projectweb.Models; 
+using projectweb.Models;
 
 namespace projectweb.ViewModel
 {
@@ -18,13 +18,17 @@ namespace projectweb.ViewModel
 
         [Required(ErrorMessage = "السنة الدراسية مطلوبة")]
         [Display(Name = "السنة الدراسية")]
-        public AcademicLevel AcademicYear { get; set; } 
+        public AcademicLevel AcademicYear { get; set; }
 
         [Required(ErrorMessage = "يجب تحديد التخصص")]
         [Display(Name = "التخصص")]
         public StudentSpecialization Specialization { get; set; } = StudentSpecialization.General;
 
-        [Display(Name = "اللجنة التابع لها")]
-        public int? CommitteeId { get; set; }
+        // ========================================================
+        
+       
+        [Display(Name = "اللجنة الامتحانية التابع لها")]
+        public int? LocationId { get; set; }
+     
     }
 }

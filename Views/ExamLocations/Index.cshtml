@@ -1,0 +1,136 @@
+@model IEnumerable<projectweb.Models.ExamLocation>
+
+@{
+    ViewData["Title"] = "إدارة أماكن الامتحانات الموحدة";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-body" dir="rtl">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 fw-bold academic-heading"><i class="bi bi-geo-alt-fill me-2"></i> الهيكل التنظيمي لأماكن الامتحانات</h1>
+        <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> إضافة مكان جديد
+        </a>
+    </div>
+
+    <div class="mb-3 d-flex gap-2">
+        <a asp-action="Index" class="btn btn-sm btn-outline-secondary shadow-sm">الكل</a>
+        <a asp-action="Index" asp-route-type="@LocationType.Hall" class="btn btn-sm btn-outline-primary shadow-sm">الجراشات الرئيسية</a>
+        <a asp-action="Index" asp-route-type="@LocationType.Block" class="btn btn-sm btn-outline-info shadow-sm">الصالات الرئيسية</a>
+        <a asp-action="Index" asp-route-type="@LocationType.Committee" class="btn btn-sm btn-outline-success shadow-sm">اللجان الامتحانية</a>
+    </div>
+
+    <div class="card academic-card overflow-hidden border-0 shadow-sm" style="border-radius: 12px;">
+        <div class="table-responsive">
+            <table class="table academic-table table-hover align-middle mb-0 text-center">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="text-start ps-4">اسم / رقم المكان</th>
+                        <th>النوع الهيكلي</th>
+                        <th>المكان الرئيسي التابع له</th>
+                        <th>المواصفات والسعة الكلية</th>
+                        <th>التفرعات والحالة</th>
+                        <th class="pe-4">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="text-start ps-4 fw-bold" style="color: #1a3a5a;">@item.LocationName</td>
+                                <td>
+                                    @switch (item.Type)
+                                    {
+                                        case LocationType.Hall:
+                                            <span class="badge bg-primary px-3 py-2">جراش رئيسي</span>
+                                            break;
+                                        case LocationType.Block:
+
+                                            <span class="badge bg-info text-dark px-3 py-2">صالة</span>
+                                            break;
+                                        case LocationType.Committee:
+
+                                            <span class="badge bg-success px-3 py-2">لجنة امتحانية</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.ParentLocation != null)
+                                    {
+                                        <span class="text-muted small"><i class="bi bi-arrow-90deg-up me-1"></i> @item.ParentLocation.LocationName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary small italic">- جذر أساسي -</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.Type == LocationType.Hall)
+                                    {
+                                        <span class="small text-dark">الدور: @item.Floor | الحد الأقصى: @item.MaxSubLocations صالات</span>
+                                    }
+                                    else if (item.Type == LocationType.Block)
+                                    {
+                                        <span class="small text-dark">الحد الأقصى: @item.MaxSubLocations لجان</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="small text-dark"><i class="bi bi-people me-1"></i> السعة: @item.StudentCapacity طالب</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.Type == LocationType.Committee)
+                                    {
+                                        <span class="badge @(item.Status == "نشطة" ? "bg-success" : "bg-warning text-dark") px-2 py-1">@item.Status</span>
+                                    }
+                                    else
+                                    {
+                                        var subCount = item.SubLocations?.Count ?? 0;
+                                        var label = item.Type == LocationType.Hall ? "صالات" : "لجان";
+                                        <span class="badge bg-light text-dark border px-2 py-1 small">
+                                            يحتوي على (@subCount) @label
+                                        </span>
+                                    }
+                                </td>
+                                <td class="pe-4">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a asp-action="Details" asp-route-id="@item.LocationId" class="btn btn-sm btn-outline-info shadow-sm" title="التفاصيل"><i class="bi bi-eye"></i></a>
+                                        <a asp-action="Edit" asp-route-id="@item.LocationId" class="btn btn-sm btn-outline-secondary shadow-sm" title="تعديل"><i class="bi bi-pencil-square"></i></a>
+                                        <a asp-action="Delete" asp-route-id="@item.LocationId" class="btn btn-sm btn-outline-danger shadow-sm" title="حذف"><i class="bi bi-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                لا توجد أماكن مسجلة في النظام.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,4 +1,6 @@
 ﻿@model projectweb.Models.CommitteesAssignment
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
 
 @{
     ViewData["Title"] = "تأكيد حذف التكليف";
@@ -31,17 +33,24 @@
                 <div class="mb-3 border-bottom pb-2">
                     <span class="text-muted small d-block mb-1">نطاق المسئولية (المكان):</span>
                     <strong class="text-dark">
-                        @if (Model.Hall != null)
+                        @if (Model.ExamLocation != null)
                         {
-                            <i class="bi bi-building me-1 text-primary"></i> @:صالة: @Model.Hall.HallName
+                            if (Model.ExamLocation.Type == projectweb.Models.LocationType.Hall)
+                            {
+                                <i class="bi bi-building me-1 text-primary"></i> @:جراش رئيسي: @Model.ExamLocation.LocationName
+                            }
+                            else if (Model.ExamLocation.Type == projectweb.Models.LocationType.Block)
+                            {
+                                <i class="bi bi-grid-3x3 me-1 text-info"></i> @:صالة: @Model.ExamLocation.LocationName <small class="text-muted">(@Model.ExamLocation.ParentLocation?.LocationName)</small>
+                            }
+                            else if (Model.ExamLocation.Type == projectweb.Models.LocationType.Committee)
+                            {
+                                <i class="bi bi-person-workspace me-1 text-success"></i> @:لجنة: @Model.ExamLocation.LocationName <small class="text-muted">(@Model.ExamLocation.ParentLocation?.LocationName  @Model.ExamLocation.ParentLocation?.ParentLocation?.LocationName)</small>
+                            }
                         }
-                        else if (Model.Block != null)
+                        else
                         {
-                            <i class="bi bi-grid-3x3 me-1 text-info"></i> @:بلوك: @Model.Block.BlockName
-                        }
-                        else if (Model.Committee != null)
-                        {
-                            <i class="bi bi-person-workspace me-1 text-success"></i> @:لجنة: @Model.Committee.CommitteeNumber
+                            <span class="text-muted fw-normal">غير محدد (احتياطي عام)</span>
                         }
                     </strong>
                 </div>
@@ -91,7 +100,7 @@
                 </div>
             </form>
         </div>
-      
+        
     </div>
 </div>
 

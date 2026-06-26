@@ -17,7 +17,6 @@ namespace projectweb.Models
         [Display(Name = "التاريخ")]
         public DateTime ScheduledDate { get; set; }
 
-
         [Required(ErrorMessage = "يجب اختيار الامتحان")]
         [Display(Name = "المادة")]
         public int ExamId { get; set; }
@@ -26,14 +25,15 @@ namespace projectweb.Models
         [ForeignKey("ExamId")]
         public virtual Exam Exam { get; set; }
 
-        [Required(ErrorMessage = "يجب اختيار الصالة")]
-        [Display(Name = "الصالة")]
-        public int BlockId { get; set; }
+        // ========================================================
+        [Required(ErrorMessage = "يجب اختيار مكان الامتحان (الصالة/الجراش)")]
+        [Display(Name = "مكان الامتحان")]
+        public int LocationId { get; set; }
 
         [ValidateNever]
-        [ForeignKey("BlockId")]
-        [Display(Name = "بيانات الصالة")]
-        public virtual Block Block { get; set; }
+        [ForeignKey("LocationId")]
+        [Display(Name = "بيانات مكان الامتحان")]
+        public virtual ExamLocation ExamLocation { get; set; }
 
         [ValidateNever]
         public virtual ICollection<Student> Students { get; set; }

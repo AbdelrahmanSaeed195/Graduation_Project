@@ -11,12 +11,12 @@
             @* رأس البطاقة الملون للتحذير *@
             <div class="card-header bg-danger text-white p-4 border-0 text-center">
                 <i class="bi bi-exclamation-octagon-fill fs-1"></i>
-                <h3 class="fw-bold mt-2 text-white">تأكيد حذف السجل</h3>
+                <h3 class="fw-bold mt-2 text-white">تأكيد حذف سجل الامتحان</h3>
             </div>
 
             <div class="card-body p-4 p-md-5 bg-white">
 
-                @* الحالة الأولى: الامتحان مرتبط بلجان (منع الحذف برمجياً) *@
+                @* الحالة الأولى: الامتحان مرتبط بتوزيعات (منع الحذف برمجياً) *@
                 @if (Model.ExamSchedules != null && Model.ExamSchedules.Any())
                 {
                     <div class="alert alert-danger border-0 mb-4 shadow-sm p-4" style="border-radius: 12px; border-right: 6px solid #dc3545 !important;">
@@ -25,10 +25,10 @@
                             <strong class="fs-5 ms-2">إجراء محظور</strong>
                         </div>
                         <p class="mb-0 lh-lg text-dark">
-                            لا يمكن حذف هذا الامتحان لوجود <strong>(@Model.ExamSchedules.Count)</strong> لجنة توزيع مرتبطة به.
+                            لا يمكن حذف هذا الامتحان لوجود <strong>(@Model.ExamSchedules.Count)</strong> مقر موزع (ExamSchedule) مرتبط به.
                             حذف الامتحان سيؤدي إلى كسر روابط الجداول والتقارير المرتبطة.
                             <br>
-                            <span class="badge bg-danger mt-2">الإجراء المطلوب:</span> يجب إلغاء توزيع اللجان لهذا الامتحان أولاً.
+                            <span class="badge bg-danger mt-2">الإجراء المطلوب:</span> يجب مسح التوزيعات المرتبطة بهذا الامتحان أولاً.
                         </p>
                     </div>
                 }
@@ -47,7 +47,7 @@
                     </div>
                 }
 
-                @* ملخص البيانات المختار حذفها *@
+                @* ملخص البيانات *@
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
                         <div class="rounded p-3 border shadow-sm text-center bg-light h-100">
@@ -63,10 +63,10 @@
                     </div>
                     <div class="col-md-4">
                         <div class="rounded p-3 border shadow-sm text-center bg-light h-100">
-                            <div class="small text-muted mb-1 fw-bold">الارتباطات</div>
+                            <div class="small text-muted mb-1 fw-bold">الارتباطات الحالية</div>
                             <div class="fw-bold @(Model.ExamSchedules != null && Model.ExamSchedules.Any() ? "text-danger" : "text-success")">
                                 <i class="bi bi-layers-half me-1"></i>
-                                @(Model.ExamSchedules?.Count ?? 0) لجنة
+                                @(Model.ExamSchedules?.Count ?? 0) مقر موزع
                             </div>
                         </div>
                     </div>

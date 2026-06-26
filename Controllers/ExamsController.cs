@@ -19,19 +19,24 @@ namespace projectweb.Controllers
             _context = context;
         }
 
+        // ============================================================
+        // 1. Index: عرض الامتحانات
+        // ============================================================
         public async Task<IActionResult> Index()
         {
             var exams = _context.Exams
                 .AsNoTracking()
                 .Include(e => e.Subject)
                 .Include(e => e.ExamSchedules)
-                    .ThenInclude(es => es.Block)
-                        .ThenInclude(b => b.Hall)
+                    .ThenInclude(es => es.ExamLocation)
                 .OrderByDescending(e => e.ExamDate);
 
             return View(await exams.ToListAsync());
         }
 
+        // ============================================================
+        // 2. Details: تفاصيل الامتحان
+        // ============================================================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -40,8 +45,7 @@ namespace projectweb.Controllers
                 .AsNoTracking()
                 .Include(e => e.Subject)
                 .Include(e => e.ExamSchedules)
-                    .ThenInclude(es => es.Block)
-                        .ThenInclude(b => b.Hall)
+                    .ThenInclude(es => es.ExamLocation)
                 .FirstOrDefaultAsync(m => m.ExamId == id);
 
             if (exam == null) return NotFound();
@@ -49,6 +53,9 @@ namespace projectweb.Controllers
             return View(exam);
         }
 
+        // ============================================================
+        // 3. Create: شاشة إضافة جديدة
+        // ============================================================
         public IActionResult Create()
         {
             PopulateSubjects();
@@ -69,21 +76,21 @@ namespace projectweb.Controllers
                 ModelState.AddModelError("EndTime", "يجب أن يكون وقت الانتهاء بعد وقت البدء.");
             }
 
+            // شرط التداخل الزمني المحدث
             bool isOverlapping = await _context.Exams.AsNoTracking().AnyAsync(e =>
                 e.ExamDate.Date == exam.ExamDate.Date &&
-                ((exam.StartTime >= e.StartTime && exam.StartTime < e.EndTime) ||
-                 (exam.EndTime > e.StartTime && exam.EndTime <= e.EndTime)));
+                (exam.StartTime < e.EndTime && exam.EndTime > e.StartTime));
 
             if (isOverlapping)
             {
-                ModelState.AddModelError("", "تنبيه: يوجد امتحان آخر مسجل في نفس الفترة الزمنية. يرجى مراجعة الصالات في جدول توزيع اللجان لضمان عدم التداخل.");
+                ModelState.AddModelError("", "تنبيه: يوجد امتحان آخر مسجل في نفس الفترة الزمنية. يرجى مراجعة الجدول.");
             }
 
             if (ModelState.IsValid)
             {
                 _context.Add(exam);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "تم إضافة الامتحان بنجاح. يمكنك الآن الانتقال لتوزيع الصالات (ExamSchedules).";
+                TempData["SuccessMessage"] = "تم إضافة الامتحان بنجاح.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -91,6 +98,9 @@ namespace projectweb.Controllers
             return View(exam);
         }
 
+        // ============================================================
+        // 4. Edit: شاشة التعديل
+        // ============================================================
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -132,11 +142,11 @@ namespace projectweb.Controllers
                 ModelState.AddModelError("EndTime", "يجب أن يكون وقت الانتهاء بعد وقت البدء.");
             }
 
+            // شرط التداخل الزمني المحدث مع استثناء الامتحان الحالي
             bool isOverlapping = await _context.Exams.AsNoTracking().AnyAsync(e =>
                 e.ExamId != exam.ExamId &&
                 e.ExamDate.Date == exam.ExamDate.Date &&
-                ((exam.StartTime >= e.StartTime && exam.StartTime < e.EndTime) ||
-                 (exam.EndTime > e.StartTime && exam.EndTime <= e.EndTime)));
+                (exam.StartTime < e.EndTime && exam.EndTime > e.StartTime));
 
             if (isOverlapping)
             {
@@ -163,6 +173,9 @@ namespace projectweb.Controllers
             return View(exam);
         }
 
+        // ============================================================
+        // 5. Delete: شاشة الحذف
+        // ============================================================
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -171,8 +184,7 @@ namespace projectweb.Controllers
                 .AsNoTracking()
                 .Include(e => e.Subject)
                 .Include(e => e.ExamSchedules)
-                    .ThenInclude(es => es.Block)
-                        .ThenInclude(b => b.Hall)
+                    .ThenInclude(es => es.ExamLocation)
                 .FirstOrDefaultAsync(m => m.ExamId == id);
 
             if (exam == null) return NotFound();
@@ -194,7 +206,7 @@ namespace projectweb.Controllers
 
                 if (hasAssignments || exam.ExamSchedules.Any())
                 {
-                    TempData["ErrorMessage"] = "فشل الحذف: لا يمكن حذف الامتحان بسبب وجود ارتباطات في جدول توزيع اللجان والـ ExamSchedule أو طاقم المراقبة الذكي الحالي. يرجى مسح التوزيعات أولاً.";
+                    TempData["ErrorMessage"] = "فشل الحذف: لا يمكن حذف الامتحان بسبب وجود ارتباطات في جدول توزيع المقرات.";
                     return RedirectToAction(nameof(Index));
                 }
 
@@ -206,19 +218,19 @@ namespace projectweb.Controllers
                 }
                 catch (Exception)
                 {
-                    TempData["ErrorMessage"] = "لا يمكن حذف الامتحان لوجود سجلات معتمدة عليه في قواعد البيانات.";
+                    TempData["ErrorMessage"] = "لا يمكن حذف الامتحان لوجود سجلات معتمدة عليه.";
                 }
             }
             return RedirectToAction(nameof(Index));
         }
 
+        // ============================================================
+        // 6. Ajax & Dropdowns Helpers
+        // ============================================================
         [HttpGet]
         public async Task<JsonResult> GetSubjectYear(int subjectId)
         {
-            var subject = await _context.Subjects
-                .AsNoTracking()
-                .FirstOrDefaultAsync(s => s.SubjectId == subjectId);
-
+            var subject = await _context.Subjects.AsNoTracking().FirstOrDefaultAsync(s => s.SubjectId == subjectId);
             if (subject != null)
             {
                 string arabicYear = subject.AcademicYear switch
@@ -229,10 +241,8 @@ namespace projectweb.Controllers
                     AcademicLevel.FourthYear => "المستوى الرابع",
                     _ => "غير محدد"
                 };
-
                 return Json(new { academicYear = arabicYear });
             }
-
             return Json(new { academicYear = "" });
         }
 
@@ -245,8 +255,7 @@ namespace projectweb.Controllers
             bool isOverlapping = await _context.Exams.AsNoTracking().AnyAsync(e =>
                 (excludeId == null || e.ExamId != excludeId) &&
                 e.ExamDate.Date == date.Date &&
-                ((start >= e.StartTime && start < e.EndTime) ||
-                 (end > e.StartTime && end <= e.EndTime)));
+                (start < e.EndTime && end > e.StartTime));
 
             return Json(new { isValidDuration = isValidDuration, isOverlapping = isOverlapping });
         }

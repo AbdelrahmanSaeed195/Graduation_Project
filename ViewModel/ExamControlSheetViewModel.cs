@@ -9,9 +9,9 @@
         public string ExamTime { get; set; }
         public string ExamDate { get; set; }
         public string ExamDay { get; set; }
-        public string HallName { get; set; } // اسم الصالة الرئيسية (مثلاً: ل)
+        public string HallName { get; set; } // اسم الموقع الرئيسي الموحد (الموقع الأب الأعلى)
 
-        // --- طاقم رئيس الصالة ---
+        // --- طاقم إدارة الموقع ---
         public string MainHead1 { get; set; }
         public string ReserveHead1 { get; set; }
         public string ReserveObserver1 { get; set; }
@@ -22,12 +22,12 @@
         public string ReserveObserver2 { get; set; }
         public List<string> ReserveNotes2 { get; set; } = new List<string>();
 
-        // --- الهيكل التنظيمي المجمع لكل البلوكات التابعة للصالة ---
+        // --- الهيكل التنظيمي المجمع للمقرات التابعة للموقع ---
         public List<BlockGroupItem> Blocks { get; set; } = new List<BlockGroupItem>();
 
         // --- الطاقم الطبي ---
-        public string DoctorName { get; set; } 
-        public string NurseName { get; set; } 
+        public string DoctorName { get; set; }
+        public string NurseName { get; set; }
 
         // --- طاقم الاحتياطي العام للجنة (الأسفل) ---
         public List<string> GeneralReserveObservers { get; set; } = new List<string>();
@@ -35,15 +35,15 @@
 
     public class BlockGroupItem
     {
-        public string BlockName { get; set; } // اسم البلوك 
-        public string BlockObserverName { get; set; } // المراقب المسؤول عن البلوك
+        public string BlockName { get; set; } // اسم الصالة الموحد 
+        public string BlockObserverName { get; set; } // المراقب المسؤول
         public List<ObserverRowItem> CommitteeObservers { get; set; } = new List<ObserverRowItem>();
     }
 
     public class ObserverRowItem
     {
         public string ObserverName { get; set; }
-        public string CommitteeNumber { get; set; } // رقم اللجنة
-        public int BookletsCount { get; set; }   // عدد كراسات
+        public string CommitteeNumber { get; set; } // اسم / رقم اللجنة الامتحانية الموحدة
+        public int BookletsCount { get; set; }   // عدد الكراسات الفعلي بناءً على فرقة المادة
     }
 }

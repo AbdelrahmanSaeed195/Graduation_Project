@@ -12,7 +12,7 @@
             @* رأس الكارت بتصميم صفحة التوزيع *@
             <div class="card-header p-4 d-flex justify-content-between align-items-center" style="background-color: #1a2c4e; border-bottom: 4px solid #00a8ff;">
                 <h4 class="mb-0 fw-bold text-white">
-                    <i class="bi bi-printer-fill me-2"></i> إعداد نطاق طباعة استمارة اللجنة
+                    <i class="bi bi-printer-fill me-2"></i>  إعداد نطاق طباعة كشوف المراقبة الموحدة
                 </h4>
                 <span class="badge bg-info text-dark px-3 py-2">نظام إدارة الامتحانات</span>
             </div>
@@ -28,7 +28,7 @@
                     </div>
                 }
 
-                @* التحقق من وجود بيانات لتجنب خطأ NullReferenceException (تم التعديل ليفحص الـ Halls) *@
+                @* التحقق من وجود بيانات لتجنب خطأ NullReferenceException *@
                 @if (ViewBag.Exams == null || ViewBag.Halls == null)
                 {
                     <div class="alert alert-danger border-0 shadow-sm mb-4 d-flex align-items-center" style="border-radius: 8px;">
@@ -48,18 +48,18 @@
                         @Html.AntiForgeryToken()
 
                         <div class="row g-4">
-                            @* اختيار الصالة الكاملة المجمعة للبلوكات *@
+                            @* اختيار الجراش الرئيسي الموحد *@
                             <div class="col-md-6">
                                 <div class="p-4 rounded border h-100 shadow-sm" style="background-color: #f8f9fa;">
                                     <label class="small fw-bold mb-3 d-block" style="color: #6c757d;">
-                                        <i class="bi bi-building me-1"></i> اختر الصالة الرئيسية للامتحان:
+                                        <i class="bi bi-building me-1"></i> اختر الجراش الرئيسي / المقر المعني:
                                     </label>
-                                    @* تم تغيير الاسم هنا ليرسل hallId للـ POST *@
-                                    <select name="hallId" class="form-select form-select-lg fw-bold" style="color: #1a2c4e; border-color: #dee2e6;" required>
-                                        <option value="">-- حدد الصالة الرئيسية --</option>
+                                    @* 🛠️ التعديل الجوهري هنا: تغيير اسم الحقل إلى locationId ليتطابق مع بارامتر ميثود الباك-أند المحدث *@
+                                    <select name="locationId" class="form-select form-select-lg fw-bold" style="color: #1a2c4e; border-color: #dee2e6;" required>
+                                        <option value="">-- حدد الجراش الرئيسي --</option>
                                         @foreach (var item in (SelectList)ViewBag.Halls)
                                         {
-                                            <option value="@item.Value">صالة (@item.Text)</option>
+                                            <option value="@item.Value">@item.Text</option>
                                         }
                                     </select>
                                 </div>
@@ -69,7 +69,7 @@
                             <div class="col-md-6">
                                 <div class="p-4 rounded border h-100 shadow-sm" style="background-color: #f8f9fa;">
                                     <label class="small fw-bold mb-3 d-block" style="color: #6c757d;">
-                                        <i class="bi bi-book me-1"></i> اختر الامتحان:
+                                        <i class="bi bi-book me-1"></i> اختر الامتحان المستهدف:
                                     </label>
                                     <select name="examId" class="form-select form-select-lg fw-bold" style="color: #1a2c4e; border-color: #dee2e6;" required>
                                         <option value="">-- حدد المادة --</option>
@@ -86,7 +86,7 @@
                         <div class="mt-5 pt-4 border-top text-center d-flex justify-content-center gap-3">
                             <button type="submit" class="btn btn-lg px-5 fw-bold text-white shadow-sm"
                                     style="background-color: #28a745; border-radius: 10px; transition: 0.3s;">
-                                <i class="bi bi-printer me-1"></i> بدء الطباعة الآن
+                                <i class="bi bi-printer me-1"></i> بدء توليد الكشوف الآن
                             </button>
 
                             <a asp-action="Index" class="btn btn-lg btn-outline-secondary px-5 fw-bold shadow-sm"

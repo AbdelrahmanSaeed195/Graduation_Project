@@ -35,6 +35,8 @@
                     <input type="hidden" asp-for="ReportId" />
                     <input type="hidden" asp-for="CreatedDate" />
 
+                    <input type="hidden" asp-for="LocationId" />
+
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label academic-label required fw-bold mb-2">المادة / الامتحان</label>
@@ -48,10 +50,10 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="ScheduleId" class="form-label academic-label required fw-bold mb-2">اللجنة المختصة</label>
+                            <label asp-for="ScheduleId" class="form-label academic-label required fw-bold mb-2">الصالة / المقر الامتحاني</label>
                             <div class="input-group" style="flex-direction: row-reverse;">
                                 <select asp-for="ScheduleId" id="committeeSelect" class="form-select academic-input border-end-0" style="border-radius: 0 8px 8px 0 !important;">
-                                    <option value="">-- اختر اللجنة --</option>
+                                    <option value="">-- اختر الصالة --</option>
                                 </select>
                                 <span class="input-group-text bg-light text-muted" style="border-radius: 8px 0 0 8px !important;"><i class="bi bi-door-open"></i></span>
                             </div>
@@ -188,7 +190,6 @@
                     staffSelect.empty();
                     $.each(data.staff, function (i, s) {
                         var option = $('<option>', { value: s.id, text: s.name });
-                        // تأمين عملية الفحص داخل مصفوفة الموظفين بدقة
                         if (currentStaffIds && currentStaffIds.map(String).indexOf(String(s.id)) !== -1) {
                             option.attr('selected', 'selected');
                         }

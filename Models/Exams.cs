@@ -32,15 +32,17 @@ namespace projectweb.Models
         [Display(Name = "المادة الدراسية")]
         public int SubjectID { get; set; }
 
-        [ValidateNever]
-        [ForeignKey("SubjectID")]
-        [Display(Name = "بيانات المادة")]
-        public virtual Subject? Subject { get; set; }
         [BindNever]
         [NotMapped]
         [Display(Name = "السنة الدراسية")]
         public AcademicLevel? AcademicYear => Subject?.AcademicYear;
 
+        // ========================================================
+        [ValidateNever]
+        [ForeignKey("SubjectID")]
+        [Display(Name = "بيانات المادة")]
+        public virtual Subject? Subject { get; set; }
+        
         [ValidateNever]
         [Display(Name = "جدول توزيع اللجان")]
         public virtual ICollection<ExamSchedule> ExamSchedules { get; set; }

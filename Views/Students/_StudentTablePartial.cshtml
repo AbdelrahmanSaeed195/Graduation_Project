@@ -19,7 +19,7 @@
                 foreach (var s in Model)
                 {
                     <tr>
-                        <td class="fw-bold text-start ps-3">@s.FullName</td>
+                        <td class="fw-bold text-start ps-3" style="color: #1a3a5a;">@s.FullName</td>
                         <td><span style="color: var(--text-muted);">@s.NationalId</span></td>
                         <td>
                             @{
@@ -32,7 +32,7 @@
                                     _ => s.AcademicYear.ToString()
                                 };
                             }
-                            <span class="badge" style="background-color: var(--bg-light); color: var(--primary-navy); border: 1px solid var(--border-color); padding: 8px 12px;">
+                            <span class="badge" style="background-color: var(--bg-light); color: var(--primary-navy); border: 1px solid var(--border-color); padding: 8px 12px; font-weight: 600;">
                                 @academicLevel
                             </span>
                         </td>
@@ -47,43 +47,43 @@
                                     _ => s.Specialization.ToString()
                                 };
                             }
-                            <span class="badge bg-light text-secondary border px-2 py-2">
+                            <span class="badge bg-light text-secondary border px-2 py-2" style="font-weight: 600;">
                                 @specializationName
                             </span>
                         </td>
                         <td>
-                            <span class="fw-bold" style="color: var(--accent-blue);">
+                            <span class="fw-bold" style="color: var(--accent-blue); font-size: 1.05rem;">
                                 @(s.SeatNumber > 0 ? s.SeatNumber.ToString() : "-")
                             </span>
                         </td>
                         <td>
-                            @if (s.Committee != null)
+                            @if (s.ExamLocation != null)
                             {
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2">
-                                    <i class="bi bi-building-check me-1"></i> لجنة @s.Committee.CommitteeNumber
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2" style="font-weight: 600;">
+                                    <i class="bi bi-building-check me-1"></i> @s.ExamLocation.LocationName
                                 </span>
                             }
                             else
                             {
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary border px-3 py-2">
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border px-3 py-2" style="font-weight: 500;">
                                     غير مسكن
                                 </span>
                             }
                         </td>
                         <td>
-                            <div class="btn-group shadow-sm" role="group">
+                            <div class="btn-group shadow-sm" role="group" style="border-radius: 6px; overflow: hidden;">
                                 <a asp-action="Committee" asp-route-id="@s.StudentId" class="btn btn-sm btn-dark" title="استعراض مقعد اللجنة">
                                     <i class="bi bi-building-check"></i>
                                 </a>
                                 <a asp-action="Details" asp-route-id="@s.StudentId" class="btn btn-sm btn-info text-white" title="التفاصيل">
                                     <i class="bi bi-eye"></i>
-                                </a>                              
-                                    <a asp-action="Edit" asp-route-id="@s.StudentId" class="btn btn-sm btn-warning" title="تعديل">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a asp-action="Delete" asp-route-id="@s.StudentId" class="btn btn-sm btn-danger" title="حذف">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@s.StudentId" class="btn btn-sm btn-warning" title="تعديل">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@s.StudentId" class="btn btn-sm btn-danger" title="حذف">
+                                    <i class="bi bi-trash"></i>
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -93,7 +93,7 @@
             {
                 <tr>
                     <td colspan="8" class="py-5" style="color: var(--text-muted);">
-                        <i class="bi bi-person-x d-block mb-2 h1"></i>
+                        <i class="bi bi-person-x d-block mb-2 h1" style="opacity: 0.5;"></i>
                         لا توجد بيانات للطلاب تتوافق مع معايير البحث الحالية.
                     </td>
                 </tr>

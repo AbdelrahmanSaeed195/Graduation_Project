@@ -15,11 +15,8 @@
                 <div class="col-md-6"><div class="data-panel"><div class="panel-label">السنة الأكاديمية</div><div class="panel-value">@Model.AcademicYear</div></div></div>
             </div>
             <div class="d-flex gap-2 flex-wrap mt-4">
-                @if (User.IsInRole("Admin"))
-                {
                     <a asp-action="Edit" asp-route-id="@Model.RelativeId" class="btn btn-academic-primary"><i class="bi bi-pencil-square"></i> تعديل</a>
                     <a asp-action="Delete" asp-route-id="@Model.RelativeId" class="btn btn-outline-danger"><i class="bi bi-trash"></i> حذف</a>
-                }
                 <a asp-action="Index" class="btn btn-outline-academic">عودة</a>
             </div>
         </div>

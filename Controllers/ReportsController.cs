@@ -24,13 +24,12 @@ namespace projectweb.Controllers
         // =====================================
         // 1. INDEX - عرض المحاضر
         // =====================================
-       
         public async Task<IActionResult> Index(int? reportType)
         {
             var reportsQuery = _context.Reports
-                .Include(r => r.Committee)
+                .Include(r => r.ExamLocation) // تحديث لقراءة مكان اللجنة الموحد
                 .Include(r => r.ExamSchedule).ThenInclude(s => s.Exam).ThenInclude(e => e.Subject)
-                .Include(r => r.ExamSchedule).ThenInclude(s => s.Block)
+                .Include(r => r.ExamSchedule).ThenInclude(s => s.ExamLocation) // تحديث لقراءة الصالة من جدول الأماكن الموحد
                 .AsQueryable();
 
             if (reportType.HasValue && reportType.Value > 0)
@@ -42,7 +41,6 @@ namespace projectweb.Controllers
             var reports = await reportsQuery.OrderByDescending(r => r.CreatedDate).ToListAsync();
 
             ViewBag.ReportStatusList = GetArabicEnumList<ReportStatus>();
-
             ViewBag.SelectedReportType = reportType;
 
             return View(reports);
@@ -56,9 +54,9 @@ namespace projectweb.Controllers
             if (id == null) return NotFound();
 
             var report = await _context.Reports
-                .Include(r => r.Committee) 
+                .Include(r => r.ExamLocation) // تحديث للمكان الموحد
                 .Include(r => r.ExamSchedule).ThenInclude(s => s.Exam).ThenInclude(e => e.Subject)
-                .Include(r => r.ExamSchedule).ThenInclude(s => s.Block)
+                .Include(r => r.ExamSchedule).ThenInclude(s => s.ExamLocation)
                 .Include(r => r.ReportPersons).ThenInclude(rp => rp.Person)
                 .Include(r => r.ReportPersons).ThenInclude(rp => rp.Student)
                 .Include(r => r.ReportPersons).ThenInclude(rp => rp.Role)
@@ -80,14 +78,14 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ReportId,Status,Notes,ScheduleId,CommitteeId")] Report report, int[] SelectedStaffIds, int? SelectedStudentId)
+        public async Task<IActionResult> Create([Bind("ReportId,Status,Notes,ScheduleId,LocationId")] Report report, int[] SelectedStaffIds, int? SelectedStudentId)
         {
             if (SelectedStudentId.HasValue)
             {
                 var student = await _context.Students.AsNoTracking().FirstOrDefaultAsync(s => s.StudentId == SelectedStudentId.Value);
                 if (student != null)
                 {
-                    report.CommitteeId = student.CommitteeId ?? 0;
+                    report.LocationId = student.LocationId ?? 0; // التحديث هنا لـ LocationId الخاص باللجنة
                 }
             }
             else
@@ -95,8 +93,12 @@ namespace projectweb.Controllers
                 var examSchedule = await _context.ExamSchedules.AsNoTracking().FirstOrDefaultAsync(es => es.ExamScheduleId == report.ScheduleId);
                 if (examSchedule != null)
                 {
-                    var firstCommitteeInBlock = await _context.Committees.AsNoTracking().FirstOrDefaultAsync(c => c.BlockId == examSchedule.BlockId);
-                    report.CommitteeId = firstCommitteeInBlock?.CommitteeId ?? 0;
+                    // جلب أول لجنة فرعية تابعة للصالة المذكورة في الجدول الموحد
+                    var firstCommitteeInBlock = await _context.ExamLocations
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(c => c.ParentLocationId == examSchedule.LocationId && c.Type == LocationType.Committee);
+
+                    report.LocationId = firstCommitteeInBlock?.LocationId ?? 0;
                 }
             }
 
@@ -109,6 +111,7 @@ namespace projectweb.Controllers
                 int fallbackPersonId = (SelectedStaffIds != null && SelectedStaffIds.Length > 0)
                     ? SelectedStaffIds[0]
                     : _context.Persons.Select(p => p.PersonId).FirstOrDefault();
+
                 if (SelectedStudentId.HasValue && fallbackPersonId > 0)
                 {
                     _context.ReportPersons.Add(new ReportPerson
@@ -116,7 +119,7 @@ namespace projectweb.Controllers
                         ReportId = report.ReportId,
                         PersonId = fallbackPersonId,
                         StudentId = SelectedStudentId.Value,
-                        RoleId = 1, 
+                        RoleId = 1,
                         SignedAt = DateTime.Now,
                         Signature = "Waiting"
                     });
@@ -138,7 +141,7 @@ namespace projectweb.Controllers
                         {
                             ReportId = report.ReportId,
                             PersonId = staffId,
-                            StudentId = null, 
+                            StudentId = null,
                             RoleId = assignment?.RoleId ?? 1,
                             SignedAt = DateTime.Now,
                             Signature = "Pending"
@@ -147,7 +150,7 @@ namespace projectweb.Controllers
                 }
 
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "تم إنشاء المحضر الأكاديمي بنجاح";
+                TempData["SuccessMessage"] = "تم إنشاء المحضر الأكاديمي الموحد بنجاح";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -188,7 +191,7 @@ namespace projectweb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ReportId,CreatedDate,Status,Notes,ScheduleId,CommitteeId")] Report report, int[] SelectedStaffIds, int? SelectedStudentId)
+        public async Task<IActionResult> Edit(int id, [Bind("ReportId,CreatedDate,Status,Notes,ScheduleId,LocationId")] Report report, int[] SelectedStaffIds, int? SelectedStudentId)
         {
             if (id != report.ReportId) return NotFound();
 
@@ -197,7 +200,7 @@ namespace projectweb.Controllers
                 var student = await _context.Students.AsNoTracking().FirstOrDefaultAsync(s => s.StudentId == SelectedStudentId.Value);
                 if (student != null)
                 {
-                    report.CommitteeId = student.CommitteeId ?? 0;
+                    report.LocationId = student.LocationId ?? 0;
                 }
             }
             else
@@ -205,8 +208,11 @@ namespace projectweb.Controllers
                 var examSchedule = await _context.ExamSchedules.AsNoTracking().FirstOrDefaultAsync(es => es.ExamScheduleId == report.ScheduleId);
                 if (examSchedule != null)
                 {
-                    var firstCommitteeInBlock = await _context.Committees.AsNoTracking().FirstOrDefaultAsync(c => c.BlockId == examSchedule.BlockId);
-                    report.CommitteeId = firstCommitteeInBlock?.CommitteeId ?? 0;
+                    var firstCommitteeInBlock = await _context.ExamLocations
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(c => c.ParentLocationId == examSchedule.LocationId && c.Type == LocationType.Committee);
+
+                    report.LocationId = firstCommitteeInBlock?.LocationId ?? 0;
                 }
             }
 
@@ -283,7 +289,7 @@ namespace projectweb.Controllers
 
             var report = await _context.Reports
                 .Include(r => r.ExamSchedule).ThenInclude(s => s.Exam).ThenInclude(e => e.Subject)
-                .Include(r => r.ExamSchedule).ThenInclude(s => s.Block)
+                .Include(r => r.ExamSchedule).ThenInclude(s => s.ExamLocation)
                 .Include(r => r.ReportPersons)
                 .FirstOrDefaultAsync(m => m.ReportId == id);
 
@@ -314,20 +320,20 @@ namespace projectweb.Controllers
         public async Task<JsonResult> GetCommitteeParties(int scheduleId)
         {
             var examSchedule = await _context.ExamSchedules
-                .Include(es => es.Block)
+                .Include(es => es.ExamLocation)
                 .FirstOrDefaultAsync(es => es.ExamScheduleId == scheduleId);
 
             var students = new List<object>();
 
             if (examSchedule != null)
             {
-                var committeeIdsInBlock = await _context.Committees
-                    .Where(c => c.BlockId == examSchedule.BlockId)
-                    .Select(c => c.CommitteeId)
+                var committeeIdsInBlock = await _context.ExamLocations
+                    .Where(c => c.ParentLocationId == examSchedule.LocationId && c.Type == LocationType.Committee)
+                    .Select(c => c.LocationId)
                     .ToListAsync();
 
                 var dbStudents = await _context.Students
-                    .Where(s => s.CommitteeId.HasValue && committeeIdsInBlock.Contains(s.CommitteeId.Value))
+                    .Where(s => s.LocationId.HasValue && committeeIdsInBlock.Contains(s.LocationId.Value))
                     .Select(s => new {
                         s.StudentId,
                         s.FullName,
@@ -358,9 +364,9 @@ namespace projectweb.Controllers
         public async Task<JsonResult> GetCommitteesByExam(int examId)
         {
             var committees = await _context.ExamSchedules
-                .Include(s => s.Block)
-                .Where(s => s.ExamId == examId && s.Block != null)
-                .Select(s => new { id = s.ExamScheduleId, name = " صالة: " + s.Block.BlockName })
+                .Include(s => s.ExamLocation)
+                .Where(s => s.ExamId == examId && s.ExamLocation != null)
+                .Select(s => new { id = s.ExamScheduleId, name = " صالة: " + s.ExamLocation.LocationName })
                 .ToListAsync();
 
             return Json(committees);

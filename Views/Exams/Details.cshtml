@@ -83,7 +83,7 @@
 
                 <div class="border-bottom pb-2 mb-3 mt-4">
                     <h5 class="fw-bold mb-0 text-navy">
-                        <i class="bi bi-diagram-3-fill me-2"></i> توزيع صالات الامتحانات (@(Model.ExamSchedules?.Count ?? 0))
+                        <i class="bi bi-diagram-3-fill me-2"></i> توزيع مقرات وصالات الامتحانات (@(Model.ExamSchedules?.Count ?? 0))
                     </h5>
                 </div>
 
@@ -94,8 +94,8 @@
                             <thead class="bg-light">
                                 <tr>
                                     <th>كود الجلسة</th>
-                                    <th>الجراش / الصالة</th>
-                                    <th>الصالة الرئيسية</th>
+                                    <th>المقر الفرعي / الصالة</th>
+                                    <th>الموقع الرئيسي الأعلى</th>
                                     <th>الإجراءات</th>
                                 </tr>
                             </thead>
@@ -106,12 +106,12 @@
                                         <td class="fw-bold text-muted small">#@s.ExamScheduleId</td>
                                         <td>
                                             <span class="fw-bold text-navy fs-6">
-                                                <i class="bi bi-building me-1 text-primary"></i> @(s.Block?.BlockName ?? "غير محدد")
+                                                <i class="bi bi-building me-1 text-primary"></i> @(s.ExamLocation?.LocationName ?? "غير محدد")
                                             </span>
                                         </td>
                                         <td class="small text-muted">
                                             <i class="bi bi-geo-alt-fill text-danger me-1"></i>
-                                            @(s.Block?.Hall?.HallName ?? "غير محدد")
+                                            @(s.ExamLocation?.ParentLocation?.LocationName ?? "مقر رئيسي")
                                         </td>
                                         <td>
                                             <a asp-controller="ExamSchedules" asp-action="Details" asp-route-id="@s.ExamScheduleId"
@@ -134,9 +134,9 @@
                 }
 
                 <div class="d-flex flex-wrap gap-2 mt-5 pt-4 border-top">
-                        <a asp-action="Edit" asp-route-id="@Model.ExamId" class="btn btn-academic-primary px-5 fw-bold shadow-sm py-2">
-                            <i class="bi bi-pencil-square me-1"></i> تعديل بيانات الامتحان
-                        </a>
+                    <a asp-action="Edit" asp-route-id="@Model.ExamId" class="btn btn-academic-primary px-5 fw-bold shadow-sm py-2">
+                        <i class="bi bi-pencil-square me-1"></i> تعديل بيانات الامتحان
+                    </a>
                     <a asp-action="Index" class="btn btn-outline-secondary px-4 shadow-sm py-2 border-0">
                         <i class="bi bi-arrow-right me-1"></i> العودة للقائمة
                     </a>

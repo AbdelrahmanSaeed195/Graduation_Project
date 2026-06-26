@@ -29,7 +29,9 @@ namespace projectweb.Controllers
         // =====================================
         public async Task<IActionResult> Index(string search)
         {
-            var query = _context.Persons.AsQueryable();
+            var query = _context.Persons
+                .Include(p => p.CommitteesAssignments)
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -49,7 +51,6 @@ namespace projectweb.Controllers
 
             ViewBag.Search = search;
 
-            // إذا كان الطلب AJAX أرسل الجدول فقط
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
                 return PartialView("_PersonTablePartial", uniqueResult);

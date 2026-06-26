@@ -18,18 +18,19 @@
 
                     <div class="alert alert-light border-0 py-3 mb-4" style="background-color: #fcfcfc; border-radius: 15px;">
                         <p class="fs-5 text-muted mb-0 fw-semibold">
-                            @(ViewBag.Message ?? "عفواً، لا توجد بيانات لجنة مسجلة لهذا الطالب في الوقت الحالي.")
+                            @(ViewBag.Message ?? "عفواً، لا توجد بيانات لجنة أو مقر امتحاني مسجل لهذا الطالب في الوقت الحالي.")
                         </p>
                     </div>
 
                     <p class="small text-secondary mb-4">
-                        يرجى التأكد من تشغيل عملية "توزيع الطلاب" من القائمة الرئيسية أو مراجعة جدول الامتحانات.
+                        يرجى التأكد من تشغيل عملية "توزيع الطلاب التلقائي" من القائمة الرئيسية أو مراجعة جدول إسناد المقرات الامتحانية.
                     </p>
 
                     <hr class="my-4 opacity-25">
 
                     <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                        <a asp-action="Index" class="btn btn-academic-primary px-5 py-2 fw-bold shadow-sm" style="border-radius: 10px; transition: 0.3s;">
+                        <!-- التحسين: توجيه زر العودة صراحة إلى كنترولر إدارة الطلاب لضمان مرونة التجربة -->
+                        <a asp-controller="Students" asp-action="Index" class="btn btn-academic-primary px-5 py-2 fw-bold shadow-sm" style="border-radius: 10px; transition: 0.3s;">
                             <i class="bi bi-arrow-right-circle me-2"></i>  العودة لسجل الطلاب
                         </a>
                     </div>
@@ -64,19 +65,16 @@
     }
 
     @@keyframes pulse-warning {
-        0%
+        0% {
+            transform: scale(1);
+        }
 
-    {
-        transform: scale(1);
-    }
+        50% {
+            transform: scale(1.05);
+        }
 
-    50% {
-        transform: scale(1.05);
-    }
-
-    100% {
-        transform: scale(1);
-    }
-
+        100% {
+            transform: scale(1);
+        }
     }
 </style>
