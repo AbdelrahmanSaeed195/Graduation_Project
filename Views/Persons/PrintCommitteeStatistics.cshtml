@@ -1,0 +1,327 @@
+﻿@using projectweb.Models.ViewModels
+@model CommitteeStatisticsViewModel
+
+@{
+    Layout = null;
+    int counter = 1;
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>إحصائية تكليفات اللجان - جامعة أسيوط</title>
+    <style>
+        @@page {
+            size: auto;
+            margin: 0mm;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: white;
+            color: black;
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+            line-height: 1.4;
+        }
+
+        .page-print-container {
+            padding: 35px 50px;
+            box-sizing: border-box;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid black;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+
+        .header-side {
+            font-weight: bold;
+            font-size: 13pt;
+            line-height: 1.5;
+        }
+
+        .header-center {
+            text-align: center;
+            font-size: 10pt;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-top: 5px;
+        }
+
+        .report-title {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 6px;
+        }
+
+        .report-subtitle {
+            text-align: center;
+            font-size: 12pt;
+            margin-bottom: 20px;
+        }
+
+        .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+            .print-table th,
+            .print-table td {
+                border: 1px solid black;
+                text-align: center;
+                padding: 7px 5px;
+                font-size: 11.5pt;
+            }
+
+            .print-table thead tr th {
+                background-color: #f0f0f0;
+                font-weight: bold;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+        .total-cell {
+            font-weight: bold;
+            font-size: 13pt;
+        }
+
+        .zero-cell {
+            color: #aaa;
+        }
+
+        .summary-box {
+            border: 1px solid black;
+            padding: 10px 20px;
+            display: inline-block;
+            font-size: 12pt;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .respect-phrase {
+            text-align: center;
+            font-weight: bold;
+            font-size: 13pt;
+            margin: 20px 0 5px 0;
+        }
+
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12.5pt;
+            margin-top: auto;
+            padding: 0 10px;
+        }
+
+        .sig-column {
+            width: 23%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .sig-line {
+            margin-top: 15px;
+            border-top: 1px dashed black;
+            width: 85%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .system-footer {
+            margin-top: 20px;
+            border-top: 2px solid black;
+            font-size: 10pt;
+            font-weight: bold;
+            padding-top: 6px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .no-print-zone {
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .btn-print {
+            background: #1a3a5a;
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        @@media print {
+            .no-print-zone {
+                display: none !important;
+            }
+
+            body {
+                padding: 0;
+                margin: 0;
+            }
+
+            .print-table thead tr th {
+                background-color: #f0f0f0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print-zone">
+        <button class="btn-print" onclick="window.print()">🖨️ طباعة الإحصائية الآن</button>
+        <a asp-controller="Persons" asp-action="Index"
+           style="display:inline-block; padding:10px 15px; cursor:pointer; margin-right:10px;
+            background-color:#e2e6ea; color:black; text-decoration:none;
+            border:1px solid #ccc; border-radius:4px; font-size:13px; font-family:Arial;">
+            العودة للقائمة الرئيسية
+        </a>
+    </div>
+
+    <div class="page-print-container">
+        <div>
+            @* الترويسة *@
+            <div class="header-container">
+                <div class="header-side">
+                    جامعة أسيوط<br />
+                    كلية علوم الرياضة<br />
+                    ادارة شئون الطلاب
+                </div>
+                <div class="header-center">
+                    AU-QAD-DC-FRM-003<br />
+                    الإصدار وتاريخه رقم : 01 - 2017/01/01
+                </div>
+                <div class="header-side" style="text-align: left;">
+                    كلية علوم الرياضة
+                </div>
+            </div>
+
+            @* عنوان التقرير *@
+            <div class="report-title">
+                إحصائية إجمالي تكليفات لجان الامتحانات
+            </div>
+            <div class="report-subtitle">
+                العام الجامعي: <span style="font-family:'Arial';">@Model.AcademicYear</span> م
+            </div>
+
+            @if (Model.Rows == null || !Model.Rows.Any())
+            {
+                <div style="text-align:center; padding:50px; border:2px dashed #ccc; border-radius:10px; margin:20px 0;">
+                    <h3 style="color:#666;">لا توجد تكليفات مسجلة في النظام حالياً</h3>
+                </div>
+            }
+            else
+            {
+                @* ملخص إجمالي *@
+                <div style="margin-bottom:15px;">
+                    <span class="summary-box">
+                        إجمالي عدد المكلفين: @Model.Rows.Count شخص
+                        &nbsp;&nbsp;|&nbsp;&nbsp;
+                        إجمالي التكليفات: @Model.Rows.Sum(r => r.TotalCount) تكليف
+                    </span>
+                </div>
+
+                @* الجدول *@
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th style="width:40px;">م</th>
+                            <th style="width:180px;">الاسم الكامل</th>
+                            <th style="width:110px;">الوظيفة</th>
+                            <th style="width:110px;">الدور في اللجنة</th>
+                            <th style="width:70px;">الفرقة الأولى</th>
+                            <th style="width:70px;">الفرقة الثانية</th>
+                            <th style="width:70px;">الفرقة الثالثة</th>
+                            <th style="width:70px;">الفرقة الرابعة</th>
+                            <th style="width:80px;">الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Rows)
+                        {
+                            <tr>
+                                <td>@(counter++)</td>
+                                <td style="text-align:right; padding-right:8px; font-weight:bold;">@row.FullName</td>
+                                <td>@row.JobRole</td>
+                                <td>@row.RoleType</td>
+                                <td class="@(row.Year1Count == 0 ? "zero-cell" : "")">@(row.Year1Count == 0 ? "-" : row.Year1Count.ToString())</td>
+                                <td class="@(row.Year2Count == 0 ? "zero-cell" : "")">@(row.Year2Count == 0 ? "-" : row.Year2Count.ToString())</td>
+                                <td class="@(row.Year3Count == 0 ? "zero-cell" : "")">@(row.Year3Count == 0 ? "-" : row.Year3Count.ToString())</td>
+                                <td class="@(row.Year4Count == 0 ? "zero-cell" : "")">@(row.Year4Count == 0 ? "-" : row.Year4Count.ToString())</td>
+                                <td class="total-cell">@row.TotalCount</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr style="background-color:#f0f0f0; font-weight:bold; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                            <td colspan="4" style="text-align:center; font-weight:bold;">الإجمالي الكلي</td>
+                            <td>@Model.Rows.Sum(r => r.Year1Count)</td>
+                            <td>@Model.Rows.Sum(r => r.Year2Count)</td>
+                            <td>@Model.Rows.Sum(r => r.Year3Count)</td>
+                            <td>@Model.Rows.Sum(r => r.Year4Count)</td>
+                            <td class="total-cell">@Model.Rows.Sum(r => r.TotalCount)</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            }
+        </div>
+
+        <div>
+            <div class="respect-phrase">وتفضلوا بقبول فائق الاحترام والتقدير،،،</div>
+
+            <div class="signatures">
+                <div class="sig-column">
+                    <div>شئون الطلاب</div>
+                    <div style="margin-top:15px; font-weight:normal;">سارة محمود</div>
+                    <div class="sig-line"></div>
+                </div>
+                <div class="sig-column">
+                    <div>مدير شئون الطلاب</div>
+                    <div style="margin-top:15px; font-weight:normal;">إيهاب صبري</div>
+                    <div class="sig-line"></div>
+                </div>
+                <div class="sig-column">
+                    <div>وكيل الكلية لشئون التعليم والطلاب</div>
+                    <div style="margin-top:15px;">أ.د / ياسر حسن حامد</div>
+                    <div class="sig-line"></div>
+                </div>
+                <div class="sig-column">
+                    <div>يعتمد، عميد الكلية</div>
+                    <div style="margin-top:15px;">أ.د / عماد سمير محمود على</div>
+                    <div class="sig-line"></div>
+                </div>
+            </div>
+
+            <div class="system-footer">
+                داخلي : 5 / 4267 / 4298 / 4268 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; مباشر : 088232168 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; فاكس : 088/2334517
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

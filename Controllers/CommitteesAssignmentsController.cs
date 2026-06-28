@@ -193,51 +193,35 @@ namespace projectweb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CommitteesAssignment assignment)
         {
-            if (assignment == null)
-            {
-                await LoadDropdownsAsync();
-                return View(new CommitteesAssignment());
-            }
-
             if (ModelState.IsValid)
             {
-                var isBusy = await _context.CommitteesAssignments
-                    .AnyAsync(a => a.ExamScheduleId == assignment.ExamScheduleId && a.PersonId == assignment.PersonId);
-
-                if (isBusy)
-                {
-                    ModelState.AddModelError("", "هذا الموظف مشغول بتكليف آخر بالفعل في نفس الجلسة امتحانية!");
-                    await LoadDropdownsAsync(assignment);
-                    return View(assignment);
-                }
-
-                assignment.AssignmentType = "Manual";
                 var role = await _context.Roles.FindAsync(assignment.RoleId);
                 assignment.RoleType = role?.RoleDescription ?? "تكليف يدوي";
-
+                assignment.AssignmentType = "Manual";
                 _context.Add(assignment);
                 await _context.SaveChangesAsync();
-                TempData["Success"] = "تم إضافة التكليف اليدوي بنجاح.";
                 return RedirectToAction(nameof(Index));
             }
-
             await LoadDropdownsAsync(assignment);
             return View(assignment);
         }
 
-        // ============================================================
-        // 6. Edit
-        // ============================================================
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null) return NotFound();
-
             var assignment = await _context.CommitteesAssignments
                 .Include(a => a.ExamLocation)
-                .Include(a => a.ExamSchedule)
-                .FirstOrDefaultAsync(m => m.AssignmentId == id);
+                .ThenInclude(l => l.ParentLocation)
+                .FirstOrDefaultAsync(a => a.AssignmentId == id);
 
             if (assignment == null) return NotFound();
+
+            ViewBag.SelectedHallId = assignment.ExamLocation?.ParentLocation?.ParentLocationId
+                                  ?? assignment.ExamLocation?.ParentLocationId
+                                  ?? assignment.LocationId;
+
+            ViewBag.SelectedBlockId = assignment.ExamLocation?.ParentLocationId != null
+                                    ? assignment.LocationId
+                                    : null;
 
             await LoadDropdownsAsync(assignment);
             return View(assignment);
@@ -249,35 +233,54 @@ namespace projectweb.Controllers
         {
             if (id != assignment.AssignmentId) return NotFound();
 
+            var current = await _context.CommitteesAssignments
+                .AsNoTracking()
+                .Include(a => a.ExamSchedule)
+                .ThenInclude(es => es.Exam)
+                .FirstOrDefaultAsync(a => a.AssignmentId == id);
+
+            if (current == null) return NotFound();
+
+            var now = DateTime.Now;
+            var examDate = current.ExamSchedule.Exam.ExamDate.Date;
+            var examStart = examDate.Add(current.ExamSchedule.Exam.StartTime);
+            var examEnd = examDate.Add(current.ExamSchedule.Exam.EndTime);
+
+            var allowedStartTime = examStart.AddHours(-2);
+            var allowedEndTime = examEnd.AddHours(2);
+
+            if (now < allowedStartTime || now > allowedEndTime)
+            {
+                ModelState.AddModelError("", "عذراً، التعديل متاح فقط في الفترة من ساعتين قبل الامتحان وحتى ساعتين بعده.");
+                await LoadDropdownsAsync(assignment);
+                return View(assignment);
+            }
+
+            // 4. التحقق من التكرار
+            bool isDuplicate = await _context.CommitteesAssignments
+                .AnyAsync(a => a.PersonId == assignment.PersonId
+                            && a.ExamScheduleId == assignment.ExamScheduleId
+                            && a.AssignmentId != id);
+
+            if (isDuplicate)
+            {
+                ModelState.AddModelError("", "هذا الموظف لديه بالفعل تكليف في نفس الامتحان.");
+                await LoadDropdownsAsync(assignment);
+                return View(assignment);
+            }
+
+            // 5. الحفظ
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var isBusy = await _context.CommitteesAssignments
-                        .AnyAsync(a => a.ExamScheduleId == assignment.ExamScheduleId &&
-                                       a.PersonId == assignment.PersonId &&
-                                       a.AssignmentId != assignment.AssignmentId);
-
-                    if (isBusy)
-                    {
-                        ModelState.AddModelError("", "هذا الموظف مشغول بتكليف تنظيم آخر في هذه الجلسة!");
-                        await LoadDropdownsAsync(assignment);
-                        return View(assignment);
-                    }
-
-                    var role = await _context.Roles.FindAsync(assignment.RoleId);
-                    assignment.RoleType = role?.RoleDescription ?? "تعديل يدوي";
-                    assignment.AssignmentType = "Manual";
-
-                    _context.Update(assignment);
+                    _context.Entry(assignment).State = EntityState.Modified;
                     await _context.SaveChangesAsync();
-
-                    TempData["Success"] = "تم تحديث بيانات التكليف بنجاح.";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!AssignmentExists(assignment.AssignmentId)) return NotFound();
+                    if (!AssignmentExists(id)) return NotFound();
                     else throw;
                 }
             }
@@ -439,16 +442,16 @@ namespace projectweb.Controllers
                     ExamTime = $"{DateTime.Today.Add(exam.StartTime):hh:mm tt} - {DateTime.Today.Add(exam.EndTime):hh:mm tt}",
                     HallName = hall.LocationName,
 
-                    MainHead1 = allAssignments.FirstOrDefault(a => a.RoleType.Contains("رئيس صالة أساسي (القطاع الأول)"))?.Person?.FullName ?? "................",
-                    ReserveHead1 = allAssignments.FirstOrDefault(a => a.RoleType.Contains("رئيس صالة احتياطي"))?.Person?.FullName ?? "................",
-                    ReserveObserver1 = allAssignments.FirstOrDefault(a => a.RoleType.Contains("مراقب احتياطي للصالة"))?.Person?.FullName ?? "................",
+                    MainHead1 = allAssignments.FirstOrDefault(a => a.RoleType != null && a.RoleType.Contains("رئيس جراش أساسي"))?.Person?.FullName ?? "................",
+                    ReserveHead1 = allAssignments.FirstOrDefault(a => a.RoleType.Contains("رئيس جراش احتياطي"))?.Person?.FullName ?? "................",
+                    ReserveObserver1 = allAssignments.FirstOrDefault(a => a.RoleType.Contains("مراقب احتياطي للجراش"))?.Person?.FullName ?? "................",
 
-                    MainHead2 = allAssignments.FirstOrDefault(a => a.RoleType.Contains("رئيس صالة أساسي (القطاع الثاني)"))?.Person?.FullName ?? "................",
+                    MainHead2 = allAssignments.FirstOrDefault(a => a.RoleType.Contains("رئيس جراش أساسي (القطاع الثاني)"))?.Person?.FullName ?? "................",
                     ReserveHead2 = "................",
                     ReserveObserver2 = "................",
 
-                    DoctorName = allAssignments.FirstOrDefault(a => a.RoleType.Contains("دكتور"))?.Person?.FullName ?? "................",
-                    NurseName = allAssignments.FirstOrDefault(a => a.RoleType.Contains("ممرض"))?.Person?.FullName ?? "................",
+                    DoctorName = allAssignments.FirstOrDefault(a => a.RoleType != null && a.RoleType.Equals("دكتور"))?.Person?.FullName ?? "................",
+                    NurseName = allAssignments.FirstOrDefault(a => a.RoleType.Contains("مساعد دكتور"))?.Person?.FullName ?? "................",
 
                     Blocks = new List<BlockGroupItem> { blockItem },
 
@@ -501,7 +504,14 @@ namespace projectweb.Controllers
                 PersonId = p.PersonId,
                 FullNameWithJob = $"{p.FullName} ({GetEnumDisplayName(p.JobRole)})"
             }).ToList();
+
             ViewBag.PersonId = new SelectList(activeStaff, "PersonId", "FullNameWithJob", assignment?.PersonId);
+
+            ViewBag.JobTitlesJson = Newtonsoft.Json.JsonConvert.SerializeObject(
+                Enum.GetValues(typeof(JobTitle))
+                    .Cast<JobTitle>()
+                    .ToDictionary(e => e.ToString(), e => GetEnumDisplayName(e))
+            );
 
             var roles = await _context.Roles.AsNoTracking().ToListAsync() ?? new List<Role>();
             ViewBag.RoleId = new SelectList(roles, "RoleID", "RoleDescription", assignment?.RoleId);
@@ -509,9 +519,10 @@ namespace projectweb.Controllers
             var mainHalls = await _context.ExamLocations.Where(l => l.Type == LocationType.Hall).AsNoTracking().ToListAsync();
             ViewBag.LocationId = new SelectList(mainHalls, "LocationId", "LocationName", assignment?.LocationId);
 
+            // ... (بقية كود dbSchedules و schedules كما هو تماماً دون حذف) ...
             var dbSchedules = await _context.ExamSchedules
                 .Include(s => s.Exam).ThenInclude(e => e.Subject)
-                .Include(s => s.ExamLocation).ThenInclude(l => l.ParentLocation).ThenInclude(p => p.ParentLocation) // تضمين أجداد الشجرة بالكامل
+                .Include(s => s.ExamLocation).ThenInclude(l => l.ParentLocation).ThenInclude(p => p.ParentLocation)
                 .AsNoTracking()
                 .ToListAsync() ?? new List<ExamSchedule>();
 
@@ -533,11 +544,9 @@ namespace projectweb.Controllers
                             _ => "غير محدد"
                         };
                     }
-
                     string subjectName = subjectEntity?.SubjectName ?? "مادة غير محددة";
                     string examDate = s.Exam != null ? s.Exam.ExamDate.ToString("yyyy/MM/dd") : DateTime.Now.ToString("yyyy/MM/dd");
                     string startTime = s.Exam != null ? DateTime.Today.Add(s.Exam.StartTime).ToString("hh:mm tt") : "00:00";
-
                     string locationTree = "غير محدد";
                     if (s.ExamLocation != null)
                     {
@@ -553,17 +562,9 @@ namespace projectweb.Controllers
                             var hall = loc.ParentLocation;
                             locationTree = $"{hall?.LocationName ?? "جراش عام"} 👈 {loc.LocationName}";
                         }
-                        else
-                        {
-                            locationTree = loc.LocationName;
-                        }
+                        else { locationTree = loc.LocationName; }
                     }
-
-                    return new
-                    {
-                        ExamScheduleId = s.ExamScheduleId,
-                        Name = $"{subjectName} - ({arabicLevel}) | 📅 {examDate} ({startTime}) | 📍 [{locationTree}]"
-                    };
+                    return new { ExamScheduleId = s.ExamScheduleId, Name = $"{subjectName} - ({arabicLevel}) | 📅 {examDate} ({startTime}) | 📍 [{locationTree}]" };
                 })
                 .OrderByDescending(x => x.ExamScheduleId)
                 .ToList();
@@ -571,7 +572,7 @@ namespace projectweb.Controllers
             ViewBag.ExamScheduleId = new SelectList(schedules, "ExamScheduleId", "Name", assignment?.ExamScheduleId);
         }
 
-        private  string GetEnumDisplayName(Enum enumValue)
+        private string GetEnumDisplayName(Enum enumValue)
         {
             if (enumValue == null) return "غير محدد";
             return enumValue.GetType()

@@ -13,15 +13,14 @@
                 <form asp-action="Edit" method="post">
                     <input type="hidden" asp-for="PersonId" />
                     <input type="hidden" asp-for="RoleId" />
-                    
+
                     <div class="row g-4 mb-4">
-                       
-                        <div class="col-md-12">
+                        <div class="col-12">
                             <label asp-for="FullName" class="form-label academic-label">الاسم الكامل</label>
                             <input asp-for="FullName" class="form-control academic-input" />
                             <span asp-validation-for="FullName" class="text-danger small mt-1 d-block"></span>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <label asp-for="NationalId" class="form-label academic-label">الرقم القومي</label>
                             <input asp-for="NationalId" class="form-control academic-input" maxlength="14" />
@@ -32,10 +31,12 @@
                             <input asp-for="Phone" class="form-control academic-input" maxlength="11" />
                             <span asp-validation-for="Phone" class="text-danger small mt-1 d-block"></span>
                         </div>
-                      
-                        <div class="col-md-6">
+
+                        <div class="col-md-12">
                             <label asp-for="JobRole" class="form-label academic-label">الوظيفة</label>
-                            <select asp-for="JobRole" asp-items="Html.GetEnumSelectList<projectweb.Models.JobTitle>()" class="form-select academic-input"></select>
+                            <select asp-for="JobRole" asp-items="Html.GetEnumSelectList<projectweb.Models.JobTitle>()" class="form-select academic-input">
+                                <option value="">-- اختر الوظيفة --</option>
+                            </select>
                             <span asp-validation-for="JobRole" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>

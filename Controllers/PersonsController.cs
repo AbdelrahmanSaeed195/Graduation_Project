@@ -7,6 +7,7 @@ using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using projectweb.Models;
 using projectweb.Models.ViewModels;
+using projectweb.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -309,7 +310,52 @@ namespace projectweb.Controllers
 
             return View(model);
         }
+        // =====================================
+        // PRINT COMMITTEE STATISTICS
+        // =====================================
+        public async Task<IActionResult> PrintCommitteeStatistics()
+        {
+            var persons = await _context.Persons
+                .AsNoTracking()
+                .Include(p => p.CommitteesAssignments)
+                    .ThenInclude(a => a.ExamSchedule)
+                        .ThenInclude(es => es.Exam)
+                            .ThenInclude(e => e.Subject)
+                .Where(p => p.CommitteesAssignments.Any())
+                .OrderBy(p => p.JobRole)
+                .ThenBy(p => p.FullName)
+                .ToListAsync();
 
+            var rows = persons.Select(p =>
+            {
+                var assignments = p.CommitteesAssignments
+                    .Where(a => a.ExamSchedule?.Exam?.Subject != null)
+                    .ToList();
+
+                int CountYear(AcademicLevel level) =>
+                    assignments.Count(a => a.ExamSchedule.Exam.Subject.AcademicYear == level);
+
+                return new PersonCommitteeStatRow
+                {
+                    FullName = p.FullName,
+                    JobRole = GetArabicJobTitle(p.JobRole),
+                    RoleType = assignments.FirstOrDefault(a => !string.IsNullOrEmpty(a.RoleType))?.RoleType ?? "غير محدد",
+                    TotalCount = assignments.Count,
+                    Year1Count = CountYear(AcademicLevel.FirstYear),
+                    Year2Count = CountYear(AcademicLevel.SecondYear),
+                    Year3Count = CountYear(AcademicLevel.ThirdYear),
+                    Year4Count = CountYear(AcademicLevel.FourthYear),
+                };
+            }).ToList();
+
+            var model = new CommitteeStatisticsViewModel
+            {
+                AcademicYear = "2025/2026",
+                Rows = rows
+            };
+
+            return View(model);
+        }
         public string GetArabicJobTitle(JobTitle job)
         {
             return job switch

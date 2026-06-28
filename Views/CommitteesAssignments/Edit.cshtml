@@ -39,15 +39,15 @@
                         <select asp-for="LocationId" id="hallSelect" class="form-select shadow-sm" asp-items="ViewBag.LocationId" style="border-radius: 8px;">
                             <option value="">-- بلا --</option>
                         </select>
-                        <small class="text-muted" style="font-size: 0.65rem;">خاص برؤساء الصالة والطاقم الطبي</small>
+                        <small class="text-muted" style="font-size: 0.65rem;">خاص برؤساء الجراشات والطاقم الطبي</small>
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold small text-muted">الصالة / البلوك</label>
+                        <label class="form-label fw-bold small text-muted">الصالة </label>
                         <select id="blockSelect" name="BlockLocationId" class="form-select shadow-sm" style="border-radius: 8px;">
                             <option value="">-- بلا --</option>
                         </select>
-                        <small class="text-muted" style="font-size: 0.65rem;">خاص بمراقبي البلوكات</small>
+                        <small class="text-muted" style="font-size: 0.65rem;">خاص بمراقبي الصالات</small>
                     </div>
 
                     <div class="col-md-4 mb-3">
@@ -84,7 +84,9 @@
             const blockSelect = $('#blockSelect');
             const committeeSelect = $('#committeeSelect');
 
-            // وظيفة التحكم في تفعيل وتعطيل الحقول بناءً على درجة الموظف
+            const savedHallId = '@ViewBag.SelectedHallId';
+            const savedLocationId = '@Model.LocationId';
+
             function updateFieldsAvailability() {
                 const selectedText = personSelect.find('option:selected').text() || "";
 
@@ -92,55 +94,60 @@
                 blockSelect.prop('disabled', false);
                 committeeSelect.prop('disabled', false);
 
-                if (selectedText.includes("أستاذ") || selectedText.includes("دكتور") || selectedText.includes("ممرض") || selectedText.includes("عميد")) {
+                const isSenior = selectedText.includes("أستاذ") || selectedText.includes("دكتور") ||
+                                 selectedText.includes("عميد") || selectedText.includes("ممرض");
+                const isMidLevel = selectedText.includes("مدرس") || selectedText.includes("معيد");
+
+                if (isSenior) {
                     blockSelect.val("").prop('disabled', true);
                     committeeSelect.val("").prop('disabled', true);
-                }
-                else if (selectedText.includes("مدرس") || selectedText.includes("معيد")) {
+                } else if (isMidLevel) {
                     committeeSelect.val("").prop('disabled', true);
                 }
             }
 
-            // ميكانيكية مزامنة القيمة النهائية لـ LocationId الموحد قبل إرسال الفورم
-            $('form').submit(function() {
-                let finalLocationId = hallSelect.val();
-
-                if (committeeSelect.val()) {
-                    finalLocationId = committeeSelect.val();
-                } else if (blockSelect.val()) {
-                    finalLocationId = blockSelect.val();
-                }
-
-                // تعيين القيمة الأكثر دقة في شجرة المكان للحقل الأصلي المرسل للـ Controller
-                hallSelect.val(finalLocationId);
-            });
-
-            personSelect.change(updateFieldsAvailability);
-            updateFieldsAvailability();
-
-            // إشعار التحميل الديناميكي المحدث عبر الـ Ajax المتوافق مع جدول ExamLocations
-            hallSelect.change(function () {
-                const hallId = $(this).val();
-
-                blockSelect.html('<option value="">-- بلا --</option>');
-                committeeSelect.html('<option value="">-- بلا --</option>');
-
+            function loadHallDetails(hallId, selectedLocationId) {
                 if (!hallId) return;
 
-                // استدعاء أكشن الكنترولر المحدث GetHallDetails
                 $.getJSON('@Url.Action("GetHallDetails")', { hallId: hallId }, function (data) {
+                    blockSelect.empty().append('<option value="">-- بلا --</option>');
+                    committeeSelect.empty().append('<option value="">-- بلا --</option>');
+
                     $.each(data.blocks, function (i, b) {
-                        blockSelect.append($('<option>', { value: b.id, text: b.name }));
+                        blockSelect.append($('<option>', { value: b.id, text: b.name, selected: (b.id == selectedLocationId) }));
                     });
                     $.each(data.committees, function (i, c) {
-                        committeeSelect.append($('<option>', { value: c.id, text: c.name }));
+                        committeeSelect.append($('<option>', { value: c.id, text: c.name, selected: (c.id == selectedLocationId) }));
                     });
 
                     updateFieldsAvailability();
-                }).fail(function(err) {
-                    console.error("Error loading spatial structural details:", err);
                 });
+            }
+
+            if (savedHallId) {
+                hallSelect.val(savedHallId);
+                loadHallDetails(savedHallId, savedLocationId);
+            } else {
+                updateFieldsAvailability();
+            }
+
+            personSelect.change(updateFieldsAvailability);
+            hallSelect.change(function () {
+                loadHallDetails($(this).val(), null);
+            });
+
+            $('form').submit(function() {
+                let finalVal = hallSelect.val();
+                if (committeeSelect.val() && !committeeSelect.prop('disabled')) {
+                    finalVal = committeeSelect.val();
+                } else if (blockSelect.val() && !blockSelect.prop('disabled')) {
+                    finalVal = blockSelect.val();
+                }
+
+                hallSelect.attr('name', 'OldLocationId'); 
+                $('<input>').attr({type: 'hidden', name: 'LocationId', value: finalVal}).appendTo('form');
             });
         });
     </script>
+}
 }
