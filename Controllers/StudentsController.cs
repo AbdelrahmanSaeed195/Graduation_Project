@@ -208,14 +208,14 @@ namespace projectweb.Controllers
             if (id == null) return BadRequest();
 
             var student = await _context.Students
-                .Include(s => s.ExamLocation) 
+                .Include(s => s.ExamLocation)
+                .Include(s => s.Relatives)
                 .FirstOrDefaultAsync(m => m.StudentId == id);
 
             if (student == null) return NotFound();
 
             return View(student);
         }
-
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

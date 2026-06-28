@@ -4,46 +4,68 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="academic-card p-4">
-            <h4 class="section-title mb-3"><i class="bi bi-pencil-square"></i> تعديل العلاقة</h4>
+<div class="container mt-5 text-end" dir="rtl">
+    <div class="card mx-auto shadow-lg border-0" style="max-width: 700px; border-radius: 15px;">
+
+        <div class="card-header border-0 p-0" style="background: linear-gradient(135deg, #1a3a5a, #2a5298); border-radius: 15px 15px 0 0;">
+            <div class="text-center py-4">
+                <h3 class="fw-bold text-white mb-0">
+                    <i class="bi bi-pencil-square me-2"></i> تعديل العلاقة
+                </h3>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
             <form asp-action="Edit" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="RelativeId" />
 
-                <div class="mb-3">
-                    <label class="academic-label required">الموظف</label>
-                    <select asp-for="PersonId" class="form-select academic-input" asp-items="ViewBag.PersonsList"></select>
-                    <span asp-validation-for="PersonId" class="text-danger small mt-1 d-block"></span>
-                </div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-muted small">
+                            <i class="bi bi-person-fill me-1 text-primary"></i> الموظف
+                        </label>
+                        <select asp-for="PersonId" class="form-select" asp-items="ViewBag.PersonsList"></select>
+                        <span asp-validation-for="PersonId" class="text-danger small mt-1 d-block"></span>
+                    </div>
 
-                <div class="mb-3">
-                    <label class="academic-label required">الطالب</label>
-                    <select asp-for="StudentId" class="form-select academic-input" asp-items="ViewBag.StudentsList"></select>
-                    <span asp-validation-for="StudentId" class="text-danger small mt-1 d-block"></span>
-                </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-muted small">
+                            <i class="bi bi-mortarboard-fill me-1 text-warning"></i> الطالب
+                        </label>
+                        <select asp-for="StudentId" class="form-select" asp-items="ViewBag.StudentsList"></select>
+                        <span asp-validation-for="StudentId" class="text-danger small mt-1 d-block"></span>
+                    </div>
 
-                <div class="row g-3 mb-4">
-                    <div class="col-7">
-                        <label class="academic-label required">نوع العلاقة</label>
-                        <input asp-for="RelationType" class="form-control academic-input" placeholder="مثال: والد، والدة" />
+                    <div class="col-md-7">
+                        <label class="form-label fw-bold text-muted small">
+                            <i class="bi bi-diagram-3-fill me-1 text-info"></i> نوع العلاقة
+                        </label>
+                        <input asp-for="RelationType" class="form-control" placeholder="مثال: والد، والدة" />
                         <span asp-validation-for="RelationType" class="text-danger small mt-1 d-block"></span>
                     </div>
-                    <div class="col-5">
-                        <label class="academic-label required">السنة</label>
-                        <input asp-for="AcademicYear" class="form-control academic-input" type="number" />
+
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold text-muted small">
+                            <i class="bi bi-calendar-fill me-1 text-success"></i> السنة
+                        </label>
+                        <input asp-for="AcademicYear" class="form-control" type="number" />
                         <span asp-validation-for="AcademicYear" class="text-danger small mt-1 d-block"></span>
                     </div>
                 </div>
 
-                <div class="d-flex gap-2 flex-wrap">
-                    <button type="submit" class="btn btn-academic-primary">تعديل</button>
-                    <a asp-action="Index" class="btn btn-outline-academic">إلغاء</a>
-                    <a asp-action="Index" class="btn btn-outline-academic">عودة</a>
+                <div class="card-footer bg-light border-0 d-flex justify-content-center gap-3 py-4 mt-4"
+                     style="border-radius: 0 0 15px 15px; margin: 0 -1.5rem -1.5rem;">
+                    <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm">
+                        <i class="bi bi-check2-circle me-1"></i> حفظ التعديلات
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-dark px-5 fw-bold bg-white shadow-sm">
+                        <i class="bi bi-arrow-right-circle me-1"></i> إلغاء
+                    </a>
                 </div>
             </form>
         </div>
+
     </div>
 </div>
 

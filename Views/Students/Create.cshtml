@@ -5,71 +5,86 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="row justify-content-center" dir="rtl">
-    <div class="col-xl-8">
-        <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
-            <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border: none;">
-                <h4 class="mb-0 fw-bold text-white"><i class="bi bi-person-plus-fill me-2"></i> إضافة طالب جديد</h4>
-            </div>
-            <div class="card-body p-4 bg-white">
-                <form asp-action="Create" method="post" id="createStudentForm">
-                    @Html.AntiForgeryToken()
-                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+<div class="container mt-5 text-end" dir="rtl">
+    <div class="card mx-auto shadow-lg border-0" style="max-width: 800px; border-radius: 15px;">
 
-                    <input type="hidden" asp-for="LocationId" value="" />
-
-                    <div class="row g-4">
-                        <div class="col-md-12">
-                            <label asp-for="FullName" class="form-label academic-label required fw-bold mb-2">اسم الطالب بالكامل</label>
-                            <input asp-for="FullName" class="form-control academic-input" placeholder="أدخل الاسم الكامل من واقع بطاقة الرقم القومي" style="border-radius: 8px;" />
-                            <span asp-validation-for="FullName" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label asp-for="NationalId" class="form-label academic-label required fw-bold mb-2">الرقم القومي</label>
-                            <input asp-for="NationalId" class="form-control academic-input" placeholder="14 رقمًا" maxlength="14" style="border-radius: 8px;" />
-                            <span asp-validation-for="NationalId" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label asp-for="AcademicYear" class="form-label academic-label required fw-bold mb-2">السنة الدراسية / المستوى</label>
-                            <select asp-for="AcademicYear" id="levelSelect" class="form-select academic-input" style="border-radius: 8px;">
-                                <option value="">-- اختر المستوى --</option>
-                                <option value="1">المستوى الأول</option>
-                                <option value="2">المستوى الثاني</option>
-                                <option value="3">المستوى الثالث</option>
-                                <option value="4">المستوى الرابع</option>
-                            </select>
-                            <span asp-validation-for="AcademicYear" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label asp-for="Specialization" class="form-label academic-label required fw-bold mb-2">التخصص الأكاديمي</label>
-                            <select asp-for="Specialization" id="specializationSelect" class="form-select academic-input" style="border-radius: 8px;">
-                                <option value="1">عام / غير متخصص</option>
-                                <option value="2">إدارة</option>
-                                <option value="3">تدريس</option>
-                                <option value="4">تدريب</option>
-                            </select>
-                            <span asp-validation-for="Specialization" class="text-danger small"></span>
-                        </div>
-                    </div>
-
-                    <div class="d-flex flex-wrap gap-2 mt-5 pt-4 border-top" style="border-color: #dee2e6 !important;">
-                        <button type="submit" class="btn btn-academic-primary px-5 fw-bold text-white" style="background-color: #1a3a5a; border-radius: 8px;">
-                            <i class="bi bi-check-circle me-1"></i> حفظ بيانات الطالب
-                        </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4" style="border-radius: 8px;">إلغاء وتراجع</a>
-                    </div>
-                </form>
+        <div class="card-header border-0 p-0" style="background: linear-gradient(135deg, #1a3a5a, #2a5298); border-radius: 15px 15px 0 0;">
+            <div class="text-center py-4">
+                <h3 class="fw-bold text-white mb-0">
+                    <i class="bi bi-person-plus-fill me-2"></i> إضافة طالب جديد
+                </h3>
             </div>
         </div>
+
+        <div class="card-body p-4">
+            <form asp-action="Create" method="post" id="createStudentForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="LocationId" value="" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="FullName" class="form-label fw-bold text-muted small">
+                            <i class="bi bi-person-fill me-1 text-primary"></i> اسم الطالب بالكامل
+                        </label>
+                        <input asp-for="FullName" class="form-control" placeholder="أدخل الاسم الكامل من واقع بطاقة الرقم القومي" />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="NationalId" class="form-label fw-bold text-muted small">
+                            <i class="bi bi-card-text me-1 text-success"></i> الرقم القومي
+                        </label>
+                        <input asp-for="NationalId" class="form-control" placeholder="14 رقمًا" maxlength="14" />
+                        <span asp-validation-for="NationalId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="AcademicYear" class="form-label fw-bold text-muted small">
+                            <i class="bi bi-mortarboard-fill me-1 text-warning"></i> السنة الدراسية
+                        </label>
+                        <select asp-for="AcademicYear" id="levelSelect" class="form-select">
+                            <option value="">-- اختر المستوى --</option>
+                            <option value="1">المستوى الأول</option>
+                            <option value="2">المستوى الثاني</option>
+                            <option value="3">المستوى الثالث</option>
+                            <option value="4">المستوى الرابع</option>
+                        </select>
+                        <span asp-validation-for="AcademicYear" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Specialization" class="form-label fw-bold text-muted small">
+                            <i class="bi bi-diagram-3-fill me-1 text-info"></i> التخصص الأكاديمي
+                        </label>
+                        <select asp-for="Specialization" id="specializationSelect" class="form-select">
+                            <option value="1">عام / غير متخصص</option>
+                            <option value="2">إدارة</option>
+                            <option value="3">تدريس</option>
+                            <option value="4">تدريب</option>
+                        </select>
+                        <span asp-validation-for="Specialization" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light border-0 d-flex justify-content-center gap-3 py-4 mt-4"
+                     style="border-radius: 0 0 15px 15px; margin: 0 -1.5rem -1.5rem;">
+                    <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm">
+                        <i class="bi bi-check-circle me-1"></i> حفظ بيانات الطالب
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-dark px-5 fw-bold bg-white shadow-sm">
+                        <i class="bi bi-arrow-right-circle me-1"></i> إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-
     <script>
         $(document).ready(function () {
             function toggleSpecialization() {
@@ -81,24 +96,8 @@
                     $('#specializationSelect option').show();
                 }
             }
-
-            $('#levelSelect').change(function () {
-                toggleSpecialization();
-            });
-
+            $('#levelSelect').change(function () { toggleSpecialization(); });
             toggleSpecialization();
         });
     </script>
-
-    <style>
-        .btn-academic-primary:hover {
-            background-color: #2e5a88 !important;
-            transform: translateY(-1px);
-        }
-
-        .academic-input:focus {
-            border-color: #1a3a5a !important;
-            box-shadow: 0 0 0 0.25rem rgba(26, 58, 90, 0.1) !important;
-        }
-    </style>
 }

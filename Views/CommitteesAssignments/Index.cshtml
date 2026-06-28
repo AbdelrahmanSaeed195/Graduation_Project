@@ -51,15 +51,17 @@
             <tbody>
                 @foreach (var item in Model)
                 {
-                    @* تحديد لون الدور الوظيفي *@
+                    @* حماية وتأمين استخراج ستايل الألوان لمنع الـ NullReferenceException *@
                     string roleBadgeStyle = "background-color: #6c757d; color: #fff;"; // افتراضي
-                    if (item.RoleType.Contains("رئيس")) { roleBadgeStyle = "background-color: #6f42c1; color: #fff;"; }
-                    else if (item.RoleType.Contains("مراقب")) { roleBadgeStyle = "background-color: #198754; color: #fff;"; }
-                    else if (item.RoleType.Contains("ملاحظ")) { roleBadgeStyle = "background-color: #0d6efd; color: #fff;"; }
+                    string currentRole = item.RoleType ?? "";
+
+                    if (currentRole.Contains("رئيس")) { roleBadgeStyle = "background-color: #6f42c1; color: #fff;"; }
+                    else if (currentRole.Contains("مراقب")) { roleBadgeStyle = "background-color: #198754; color: #fff;"; }
+                    else if (currentRole.Contains("ملاحظ")) { roleBadgeStyle = "background-color: #0d6efd; color: #fff;"; }
 
                     <tr>
                         <td class="fw-bold py-3">
-                            <div class="text-dark">@item.Person.FullName</div>
+                            <div class="text-dark">@item.Person?.FullName</div>
                             <div class="small text-muted fw-bold" style="font-size: 0.75rem;">
                                 <i class="bi bi-briefcase me-1"></i> @ViewData["Job_" + item.PersonId]
                             </div>
@@ -85,7 +87,7 @@
                                         ملاحظ احتياطي (صالة: @item.ExamLocation.LocationName)
                                     </span>
                                 }
-                                // 3. الأساتذة (   جراش أساسي)
+                                // 3. الأساتذة (جراش أساسي)
                                 else if (job == JobTitle.Professor || job == JobTitle.ProfessorEmeritus || job == JobTitle.AssistantProfessor)
                                 {
                                     <span class="badge px-3 py-2 shadow-sm" style="background-color: #6f42c1; color: #fff; border-radius: 8px;">
@@ -116,7 +118,8 @@
                             }
                         </td>
 
-                        <td><span class="badge rounded-pill px-3 py-1 shadow-sm" style="@roleBadgeStyle">@item.RoleType</span></td>
+                        @* تم تأمين عرض النص هنا أيضاً *@
+                        <td><span class="badge rounded-pill px-3 py-1 shadow-sm" style="@roleBadgeStyle">@(string.IsNullOrEmpty(item.RoleType) ? "غير محدد" : item.RoleType)</span></td>
 
                         <td>
                             <div class="fw-bold">@item.ExamSchedule?.Exam?.Subject?.SubjectName</div>

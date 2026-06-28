@@ -1,44 +1,165 @@
-
 @model projectweb.Models.Person
 @{
-    ViewData["Title"] = "تفاصيل الموظف";
+    ViewData["Title"] = "بيانات الموظف";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="row justify-content-center" dir="rtl">
-    <div class="col-xl-9">
-        <div class="card academic-card shadow-sm">
-            <div class="card-header academic-card-header text-white p-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold text-white"><i class="bi bi-person-vcard-fill me-2"></i> بيانات الملف الشخصي</h5>
-            </div>
-            <div class="card-body p-0">
-                <table class="table table-bordered mb-0">
-                    <tbody>
-                        <tr>
-                            <th class="bg-light" style="width: 25%;">الاسم الكامل</th>
-                            <td colspan="3" class="fw-bold" style="color: var(--text-main);">@Model.FullName</td>
-                        </tr>
-                        <tr>
-                            <th class="bg-light" style="width: 25%;">الرقم القومي</th>
-                            <td style="width: 25%;">@Model.NationalId</td>
-                            <th class="bg-light" style="width: 25%;">رقم المحمول</th>
-                            <td style="width: 25%;"><span style="color: var(--accent-blue);" class="fw-medium">@Model.Phone</span></td>
-                        </tr>
-                        <tr>
-                            <th class="bg-light" style="width: 25%;">المسمى الوظيفي / الدور</th>
-                            <td style="width: 25%;"><span class="badge" style="background-color: var(--bg-light); color: var(--primary-navy); border: 1px solid var(--border-color);">@Html.DisplayFor(m => m.JobRole)</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="card-footer bg-light p-3 d-flex justify-content-end gap-2">                   
-                        <a asp-action="Edit" asp-route-id="@Model.PersonId" class="btn btn-academic-primary px-4 fw-bold">
-                            <i class="bi bi-pencil-square me-1"></i> تعديل البيانات
-                        </a>
-                        <a asp-action="Delete" asp-route-id="@Model.PersonId" class="btn btn-outline-danger px-4">
-                            <i class="bi bi-trash ms-2"></i> حذف
-                        </a>
-                    <a asp-action="Index" class="btn btn-outline-secondary px-4">الرجوع للقائمة</a>
+<div class="container mt-5 text-end" dir="rtl">
+    <div class="card mx-auto shadow-lg border-0 main-details-card" style="max-width: 800px; border-radius: 15px; overflow: visible;">
+
+        @* Header *@
+        <div class="card-header border-0 p-0" style="background: linear-gradient(135deg, #1a3a5a, #2a5298); border-radius: 15px 15px 0 0;">
+            <div class="text-center py-4 position-relative">
+                <div class="position-absolute top-0 start-50 translate-middle-x" style="margin-top: -18px;">
+                    <span class="badge rounded-pill px-4 py-2 shadow badge-animate"
+                          style="background-color: #fff; color: #1a3a5a; font-size: 0.85rem; border: 2px solid #2a5298;">
+                        <i class="bi bi-person-badge-fill me-1"></i> بطاقة الموظف الأكاديمية
+                    </span>
                 </div>
+                <h3 class="fw-bold mt-3 text-white mb-0">
+                    <i class="bi bi-person-vcard-fill me-2"></i> بيانات الملف الشخصي
+                </h3>
             </div>
         </div>
+
+        @* Body *@
+        <div class="card-body p-4 pt-4">
+            <div class="row g-3">
+
+                @* الاسم الكامل *@
+                <div class="col-12">
+                    <div class="info-field p-3 rounded-3 border bg-white shadow-sm">
+                        <label class="text-muted small d-block mb-1">
+                            <i class="bi bi-person-fill me-1 text-primary"></i> الاسم الكامل
+                        </label>
+                        <h5 class="fw-bold mb-0" style="color: #1a3a5a;">@Model.FullName</h5>
+                    </div>
+                </div>
+
+                @* الرقم القومي + المحمول *@
+                <div class="col-md-6">
+                    <div class="info-field p-3 rounded-3 border bg-white shadow-sm h-100">
+                        <label class="text-muted small d-block mb-1">
+                            <i class="bi bi-card-text me-1 text-success"></i> الرقم القومي
+                        </label>
+                        <p class="fw-bold mb-0 fs-6" style="letter-spacing: 1px; font-family: 'Courier New', monospace;">
+                            @Model.NationalId
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="info-field p-3 rounded-3 border bg-white shadow-sm h-100">
+                        <label class="text-muted small d-block mb-1">
+                            <i class="bi bi-telephone-fill me-1 text-info"></i> رقم المحمول
+                        </label>
+                        <p class="fw-bold mb-0 fs-6" style="color: #2a5298;">
+                            @(string.IsNullOrEmpty(Model.Phone) ? "غير مسجل" : Model.Phone)
+                        </p>
+                    </div>
+                </div>
+
+                @* الوظيفة + حالة النشاط *@
+                <div class="col-md-6">
+                    <div class="info-field p-3 rounded-3 border bg-white shadow-sm h-100">
+                        <label class="text-muted small d-block mb-1">
+                            <i class="bi bi-briefcase-fill me-1 text-warning"></i> المسمى الوظيفي / الدور
+                        </label>
+                        <span class="badge px-3 py-2 fs-6" style="background-color: #e8f0fe; color: #1a3a5a; border: 1px solid #c5d3f0;">
+                            @Html.DisplayFor(m => m.JobRole)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="info-field p-3 rounded-3 border bg-white shadow-sm h-100">
+                        <label class="text-muted small d-block mb-1">
+                            <i class="bi bi-toggle-on me-1 text-success"></i> حالة النشاط في التكليفات
+                        </label>
+                        @if (Model.IsActiveForAssignment)
+                        {
+                            <span class="badge px-3 py-2 fs-6" style="background-color: #d1fae5; color: #065f46; border: 1px solid #6ee7b7;">
+                                <i class="bi bi-check-circle-fill me-1"></i> نشط ومؤهل للتكليف
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge px-3 py-2 fs-6" style="background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;">
+                                <i class="bi bi-x-circle-fill me-1"></i> موقوف عن التكليف
+                            </span>
+                        }
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        @* Footer *@
+        <div class="card-footer bg-light border-0 d-flex justify-content-center gap-3 py-4"
+             style="border-radius: 0 0 15px 15px;">
+            <a asp-action="Edit" asp-route-id="@Model.PersonId"
+               class="btn btn-primary px-5 shadow-sm btn-hover-effect fw-bold">
+                <i class="bi bi-pencil-square me-1"></i> تعديل البيانات
+            </a>
+            <a asp-action="Delete" asp-route-id="@Model.PersonId"
+               class="btn btn-outline-danger px-5 shadow-sm fw-bold btn-hover-effect-danger">
+                <i class="bi bi-trash me-1"></i> حذف الموظف
+            </a>
+            <a asp-action="Index"
+               class="btn btn-outline-dark px-5 shadow-sm bg-white fw-bold btn-hover-effect-outline">
+                <i class="bi bi-arrow-right-circle me-1"></i> العودة للقائمة
+            </a>
+        </div>
+
     </div>
 </div>
+
+<style>
+    .main-details-card {
+        transition: box-shadow 0.3s ease;
+    }
+
+    .info-field {
+        cursor: default;
+    }
+
+    .badge-animate {
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(26, 58, 90, 0.3); }
+        70% { box-shadow: 0 0 0 10px rgba(26, 58, 90, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(26, 58, 90, 0); }
+    }
+
+    .btn-hover-effect {
+        transition: all 0.3s ease;
+    }
+
+        .btn-hover-effect:hover {
+            background-color: #0b4a8a !important;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3) !important;
+        }
+
+    .btn-hover-effect-danger {
+        transition: all 0.3s ease;
+    }
+
+        .btn-hover-effect-danger:hover {
+            background-color: #dc3545 !important;
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+    .btn-hover-effect-outline {
+        transition: all 0.3s ease;
+    }
+
+        .btn-hover-effect-outline:hover {
+            background-color: #343a40 !important;
+            color: white !important;
+            transform: translateY(-2px);
+        }
+</style>

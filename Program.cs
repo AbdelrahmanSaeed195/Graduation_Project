@@ -73,6 +73,9 @@ using (var scope = app.Services.CreateScope())
         var result = await userManager.CreateAsync(newAdmin, adminPassword);
         if (result.Succeeded) await userManager.AddToRoleAsync(newAdmin, "Admin");
     }
+
+    // Seed application data (Arabic dummy data)
+    await DataSeeder.SeedAsync(services);
 }
 
 // 7. تشغيل التطبيق

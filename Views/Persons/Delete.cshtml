@@ -2,78 +2,104 @@
 @{
     ViewData["Title"] = "حذف موظف";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    bool canDelete = ViewBag.CanDelete != false;
 }
 
-<div class="row justify-content-center" dir="rtl">
-    <div class="col-xl-8">
-        <div class="card academic-card shadow-sm" style="border-color: @(ViewBag.CanDelete == false ? "#ffc107" : "#dc3545");">
+<div class="container mt-5 text-end" dir="rtl">
+    <div class="card mx-auto shadow-lg border-0" style="max-width: 800px; border-radius: 15px;">
 
-            <div class="card-header @(ViewBag.CanDelete == false ? "bg-warning text-dark" : "bg-danger text-white") p-4 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold @(ViewBag.CanDelete == false ? "text-dark" : "text-white")">
-                    <i class="bi @(ViewBag.CanDelete == false ? "bi-exclamation-triangle-fill" : "bi-trash-fill") me-2"></i>
-                    @(ViewBag.CanDelete == false ? "لا يمكن حذف السجل" : "تأكيد الحذف")
-                </h5>
+        <div class="card-header border-0 p-0"
+             style="background: linear-gradient(135deg, @(canDelete ? "#7f1d1d, #dc3545" : "#78350f, #d97706")); border-radius: 15px 15px 0 0;">
+            <div class="text-center py-4">
+                <h3 class="fw-bold text-white mb-0">
+                    <i class="bi @(canDelete ? "bi-trash-fill" : "bi-exclamation-triangle-fill") me-2"></i>
+                    @(canDelete ? "تأكيد حذف الموظف" : "لا يمكن حذف السجل")
+                </h3>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+
+            @if (!canDelete)
+            {
+                <div class="alert alert-warning d-flex align-items-center gap-3 mb-4">
+                    <i class="bi bi-exclamation-octagon-fill fs-4 text-warning"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">عفواً، لا يمكن إتمام عملية الحذف حالياً!</h6>
+                        <p class="mb-0 small">@ViewBag.Message</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger d-flex align-items-center gap-3 mb-4">
+                    <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">هل أنت متأكد من رغبتك في حذف هذا السجل؟</h6>
+                        <p class="mb-0 small">لا يمكن التراجع عن هذا الإجراء بمجرد تنفيذه.</p>
+                    </div>
+                </div>
+            }
+
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <div class="p-3 rounded-3 border bg-white shadow-sm">
+                        <label class="text-muted small d-block mb-1">
+                            <i class="bi bi-person-fill me-1 text-primary"></i> الاسم الكامل
+                        </label>
+                        <h5 class="fw-bold mb-0" style="color: #1a3a5a;">@Model.FullName</h5>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="p-3 rounded-3 border bg-white shadow-sm h-100">
+                        <label class="text-muted small d-block mb-1">
+                            <i class="bi bi-card-text me-1 text-success"></i> الرقم القومي
+                        </label>
+                        <p class="fw-bold mb-0" style="font-family: 'Courier New', monospace;">@Model.NationalId</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="p-3 rounded-3 border bg-white shadow-sm h-100">
+                        <label class="text-muted small d-block mb-1">
+                            <i class="bi bi-telephone-fill me-1 text-info"></i> رقم المحمول
+                        </label>
+                        <p class="fw-bold mb-0" style="color: #2a5298;">
+                            @(string.IsNullOrEmpty(Model.Phone) ? "غير مسجل" : Model.Phone)
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="p-3 rounded-3 border bg-white shadow-sm">
+                        <label class="text-muted small d-block mb-1">
+                            <i class="bi bi-briefcase-fill me-1 text-warning"></i> المسمى الوظيفي
+                        </label>
+                        <span class="badge px-3 py-2" style="background-color: #e8f0fe; color: #1a3a5a; border: 1px solid #c5d3f0; font-size: 0.9rem;">
+                            @Html.DisplayFor(m => m.JobRole)
+                        </span>
+                    </div>
+                </div>
             </div>
 
-            <div class="card-body p-4 bg-white">
+            <form asp-action="Delete" method="post">
+                <input type="hidden" asp-for="PersonId" />
+                <div class="card-footer bg-light border-0 d-flex justify-content-center gap-3 py-4"
+                     style="border-radius: 0 0 15px 15px; margin: 0 -1.5rem -1.5rem;">
+                    @if (canDelete)
+                    {
+                        <button type="submit" class="btn btn-danger px-5 fw-bold shadow-sm">
+                            <i class="bi bi-trash me-1"></i> تأكيد الحذف النهائي
+                        </button>
+                    }
+                    <a asp-action="Index" class="btn btn-outline-dark px-5 fw-bold bg-white shadow-sm">
+                        <i class="bi bi-arrow-right-circle me-1"></i>
+                        @(canDelete ? "إلغاء" : "العودة للقائمة")
+                    </a>
+                </div>
+            </form>
 
-                @if (ViewBag.CanDelete == false)
-                {
-                    <div class="alert alert-warning border-0 mb-4 d-flex align-items-center" style="background-color: #fffbeb; color: #92400e;">
-                        <i class="bi bi-exclamation-octagon-fill ms-3 fs-4 text-warning"></i>
-                        <div>
-                            <h6 class="fw-bold mb-1">عفواً، لا يمكن إتمام عملية الحذف حالياً!</h6>
-                            <p class="mb-0 small">@ViewBag.Message</p>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <div class="alert alert-danger border-0 mb-4 d-flex align-items-center" style="background-color: #fff5f5; color: #c53030;">
-                        <i class="bi bi-exclamation-triangle-fill ms-3 fs-4"></i>
-                        <div>
-                            <h6 class="fw-bold mb-1">هل أنت متأكد من رغبتك في حذف هذا السجل؟</h6>
-                            <p class="mb-0 small">لا يمكن التراجع عن هذا الإجراء بمجرد تنفيذه.</p>
-                        </div>
-                    </div>
-                }
-
-                <table class="table table-bordered mb-4">
-                    <tbody>
-                        <tr>
-                            <th class="bg-light" style="width: 25%;">الاسم الكامل</th>
-                            <td colspan="3" class="fw-bold" style="color: var(--text-main);">@Model.FullName</td>
-                        </tr>
-                        <tr>
-                            <th class="bg-light" style="width: 25%;">الرقم القومي</th>
-                            <td style="width: 25%;">@Model.NationalId</td>
-                            <th class="bg-light" style="width: 25%;">رقم المحمول</th>
-                            <td style="width: 25%;"><span style="color: var(--accent-blue);" class="fw-medium">@Model.Phone</span></td>
-                        </tr>
-                        <tr>
-                            <th class="bg-light" style="width: 25%;">الدور الوظيفي</th>
-                            <td colspan="3"><span class="badge" style="background-color: var(--bg-light); color: var(--primary-navy); border: 1px solid var(--border-color);">@Html.DisplayFor(m => m.JobRole)</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <form asp-action="Delete" method="post">
-                    <input type="hidden" asp-for="PersonId" />
-                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
-
-                        @if (ViewBag.CanDelete != false)
-                        {
-                            <button type="submit" class="btn btn-danger px-4 fw-bold shadow-sm">
-                                <i class="bi bi-trash me-1"></i> تأكيد الحذف النهائي
-                            </button>
-                        }
-
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4">
-                            @(ViewBag.CanDelete == false ? "العودة للقائمة" : "إلغاء")
-                        </a>
-                    </div>
-                </form>
-            </div>
         </div>
     </div>
 </div>

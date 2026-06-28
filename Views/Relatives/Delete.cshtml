@@ -1,24 +1,73 @@
 @model projectweb.Models.Relative
-
 @{
     ViewData["Title"] = "حذف علاقة";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="row justify-content-center py-5">
-    <div class="col-lg-6">
-        <div class="app-card bg-white p-4">
-            <div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill"></i> سيتم حذف العلاقة نهائيًا.</div>
-            <div class="bg-light rounded p-3 mb-2"><div class="small text-muted">الموظف</div><div class="fw-bold">@Model.Person?.FullName</div></div>
-            <div class="bg-light rounded p-3 mb-2"><div class="small text-muted">الطالب</div><div class="fw-bold">@Model.Student?.FullName</div></div>
-            <div class="bg-light rounded p-3 mb-4"><div class="small text-muted">نوع العلاقة</div><span class="badge bg-danger">@Model.RelationType</span></div>
+<div class="container mt-5 text-end" dir="rtl">
+    <div class="card mx-auto shadow-lg border-0" style="max-width: 700px; border-radius: 15px;">
+
+        <div class="card-header border-0 p-0" style="background: linear-gradient(135deg, #7f1d1d, #dc3545); border-radius: 15px 15px 0 0;">
+            <div class="text-center py-4">
+                <h3 class="fw-bold text-white mb-0">
+                    <i class="bi bi-trash-fill me-2"></i> تأكيد حذف العلاقة
+                </h3>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <div class="alert alert-danger d-flex align-items-center gap-3 mb-4">
+                <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                <div>
+                    <h6 class="fw-bold mb-1">هل أنت متأكد؟</h6>
+                    <p class="mb-0 small">سيتم حذف هذه العلاقة نهائيًا ولا يمكن التراجع.</p>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <div class="p-3 rounded-3 border bg-white shadow-sm">
+                        <label class="text-muted small d-block mb-1">
+                            <i class="bi bi-person-fill me-1 text-primary"></i> الموظف
+                        </label>
+                        <h5 class="fw-bold mb-0" style="color: #1a3a5a;">@Model.Person?.FullName</h5>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="p-3 rounded-3 border bg-white shadow-sm">
+                        <label class="text-muted small d-block mb-1">
+                            <i class="bi bi-mortarboard-fill me-1 text-warning"></i> الطالب
+                        </label>
+                        <h5 class="fw-bold mb-0" style="color: #1a3a5a;">@Model.Student?.FullName</h5>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="p-3 rounded-3 border bg-white shadow-sm">
+                        <label class="text-muted small d-block mb-1">
+                            <i class="bi bi-diagram-3-fill me-1 text-info"></i> نوع العلاقة
+                        </label>
+                        <span class="badge px-3 py-2" style="background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; font-size: 0.9rem;">
+                            @Model.RelationType
+                        </span>
+                    </div>
+                </div>
+            </div>
+
             <form asp-action="Delete" method="post">
                 <input type="hidden" asp-for="RelativeId" />
-                <div class="d-flex gap-2 flex-wrap">
-                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> حذف</button>
-                    <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+                <div class="card-footer bg-light border-0 d-flex justify-content-center gap-3 py-4"
+                     style="border-radius: 0 0 15px 15px; margin: 0 -1.5rem -1.5rem;">
+                    <button type="submit" class="btn btn-danger px-5 fw-bold shadow-sm">
+                        <i class="bi bi-trash me-1"></i> تأكيد الحذف
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-dark px-5 fw-bold bg-white shadow-sm">
+                        <i class="bi bi-arrow-right-circle me-1"></i> إلغاء
+                    </a>
                 </div>
             </form>
         </div>
+
     </div>
 </div>
