@@ -60,8 +60,9 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var student = await _context.Students
-                .Include(s => s.ExamLocation) // تحديث للموقع الموحد
+                .Include(s => s.ExamLocation)
                 .Include(s => s.Relatives)
+                    .ThenInclude(r => r.Person)  // ← دي اللي ناقصة
                 .FirstOrDefaultAsync(s => s.StudentId == id);
 
             if (student == null) return NotFound();
