@@ -2,8 +2,8 @@
 <!-- https://go.microsoft.com/fwlink/?LinkID=208121. -->
 <Project>
   <PropertyGroup>
-    <_PublishTargetUrl>C:\PublishedProjects\ExamSystem</_PublishTargetUrl>
-    <History>True|2026-06-22T07:55:19.7631856Z||;</History>
+    <_PublishTargetUrl>D:\Version 1</_PublishTargetUrl>
+    <History>True|2026-06-28T11:28:01.9960974Z||;True|2026-06-28T07:26:28.0858603+02:00||;True|2026-06-28T07:22:39.5373696+02:00||;True|2026-06-22T09:55:19.7631856+02:00||;</History>
     <LastFailureDetails />
   </PropertyGroup>
 </Project>

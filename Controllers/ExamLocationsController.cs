@@ -19,9 +19,6 @@ namespace projectweb.Controllers
             db = context;
         }
 
-        // ========================
-        // Helper: اسم عربي للنوع
-        // ========================
         private string GetLocationTypeDisplayName(LocationType type)
         {
             return type.GetType()
@@ -30,25 +27,20 @@ namespace projectweb.Controllers
                 .FirstOrDefault() is DisplayAttribute attr ? attr.Name : type.ToString();
         }
 
-        // ========================
-        // Helper: حالات حسب النوع
-        // ========================
         private SelectList GetStatusListByType(LocationType type, string? selectedValue = null)
         {
             List<string> statuses;
-
             switch (type)
             {
-                case LocationType.Committee: // لجنة
+                case LocationType.Committee:
                     statuses = new List<string> { "نشطة", "مغلقة", "تحت الإعداد", "محجوزة" };
                     break;
-                case LocationType.Hall:   // جراش
-                case LocationType.Block:  // صالة
+                case LocationType.Hall:
+                case LocationType.Block:
                 default:
                     statuses = new List<string> { "نشطة", "مغلقة", "تحت الإعداد" };
                     break;
             }
-
             return new SelectList(statuses, selectedValue);
         }
 
@@ -63,9 +55,7 @@ namespace projectweb.Controllers
                 .AsNoTracking();
 
             if (type.HasValue)
-            {
                 query = query.Where(l => l.Type == type.Value);
-            }
 
             var locations = await query.OrderBy(l => l.Type).ThenBy(l => l.LocationName).ToListAsync();
             return View(locations);
@@ -84,7 +74,6 @@ namespace projectweb.Controllers
                 .FirstOrDefaultAsync(l => l.LocationId == id);
 
             if (location == null) return NotFound();
-
             return View(location);
         }
 
@@ -116,30 +105,38 @@ namespace projectweb.Controllers
             // التحقق من السعة الفرعية للأب
             if (location.ParentLocationId != null)
             {
-                var parent = await db.ExamLocations.Include(p => p.SubLocations)
+                var parent = await db.ExamLocations
+                    .Include(p => p.SubLocations)
                     .FirstOrDefaultAsync(p => p.LocationId == location.ParentLocationId);
 
-                if (parent != null && parent.SubLocations.Count >= parent.MaxSubLocations)
+                if (parent == null)
                 {
-                    ModelState.AddModelError("ParentLocationId",
+                    // ✅ key فاضي عشان يظهر في validation-summary
+                    ModelState.AddModelError("", "المكان الرئيسي غير موجود.");
+                }
+                else if (parent.SubLocations != null && parent.MaxSubLocations > 0
+                         && parent.SubLocations.Count >= parent.MaxSubLocations)
+                {
+                    // ✅ key فاضي عشان يظهر في validation-summary
+                    ModelState.AddModelError("",
                         $"عفواً، المكان الرئيسي ({parent.LocationName}) استوفى الحد الأقصى ({parent.MaxSubLocations}) ولا يمكن إضافة المزيد.");
                 }
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                db.ExamLocations.Add(location);
-                await db.SaveChangesAsync();
-                TempData["SuccessMessage"] = "تم إضافة المكان بنجاح.";
-                return RedirectToAction(nameof(Index));
+                await LoadDropdownLists(location.ParentLocationId);
+                return View(location);
             }
 
-            await LoadDropdownLists(location.ParentLocationId);
-            return View(location);
+            db.ExamLocations.Add(location);
+            await db.SaveChangesAsync();
+            TempData["SuccessMessage"] = "تم إضافة المكان بنجاح.";
+            return RedirectToAction(nameof(Index));
         }
 
         // ========================
-        // GET: Edit  
+        // GET: Edit
         // ========================
         public async Task<IActionResult> Edit(int? id)
         {
@@ -148,18 +145,14 @@ namespace projectweb.Controllers
             var location = await db.ExamLocations.FindAsync(id);
             if (location == null) return NotFound();
 
-            // ✅ الاسم العربي للنوع عبر helper
             ViewBag.TypeDisplayName = GetLocationTypeDisplayName(location.Type);
-
-            // ✅ قائمة الحالات حسب نوع المكان مع تحديد القيمة الحالية
             ViewBag.StatusList = GetStatusListByType(location.Type, location.Status);
-
             await LoadDropdownLists(location.ParentLocationId);
             return View(location);
         }
 
         // ========================
-        // POST: Edit  
+        // POST: Edit
         // ========================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -170,7 +163,6 @@ namespace projectweb.Controllers
             var existingLocation = await db.ExamLocations.FindAsync(id);
             if (existingLocation == null) return NotFound();
 
-            // التحقق من الاسم
             bool isNameExist = await db.ExamLocations.AnyAsync(l =>
                 l.LocationName == location.LocationName &&
                 l.ParentLocationId == location.ParentLocationId &&
@@ -260,7 +252,10 @@ namespace projectweb.Controllers
                     l.LocationId,
                     l.Type,
                     l.LocationName,
-                    l.ParentLocationId
+                    l.ParentLocationId,
+                    l.MaxSubLocations,
+                    // ✅ بنجيب العدد الحالي عشان الـ JS يقدر يعرض تحذير
+                    CurrentSubCount = db.ExamLocations.Count(s => s.ParentLocationId == l.LocationId)
                 })
                 .OrderBy(l => l.LocationName)
                 .ToListAsync();
