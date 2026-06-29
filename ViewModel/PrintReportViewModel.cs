@@ -24,7 +24,9 @@ namespace projectweb.Models.ViewModels
     {
         public string SubjectName { get; set; }
         public string TargetYear { get; set; }
-        public string ExamTimeRange { get; set; } 
+        public string ExamTimeRange { get; set; }
         public string PersonFullName { get; set; }
+        public string? LocationName { get; set; }  // ← جديد
+        public bool IsReserve { get; set; }         // ← جديد
     }
 }

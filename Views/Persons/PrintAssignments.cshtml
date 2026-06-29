@@ -5,6 +5,8 @@
     Layout = null;
     var personName = Model.PersonFullName ?? "............................................";
     int counter = 1;
+    var isPersonReserve = Model.Rows.Any(r => r.DailyItems.Any(i => i.IsReserve));
+    var allItems = Model.Rows.SelectMany(r => r.DailyItems).ToList();
 }
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -12,200 +14,207 @@
     <meta charset="utf-8" />
     <title>طباعة خطاب تكليف - جامعة أسيوط</title>
     <style>
-        /* إلغاء هوامش المتصفح نهائياً لإخفاء الروابط والتاريخ الخارجي */
-        @@page {
-            size: auto;
-            margin: 0mm;
-        }
-
-        body {
-            font-family: 'Times New Roman', Times, serif;
-            background-color: white;
-            color: black;
-            margin: 0;
-            padding: 0;
-            direction: rtl;
-            line-height: 1.4;
-        }
-
-        .page-print-container {
-            padding: 35px 50px;
-            box-sizing: border-box;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            border-bottom: 2px solid black;
-            padding-bottom: 8px;
-            margin-bottom: 15px;
-        }
-
-        .header-side {
-            font-weight: bold;
-            font-size: 13pt;
-            line-height: 1.5;
-        }
-
-        .header-center {
-            text-align: center;
-            font-size: 10pt;
-            font-weight: bold;
-            line-height: 1.5;
-            margin-top: 5px;
-        }
-
-        .recipient-section {
-            margin: 20px 0 10px 0;
-            font-size: 14pt;
-            font-weight: bold;
-            line-height: 1.8;
-        }
-
-        .line-value {
-            border-bottom: 1px dotted black;
-            display: inline-block;
-            padding: 0 10px;
-            font-weight: bold;
-        }
-
-        .greeting {
-            text-align: center;
-            font-weight: bold;
-            font-size: 14pt;
-            margin-bottom: 15px;
-            text-decoration: underline;
-        }
-
-        .letter-intro {
-            font-size: 13.5pt;
-            text-align: justify;
-            margin-bottom: 15px;
-            line-height: 1.6;
-        }
-
-        .print-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
-        }
-
-            .print-table th, .print-table td {
-                border: 1px solid black;
-                text-align: center;
-                padding: 8px 6px;
-                font-size: 12pt;
-            }
-
-            .print-table th {
-                background-color: #f8f9fa;
-                font-weight: bold;
-            }
-
-        .time-header {
-            display: block;
-            font-size: 10pt;
-            font-weight: normal;
-            color: #000;
-            margin-top: 4px;
-            direction: ltr;
-        }
-
-        .subject-box {
-            font-weight: bold;
-            font-size: 12pt;
-            padding: 3px 0;
-        }
-
-        .closing-note {
-            font-weight: bold;
-            font-size: 12pt;
-            margin-top: 10px;
-            line-height: 1.6;
-            text-align: justify;
-        }
-
-        .respect-phrase {
-            text-align: center;
-            font-weight: bold;
-            font-size: 13pt;
-            margin: 20px 0 5px 0;
-        }
-
-        .signatures {
-            display: flex;
-            justify-content: space-between;
-            text-align: center;
-            font-weight: bold;
-            font-size: 12.5pt;
-            margin-top: auto;
-            padding: 0 10px;
-        }
-
-        .sig-column {
-            width: 23%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .sig-line {
-            margin-top: 15px;
-            border-top: 1px dashed black;
-            width: 85%;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .system-footer {
-            margin-top: 20px;
-            border-top: 2px solid black;
-            font-size: 10pt;
-            font-weight: bold;
-            padding-top: 6px;
-            text-align: center;
-            line-height: 1.5;
-        }
-
-        .no-print-zone {
-            padding: 15px;
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            margin-bottom: 20px;
-            border-radius: 6px;
-        }
-
-        .btn-print {
-            background: #1a3a5a;
-            color: white;
-            padding: 10px 25px;
-            border: none;
-            cursor: pointer;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        @@media print {
-            .no-print-zone {
-                display: none !important;
+            @@page {
+                size: auto;
+                margin: 0mm;
             }
 
             body {
-                padding: 0;
+                font-family: 'Times New Roman', Times, serif;
+                background-color: white;
+                color: black;
                 margin: 0;
+                padding: 0;
+                direction: rtl;
+                line-height: 1.4;
             }
 
-            .print-table th {
-                background-color: #f8f9fa !important;
-                -webkit-print-color-adjust: exact;
+            .page-print-container {
+                padding: 35px 50px;
+                box-sizing: border-box;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
             }
-        }
+
+            .header-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                border-bottom: 2px solid black;
+                padding-bottom: 8px;
+                margin-bottom: 15px;
+            }
+
+            .header-side {
+                font-weight: bold;
+                font-size: 13pt;
+                line-height: 1.5;
+            }
+
+            .header-center {
+                text-align: center;
+                font-size: 10pt;
+                font-weight: bold;
+                line-height: 1.5;
+                margin-top: 5px;
+            }
+
+            .recipient-section {
+                margin: 20px 0 10px 0;
+                font-size: 14pt;
+                font-weight: bold;
+                line-height: 1.8;
+            }
+
+            .line-value {
+                border-bottom: 1px dotted black;
+                display: inline-block;
+                padding: 0 10px;
+                font-weight: bold;
+            }
+
+            .greeting {
+                text-align: center;
+                font-weight: bold;
+                font-size: 14pt;
+                margin-bottom: 15px;
+                text-decoration: underline;
+            }
+
+            .letter-intro {
+                font-size: 13.5pt;
+                text-align: justify;
+                margin-bottom: 15px;
+                line-height: 1.6;
+            }
+
+            .print-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 15px;
+            }
+
+                .print-table th, .print-table td {
+                    border: 1px solid black;
+                    text-align: center;
+                    padding: 8px 6px;
+                    font-size: 12pt;
+                }
+
+                .print-table th {
+                    background-color: #f8f9fa;
+                    font-weight: bold;
+                }
+
+            .time-header {
+                display: block;
+                font-size: 10pt;
+                font-weight: normal;
+                color: #000;
+                margin-top: 4px;
+                direction: ltr;
+            }
+
+            .location-header {
+                display: block;
+                font-size: 10pt;
+                font-weight: bold;
+                color: #000;
+                margin-top: 3px;
+            }
+
+            .subject-box {
+                font-weight: bold;
+                font-size: 12pt;
+                padding: 3px 0;
+            }
+
+            .closing-note {
+                font-weight: bold;
+                font-size: 12pt;
+                margin-top: 10px;
+                line-height: 1.6;
+                text-align: justify;
+            }
+
+            .respect-phrase {
+                text-align: center;
+                font-weight: bold;
+                font-size: 13pt;
+                margin: 20px 0 5px 0;
+            }
+
+            .signatures {
+                display: flex;
+                justify-content: space-between;
+                text-align: center;
+                font-weight: bold;
+                font-size: 12.5pt;
+                margin-top: auto;
+                padding: 0 10px;
+            }
+
+            .sig-column {
+                width: 23%;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+
+            .sig-line {
+                margin-top: 15px;
+                border-top: 1px dashed black;
+                width: 85%;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .system-footer {
+                margin-top: 20px;
+                border-top: 2px solid black;
+                font-size: 10pt;
+                font-weight: bold;
+                padding-top: 6px;
+                text-align: center;
+                line-height: 1.5;
+            }
+
+            .no-print-zone {
+                padding: 15px;
+                background: #f8f9fa;
+                border: 1px solid #ddd;
+                margin-bottom: 20px;
+                border-radius: 6px;
+            }
+
+            .btn-print {
+                background: #1a3a5a;
+                color: white;
+                padding: 10px 25px;
+                border: none;
+                cursor: pointer;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 14px;
+            }
+
+            @@media print {
+                .no-print-zone {
+                    display: none !important;
+                }
+
+                body {
+                    padding: 0;
+                    margin: 0;
+                }
+
+                .print-table th {
+                    background-color: #f8f9fa !important;
+                    -webkit-print-color-adjust: exact;
+                }
+            }
     </style>
 </head>
 <body>
@@ -233,7 +242,10 @@
             </div>
 
             <div class="recipient-section">
-                <div>السيد / أ / <span class="line-value" style="min-width: 300px;">@personName</span></div>
+                <div>
+                    السيد / أ / <span class="line-value" style="min-width: 300px;">@personName</span>
+                    
+                </div>
             </div>
 
             <div class="greeting">تحية طيبة وبعد،،،</div>
@@ -260,60 +272,73 @@
                             <th colspan="4">الفرق الدراسية</th>
                         </tr>
                         <tr>
-                            <th>الفرقة الأولى @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("1"))) {
-                            <span class="time-header">(@Model.YearTimes["1"])</span>
-                        }
-                </th>
-                        <th>الفرقة الثانية @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("2"))) {
-                        <span class="time-header">(@Model.YearTimes["2"])</span>
-                                                }
-                </th>
-                        <th>الفرقة الثالثة @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("3"))) {
-                        <span class="time-header">(@Model.YearTimes["3"])</span>
-                                                }
-                </th>
-                        <th>الفرقة الرابعة @if(!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault("4"))) {
-                        <span class="time-header">(@Model.YearTimes["4"])</span>
-                                                }
-                </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var row in Model.Rows)
-                    {
-                        <tr>
-                            <td style="font-weight: bold;">@(counter++)</td>
-                            <td style="font-weight: bold;">@row.Day</td>
-                            <td style="font-family: 'Arial';">@row.Date.ToString("yyyy/MM/dd")</td>
                             @foreach (var yearName in new[] { "1", "2", "3", "4" })
                             {
-                                <td>
-                                    @{
-                                        var items = row.DailyItems.Where(i => i.TargetYear != null && i.TargetYear.Contains(yearName)).ToList();
-                                    }
-                                    @if (items.Any())
+                                var yearLabel = yearName switch
+                                {
+                                    "1" => "الفرقة الأولى",
+                                    "2" => "الفرقة الثانية",
+                                    "3" => "الفرقة الثالثة",
+                                    "4" => "الفرقة الرابعة",
+                                    _ => ""
+                                };
+
+                                var locationForYear = allItems
+                                    .FirstOrDefault(i => i.TargetYear == yearName && !string.IsNullOrEmpty(i.LocationName))
+                                    ?.LocationName;
+
+                                <th>
+                                    @yearLabel
+                                    @if (!string.IsNullOrEmpty(Model.YearTimes.GetValueOrDefault(yearName)))
                                     {
-                                        foreach (var item in items)
-                                        {
-                                            <div class="subject-box">@item.SubjectName</div>
-                                        }
+                                        <span class="time-header">(@Model.YearTimes[yearName])</span>
                                     }
-                                    else
+                                    @if (!string.IsNullOrEmpty(locationForYear))
                                     {
-                                        <span></span>
+                                        <span class="location-header">[@locationForYear]</span>
                                     }
-                                </td>
+                                </th>
                             }
                         </tr>
-                    }
-                </tbody>
-            </table>
-
-            <div class="closing-note">
-                <u>فقط لا غير</u><br />
-                كما يرجى عدم التأخير عن موعد لجنة الامتحانات وضرورة الحضور إلى مقر اللجنة قبل بدء الامتحانات بنصف ساعة مع الالتزام بالجدول الخاص بسيادتكم.
-            </div>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Rows)
+                        {
+                            <tr>
+                                <td style="font-weight: bold;">@(counter++)</td>
+                                <td style="font-weight: bold;">@row.Day</td>
+                                <td style="font-family: 'Arial';">@row.Date.ToString("yyyy/MM/dd")</td>
+                                @foreach (var yearName in new[] { "1", "2", "3", "4" })
+                                {
+                                    <td>
+                                        @{
+                                            var items = row.DailyItems
+                                                .Where(i => i.TargetYear != null && i.TargetYear.Contains(yearName))
+                                                .ToList();
+                                        }
+                                        @if (items.Any())
+                                        {
+                                            foreach (var item in items)
+                                            {
+                                                <div class="subject-box">@item.SubjectName</div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span></span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
                         }
+                    </tbody>
+                </table>
+
+                <div class="closing-note">
+                    <u>فقط لا غير</u><br />
+                    كما يرجى عدم التأخير عن موعد لجنة الامتحانات وضرورة الحضور إلى مقر اللجنة قبل بدء الامتحانات بنصف ساعة مع الالتزام بالجدول الخاص بسيادتكم.
+                </div>
+            }
         </div>
 
         <div>

@@ -219,10 +219,11 @@ namespace projectweb.Controllers
             if (person == null) return Content($"خطأ: لم يتم العثور على الموظف رقم {id}");
 
             var rawAssignments = await _context.CommitteesAssignments
-                .AsNoTracking()
-                .Include(a => a.ExamSchedule).ThenInclude(es => es.Exam).ThenInclude(e => e.Subject)
-                .Where(a => a.PersonId == id)
-                .ToListAsync();
+    .AsNoTracking()
+    .Include(a => a.ExamSchedule).ThenInclude(es => es.Exam).ThenInclude(e => e.Subject)
+    .Include(a => a.ExamLocation).ThenInclude(l => l.ParentLocation).ThenInclude(p => p.ParentLocation) // ← عدّل
+    .Where(a => a.PersonId == id)
+    .ToListAsync();
 
             var yearTimesMap = new Dictionary<string, string>
             {
@@ -236,13 +237,14 @@ namespace projectweb.Controllers
             if (rawAssignments != null && rawAssignments.Any())
             {
                 var firstValidAssignment = rawAssignments.FirstOrDefault(a => !string.IsNullOrEmpty(a.RoleType));
-                if (firstValidAssignment != null)
-                {
+                if(firstValidAssignment != null)
+{
                     assignedRoleInCommittee = firstValidAssignment.RoleType;
 
                     if (assignedRoleInCommittee.Contains("رئيس صالة")) assignedRoleInCommittee = "رئيس صالة";
                     else if (assignedRoleInCommittee.Contains("مراقب")) assignedRoleInCommittee = "مراقب";
                     else if (assignedRoleInCommittee.Contains("ملاحظ")) assignedRoleInCommittee = "ملاحظ";
+                    else if (assignedRoleInCommittee.Contains("رئيس جراش")) assignedRoleInCommittee = "رئيس جراش"; // ← أضف السطر ده
                 }
 
                 foreach (var assignment in rawAssignments.Where(a => a.ExamSchedule?.Exam != null))
@@ -290,7 +292,11 @@ namespace projectweb.Controllers
                             {
                                 SubjectName = exam.Subject?.SubjectName ?? "مادة غير محددة",
                                 TargetYear = yearNum,
-                                PersonFullName = person.FullName
+                                PersonFullName = person.FullName,
+                                LocationName = a.ExamLocation?.ParentLocation?.ParentLocation?.LocationName  // الجراج
+            ?? a.ExamLocation?.ParentLocation?.LocationName                   // أو الصالة لو مفيش جراج
+            ?? a.ExamLocation?.LocationName,           // ← جديد
+                                IsReserve = a.RoleType?.Contains("احتياطي") ?? false   // ← جديد
                             };
                         }).ToList()
                     })
