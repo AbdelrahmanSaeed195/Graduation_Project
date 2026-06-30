@@ -53,8 +53,8 @@
                             <input asp-for="Floor" class="form-control text-center shadow-sm" type="number" placeholder="مثال: 1" style="border-radius: 8px;" />
                         </div>
 
-                        <div class="col-md-3 dependency-field hall-fields academic-year-field">
-                            <label asp-for="AcademicYear" class="form-label fw-bold">السنة الدراسية المخصصة لهذا الجراش</label>
+                        <div class="col-md-3 dependency-field academic-year-field">
+                            <label asp-for="AcademicYear" class="form-label fw-bold">السنة الدراسية المخصصة لهذه الصالة</label>
                             <select asp-for="AcademicYear" id="academicYearSelect" asp-items="Html.GetEnumSelectList<AcademicLevel>()" class="form-select shadow-sm" style="border-radius: 8px;">
                                 <option value="">-- بدون تخصيص --</option>
                             </select>
@@ -100,11 +100,11 @@
             parentSelect.empty().append('<option value="">-- اختر الأب --</option>');
 
             if (type == "1") { // جراش
-                $(".hall-fields, .capacity-fields, .academic-year-field").show();
+                $(".hall-fields, .capacity-fields").show();
                 $("#maxSubLabel").text("أقصى عدد صالات داخل الجراش");
             }
             else if (type == "2") { // صالة
-                $(".parent-location-container, .capacity-fields").show();
+                $(".parent-location-container, .capacity-fields, .academic-year-field").show();
                 $("#maxSubLabel").text("أقصى عدد لجان داخل الصالة");
                 allLocations.filter(l => l.Type == 1).forEach(l => {
                     parentSelect.append(`<option value="${l.LocationId}">جراش: ${l.LocationName}</option>`);

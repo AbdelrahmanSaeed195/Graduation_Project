@@ -253,9 +253,9 @@ namespace projectweb.Controllers
                 student.LocationId = null;
             }
 
-            // الجراشات اللي محدد لها سنة دراسية
-            var hallsByYear = await _context.ExamLocations
-                .Where(l => l.Type == LocationType.Hall && l.AcademicYear != null)
+            // الصالات اللي محدد لها سنة دراسية
+            var blocksByYear = await _context.ExamLocations
+                .Where(l => l.Type == LocationType.Block && l.AcademicYear != null)
                 .ToListAsync();
 
             // مصفوفة فحص التعارضات (بدون تغيير)
@@ -285,64 +285,60 @@ namespace projectweb.Controllers
                 }
             }
 
-            // كاش للجان كل جراش
-            var hallCommitteesMap = new Dictionary<int, List<ExamLocation>>();
+            // كاش للجان كل صالة (مش جراش دلوقتي)
+            var blockCommitteesMap = new Dictionary<int, List<ExamLocation>>();
             var committeeOccupancy = new Dictionary<int, int>();
 
-            async Task<List<ExamLocation>> GetCommitteesForHallAsync(int hallId)
+            async Task<List<ExamLocation>> GetCommitteesForBlockAsync(int blockId)
             {
-                if (hallCommitteesMap.TryGetValue(hallId, out var cachedCommittees))
+                if (blockCommitteesMap.TryGetValue(blockId, out var cachedCommittees))
                     return cachedCommittees;
 
-                var blockIds = await _context.ExamLocations
-                    .Where(l => l.Type == LocationType.Block && l.ParentLocationId == hallId)
-                    .Select(l => l.LocationId)
-                    .ToListAsync();
-
-                var committeesOfHall = await _context.ExamLocations
-                    .Where(l => l.Type == LocationType.Committee
-                                && l.ParentLocationId != null
-                                && blockIds.Contains(l.ParentLocationId.Value))
+                // اللجان التابعة لهذه الصالة مباشرة فقط
+                var committeesOfBlock = await _context.ExamLocations
+                    .Where(l => l.Type == LocationType.Committee && l.ParentLocationId == blockId)
                     .OrderBy(l => l.LocationName)
                     .ToListAsync();
 
-                hallCommitteesMap[hallId] = committeesOfHall;
+                blockCommitteesMap[blockId] = committeesOfBlock;
 
-                foreach (var committee in committeesOfHall)
+                foreach (var committee in committeesOfBlock)
                 {
                     if (!committeeOccupancy.ContainsKey(committee.LocationId))
                         committeeOccupancy[committee.LocationId] = 0;
                 }
 
-                return committeesOfHall;
+                return committeesOfBlock;
             }
 
             var orderedStudents = allStudents.OrderBy(s => s.AcademicYear).ThenBy(s => s.FullName).ToList();
 
             int totalAssigned = 0;
-            int skippedNoHallForYear = 0;
-            int skippedNoCommitteesInHall = 0;
+            int skippedNoBlockForYear = 0;
+            int skippedNoCommitteesInBlock = 0;
 
             foreach (var student in orderedStudents)
             {
-                // الجراش بيتحدد مباشرة من سنة الطالب
-                var hall = hallsByYear.FirstOrDefault(h => h.AcademicYear == student.AcademicYear);
+                // الصالة بتتحدد مباشرة من سنة الطالب
+                // ملحوظة: لو فيه أكتر من صالة بنفس السنة، التوزيع هيستخدم أول واحدة بس
+                // (لو عايز توزيع على أكتر من صالة لنفس السنة قولي وأضيف منطق التنقل بينهم)
+                var block = blocksByYear.FirstOrDefault(b => b.AcademicYear == student.AcademicYear);
 
-                if (hall == null)
+                if (block == null)
                 {
-                    skippedNoHallForYear++;
+                    skippedNoBlockForYear++;
                     continue;
                 }
 
-                var committeesOfHall = await GetCommitteesForHallAsync(hall.LocationId);
+                var committeesOfBlock = await GetCommitteesForBlockAsync(block.LocationId);
 
-                if (!committeesOfHall.Any())
+                if (!committeesOfBlock.Any())
                 {
-                    skippedNoCommitteesInHall++;
+                    skippedNoCommitteesInBlock++;
                     continue;
                 }
 
-                foreach (var targetCommittee in committeesOfHall)
+                foreach (var targetCommittee in committeesOfBlock)
                 {
                     int currentCount = committeeOccupancy[targetCommittee.LocationId];
 
@@ -374,11 +370,11 @@ namespace projectweb.Controllers
                     await RecalculateSeatNumbersByCommittee(locId);
                 }
 
-                TempData["SuccessMessage"] = $"تم التوزيع لـ {totalAssigned} طالب بنجاح، كل سنة دراسية التزمت بجراشها المخصص، مع فحص تعارض صلة القرابة.";
+                TempData["SuccessMessage"] = $"تم التوزيع لـ {totalAssigned} طالب بنجاح، كل سنة دراسية التزمت بصالتها المخصصة، مع فحص تعارض صلة القرابة.";
             }
             else
             {
-                TempData["ErrorMessage"] = $"فشل التوزيع: {skippedNoHallForYear} طالب بلا جراش مخصص لسنتهم الدراسية، {skippedNoCommitteesInHall} جراش بلا لجان تابعة له، أو سعة اللجان ممتلئة/تعارضات قرابة تمنع التسكين.";
+                TempData["ErrorMessage"] = $"فشل التوزيع: {skippedNoBlockForYear} طالب بلا صالة مخصصة لسنتهم الدراسية، {skippedNoCommitteesInBlock} صالة بلا لجان تابعة لها، أو سعة اللجان ممتلئة/تعارضات قرابة تمنع التسكين.";
             }
 
             return RedirectToAction(nameof(Index));
