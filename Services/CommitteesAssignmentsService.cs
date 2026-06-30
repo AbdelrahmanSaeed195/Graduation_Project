@@ -91,19 +91,39 @@ namespace projectweb.Services
             }
 
             var scheduledSchedules = await _context.ExamSchedules
-                .Include(es => es.ExamLocation)
-                .Where(es => es.ExamId == examId && (es.LocationId == currentLocId || es.ExamLocation.ParentLocationId == currentLocId))
-                .ToListAsync();
+     .Include(es => es.ExamLocation)
+         .ThenInclude(l => l.ParentLocation)
+     .Where(es => es.ExamId == examId &&
+         (es.LocationId == currentLocId ||
+          es.ExamLocation.ParentLocationId == currentLocId))
+     .ToListAsync();
 
             if (!scheduledSchedules.Any()) return false;
 
-            var activeBlocks = scheduledSchedules
-                .Select(es => es.ExamLocation.Type == LocationType.Block ? es.ExamLocation : es.ExamLocation.ParentLocation)
-                .Where(l => l != null && l.Type == LocationType.Block)
-                .GroupBy(l => l.LocationId)
-                .Select(g => g.First())
-                .OrderBy(l => l.LocationName)
-                .ToList();
+            var hallIds = scheduledSchedules
+     .Select(s =>
+     {
+         if (s.ExamLocation.Type == LocationType.Hall)
+             return s.ExamLocation.LocationId;
+
+         if (s.ExamLocation.Type == LocationType.Block)
+             return s.ExamLocation.ParentLocationId;
+
+         if (s.ExamLocation.Type == LocationType.Committee)
+             return s.ExamLocation.ParentLocation?.ParentLocationId;
+
+         return null;
+     })
+     .Where(id => id != null)
+     .Distinct()
+     .ToList();
+
+            var activeBlocks = await _context.ExamLocations
+                .Where(x => x.Type == LocationType.Block &&
+                            x.ParentLocationId != null &&
+                            hallIds.Contains(x.ParentLocationId.Value))
+                .OrderBy(x => x.LocationName)
+                .ToListAsync();
 
             if (!activeBlocks.Any()) return false;
 

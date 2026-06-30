@@ -76,6 +76,20 @@
                                    style="border-radius: 8px;" />
                         </div>
 
+                        <div class="col-md-3 dependency-field hall-fields academic-year-field">
+                            <label asp-for="AcademicYear" class="form-label fw-bold">
+                                السنة الدراسية المخصصة لهذا الجراش
+                            </label>
+                            <select asp-for="AcademicYear"
+                                    id="academicYearSelect"
+                                    asp-items="Html.GetEnumSelectList<AcademicLevel>()"
+                                    class="form-select shadow-sm"
+                                    style="border-radius: 8px;">
+                                <option value="">-- بدون تخصيص --</option>
+                            </select>
+                            <span asp-validation-for="AcademicYear" class="text-danger small"></span>
+                        </div>
+
                         <div class="col-md-6 dependency-field capacity-fields">
                             <label asp-for="MaxSubLocations"
                                    id="maxSubLabel"
@@ -138,8 +152,8 @@
             parentSelect.empty().append('<option value="" disabled selected>-- اختر الأب التراتبي --</option>');
 
             if (val === "1") {
-                // جراش: يظهر رقم الدور + الحد الأقصى
-                $(".hall-fields, .capacity-fields").show();
+                // جراش: يظهر رقم الدور + الحد الأقصى + السنة الدراسية
+                $(".hall-fields, .capacity-fields , .academic-year-field").show();
                 $("#maxSubLabel").text("أقصى عدد صالات داخل الجراش");
             }
             else if (val === "2") {

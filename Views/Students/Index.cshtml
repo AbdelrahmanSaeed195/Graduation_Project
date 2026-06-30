@@ -24,6 +24,12 @@
             <a asp-action="Create" class="btn btn-academic-primary px-4 shadow-sm">
                 <i class="bi bi-person-plus-fill me-1"></i> إضافة طالب
             </a>
+            <form asp-action="ClearStudents" method="post"
+                  onsubmit="return confirm('هل أنت متأكد من حذف جميع الطلاب؟');">
+                <button type="submit" class="btn btn-danger">
+                    حذف جميع الطلاب
+                </button>
+            </form>
         </div>
     </div>
 

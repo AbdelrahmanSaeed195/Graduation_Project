@@ -241,21 +241,10 @@ namespace projectweb.Controllers
         public async Task<IActionResult> DistributeStudents()
         {
             var allStudents = await _context.Students.ToListAsync();
+
             if (!allStudents.Any())
             {
                 TempData["ErrorMessage"] = "عفواً، لا يوجد طلاب مسجلين في النظام حالياً.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            // سحب الأماكن المصنفة كـ لجان امتحانية فقط (Type == Committee)
-            var allCommittees = await _context.ExamLocations
-                .Where(l => l.Type == LocationType.Committee)
-                .OrderBy(l => l.LocationName)
-                .ToListAsync();
-
-            if (!allCommittees.Any())
-            {
-                TempData["ErrorMessage"] = "فشل التوزيع: لا توجد لجان امتحانية مضافة بالنظام الموحد.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -264,11 +253,15 @@ namespace projectweb.Controllers
                 student.LocationId = null;
             }
 
-            // مصفوفة فحص التعارضات
+            // الجراشات اللي محدد لها سنة دراسية
+            var hallsByYear = await _context.ExamLocations
+                .Where(l => l.Type == LocationType.Hall && l.AcademicYear != null)
+                .ToListAsync();
+
+            // مصفوفة فحص التعارضات (بدون تغيير)
             var studentConflictMap = new Dictionary<int, HashSet<int>>();
             var allRelatives = await _context.Relatives.ToListAsync();
 
-            // فحص التكليفات في جدول التكليفات بناءً على الحقل الموحد LocationId
             var committeeStaff = await _context.CommitteesAssignments
                 .Where(ca => ca.LocationId != null)
                 .Select(ca => new { ca.PersonId, LocationId = ca.LocationId.Value })
@@ -292,23 +285,71 @@ namespace projectweb.Controllers
                 }
             }
 
-            // تشغيل خوارزمية التسكين
+            // كاش للجان كل جراش
+            var hallCommitteesMap = new Dictionary<int, List<ExamLocation>>();
+            var committeeOccupancy = new Dictionary<int, int>();
+
+            async Task<List<ExamLocation>> GetCommitteesForHallAsync(int hallId)
+            {
+                if (hallCommitteesMap.TryGetValue(hallId, out var cachedCommittees))
+                    return cachedCommittees;
+
+                var blockIds = await _context.ExamLocations
+                    .Where(l => l.Type == LocationType.Block && l.ParentLocationId == hallId)
+                    .Select(l => l.LocationId)
+                    .ToListAsync();
+
+                var committeesOfHall = await _context.ExamLocations
+                    .Where(l => l.Type == LocationType.Committee
+                                && l.ParentLocationId != null
+                                && blockIds.Contains(l.ParentLocationId.Value))
+                    .OrderBy(l => l.LocationName)
+                    .ToListAsync();
+
+                hallCommitteesMap[hallId] = committeesOfHall;
+
+                foreach (var committee in committeesOfHall)
+                {
+                    if (!committeeOccupancy.ContainsKey(committee.LocationId))
+                        committeeOccupancy[committee.LocationId] = 0;
+                }
+
+                return committeesOfHall;
+            }
+
             var orderedStudents = allStudents.OrderBy(s => s.AcademicYear).ThenBy(s => s.FullName).ToList();
-            var committeeOccupancy = allCommittees.ToDictionary(c => c.LocationId, c => 0);
 
             int totalAssigned = 0;
+            int skippedNoHallForYear = 0;
+            int skippedNoCommitteesInHall = 0;
 
             foreach (var student in orderedStudents)
             {
-                foreach (var targetCommittee in allCommittees)
+                // الجراش بيتحدد مباشرة من سنة الطالب
+                var hall = hallsByYear.FirstOrDefault(h => h.AcademicYear == student.AcademicYear);
+
+                if (hall == null)
+                {
+                    skippedNoHallForYear++;
+                    continue;
+                }
+
+                var committeesOfHall = await GetCommitteesForHallAsync(hall.LocationId);
+
+                if (!committeesOfHall.Any())
+                {
+                    skippedNoCommitteesInHall++;
+                    continue;
+                }
+
+                foreach (var targetCommittee in committeesOfHall)
                 {
                     int currentCount = committeeOccupancy[targetCommittee.LocationId];
 
                     bool hasConflict = studentConflictMap.ContainsKey(student.StudentId) &&
                                        studentConflictMap[student.StudentId].Contains(targetCommittee.LocationId);
 
-                    // استخدام الحقل الجديد StudentCapacity المخزن بجدول أماكن الامتحانات الموحد
-                    if (currentCount < targetCommittee.StudentCapacity && !hasConflict)
+                    if (currentCount < (targetCommittee.StudentCapacity ?? 0) && !hasConflict)
                     {
                         student.LocationId = targetCommittee.LocationId;
                         committeeOccupancy[targetCommittee.LocationId] = currentCount + 1;
@@ -333,11 +374,11 @@ namespace projectweb.Controllers
                     await RecalculateSeatNumbersByCommittee(locId);
                 }
 
-                TempData["SuccessMessage"] = $"تم التوزيع لـ {totalAssigned} طالب بنجاح مع تفعيل فحص منع تعارض صلة القرابة التراتبي.";
+                TempData["SuccessMessage"] = $"تم التوزيع لـ {totalAssigned} طالب بنجاح، كل سنة دراسية التزمت بجراشها المخصص، مع فحص تعارض صلة القرابة.";
             }
             else
             {
-                TempData["ErrorMessage"] = "فشل التوزيع: سعة اللجان ممتلئة بالكامل أو توجد تعارضات قرابة تمنع تسكين الطلاب.";
+                TempData["ErrorMessage"] = $"فشل التوزيع: {skippedNoHallForYear} طالب بلا جراش مخصص لسنتهم الدراسية، {skippedNoCommitteesInHall} جراش بلا لجان تابعة له، أو سعة اللجان ممتلئة/تعارضات قرابة تمنع التسكين.";
             }
 
             return RedirectToAction(nameof(Index));
@@ -472,6 +513,23 @@ namespace projectweb.Controllers
                 studentsInCommittee[i].SeatNumber = i + 1;
 
             await _context.SaveChangesAsync();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ClearStudents()
+        {
+            var students = await _context.Students.ToListAsync();
+
+            if (students.Any())
+            {
+                _context.Students.RemoveRange(students);
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["SuccessMessage"] = "تم حذف جميع الطلاب بنجاح.";
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }
