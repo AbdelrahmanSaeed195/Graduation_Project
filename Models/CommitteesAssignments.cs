@@ -20,6 +20,9 @@ namespace projectweb.Models
         [Display(Name = "مسمى الدور")]
         public string? RoleType { get; set; }
 
+        [Display(Name = "التوزيع الفرعي (القطاع/الدور)")]
+        public string? SubRoleType { get; set; }
+
         // ========================================================
 
         [Display(Name = "مكان التكليف (جراش/صالة/لجنة)")]

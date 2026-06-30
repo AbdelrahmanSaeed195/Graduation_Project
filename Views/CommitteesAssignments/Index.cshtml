@@ -49,15 +49,47 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model)
-                {
-                    @* حماية وتأمين استخراج ستايل الألوان لمنع الـ NullReferenceException *@
-                    string roleBadgeStyle = "background-color: #6c757d; color: #fff;"; // افتراضي
-                    string currentRole = item.RoleType ?? "";
+                @* ترتيب مخصص للعرض داخل الجدول: الرؤساء الأساسيون أولاً، ثم رؤساء الاحتياط، ثم المراقبون، ثم الملاحظون *@
+                @{
+                    var sortedModel = Model
+                    .OrderByDescending(a => a.RoleType == "رئيس جراش")
+                    .ThenByDescending(a => a.RoleType == "رئيس جراش احتياطي")
+                    .ThenByDescending(a => a.RoleType == "مراقب")
+                    .ThenByDescending(a => a.RoleType == "مراقب احتياطي")
+                    .ToList();
+                }
 
-                    if (currentRole.Contains("رئيس")) { roleBadgeStyle = "background-color: #6f42c1; color: #fff;"; }
-                    else if (currentRole.Contains("مراقب")) { roleBadgeStyle = "background-color: #198754; color: #fff;"; }
-                    else if (currentRole.Contains("ملاحظ")) { roleBadgeStyle = "background-color: #0d6efd; color: #fff;"; }
+                @foreach (var item in sortedModel)
+                {
+                    @* هندسة لوحة الألوان برمجياً للفصل الحاسم بين قطاعات وأدوار الجراش الموحد *@
+                    string roleBadgeStyle = "background-color: #6c757d; color: #fff;";
+                    string currentRole = item.RoleType ?? "";
+                    string subRole = item.SubRoleType ?? "";
+
+                    if (currentRole == "رئيس جراش")
+                    {
+                        roleBadgeStyle = "background-color: #6f42c1; color: #fff;"; // البنفسجي الغامق للأساسي (الـ 3 في الدورين / الـ 2 في الدور الواحد)
+                    }
+                    else if (currentRole == "رئيس جراش احتياطي")
+                    {
+                        roleBadgeStyle = "background-color: #b197fc; color: #fff;"; // البنفسجي الفاتح للاحتياطي (2 في الدورين / 1 في الدور الواحد)
+                    }
+                    else if (currentRole == "مراقب" && !currentRole.Contains("احتياطي"))
+                    {
+                        roleBadgeStyle = "background-color: #198754; color: #fff;"; // الأخضر الأساسي لمراقب الصالة
+                    }
+                    else if (currentRole == "مراقب احتياطي")
+                    {
+                        roleBadgeStyle = "background-color: #fd7e14; color: #fff;"; // البرتقالي للمراقبين الاحتياطيين للأدوار والمقار
+                    }
+                    else if (currentRole.Contains("ملاحظ") && !currentRole.Contains("احتياطي"))
+                    {
+                        roleBadgeStyle = "background-color: #0d6efd; color: #fff;"; // الأزرق القياسي لملاحظ اللجنة
+                    }
+                    else if (currentRole.Contains("ملاحظ احتياطي"))
+                    {
+                        roleBadgeStyle = "background-color: #e83e8c; color: #fff;"; // الوردي المخصص للاحتياطي الفرعي
+                    }
 
                     <tr>
                         <td class="fw-bold py-3">
@@ -73,65 +105,60 @@
                                 var job = item.Person?.JobRole;
                                 var role = item.RoleType ?? "";
 
-                                // 1. مراقب احتياطي
-                                if (role.Contains("مراقب احتياطي"))
+                                if (role.Contains("مراقب احتياطي") || role.Contains("رئيس"))
                                 {
-                                    <span class="badge px-3 py-2 shadow-sm" style="background-color: #fd7e14; color: #fff; border-radius: 8px;">
-                                        مراقب احتياطي (جراش: @(item.ExamLocation.ParentLocation?.ParentLocation?.LocationName ?? item.ExamLocation.ParentLocation?.LocationName ?? item.ExamLocation.LocationName))
+                                    <span class="badge px-3 py-2 shadow-sm" style="background-color: #f8f9fa; color: #212529; border: 1px solid #dee2e6; border-radius: 8px;">
+                                        <i class="bi bi-building me-1 text-primary"></i> جراش: @(item.ExamLocation.ParentLocation?.ParentLocation?.LocationName ?? item.ExamLocation.ParentLocation?.LocationName ?? item.ExamLocation.LocationName)
                                     </span>
                                 }
-                                // 2. ملاحظ احتياطي
-                                else if (role.Contains("ملاحظ احتياطي"))
+                                else if (role == "مراقب" || role.Contains("ملاحظ احتياطي"))
                                 {
-                                    <span class="badge px-3 py-2 shadow-sm" style="background-color: #e83e8c; color: #fff; border-radius: 8px;">
-                                        ملاحظ احتياطي (صالة: @item.ExamLocation.LocationName)
+                                    <span class="badge px-3 py-2 shadow-sm" style="background-color: #e8f5e9; color: #198754; border-radius: 8px;">
+                                        صالة: @(item.ExamLocation.ParentLocation?.LocationName ?? item.ExamLocation.LocationName)
                                     </span>
                                 }
-                                // 3. الأساتذة (جراش أساسي)
-                                else if (job == JobTitle.Professor || job == JobTitle.ProfessorEmeritus || job == JobTitle.AssistantProfessor)
-                                {
-                                    <span class="badge px-3 py-2 shadow-sm" style="background-color: #6f42c1; color: #fff; border-radius: 8px;">
-                                        جراش أساسي: @(item.ExamLocation.ParentLocation?.ParentLocation?.LocationName ?? item.ExamLocation.ParentLocation?.LocationName ?? item.ExamLocation.LocationName)
-                                    </span>
-                                }
-                                // 4. الطاقم الطبي
-                                else if (job == JobTitle.Doctor || job == JobTitle.Nurse)
-                                {
-                                    <span class="badge px-3 py-2 shadow-sm" style="background-color: #adb5bd; color: #000; border-radius: 8px;">
-                                        جراش: @(item.ExamLocation.ParentLocation?.ParentLocation?.LocationName ?? item.ExamLocation.ParentLocation?.LocationName ?? item.ExamLocation.LocationName)
-                                    </span>
-                                }
-                                // 5. مراقب صالة
-                                else if (job == JobTitle.StaffObserver)
-                                {
-                                    <span class="badge px-3 py-2 shadow-sm" style="background-color: #198754; color: #fff; border-radius: 8px;">
-                                        صالة: @item.ExamLocation.LocationName (جراش: @item.ExamLocation.ParentLocation?.LocationName)
-                                    </span>
-                                }
-                                // 6. لجنة
                                 else
                                 {
-                                    <span class="badge px-3 py-2 shadow-sm" style="background-color: #0dcaf0; color: #000; border-radius: 8px;">
-                                        لجنة: @item.ExamLocation.LocationName (صالة: @item.ExamLocation.ParentLocation?.LocationName)
+                                    <span class="badge px-3 py-2 shadow-sm" style="background-color: #e0f7fa; color: #008094; border-radius: 8px;">
+                                        لجنة: @item.ExamLocation.LocationName (صالة: @(item.ExamLocation.ParentLocation?.LocationName ?? "---"))
                                     </span>
                                 }
                             }
+                            else
+                            {
+                                <span class="text-muted small">غير محدد</span>
+                            }
                         </td>
 
-                        @* تم تأمين عرض النص هنا أيضاً *@
-                        <td><span class="badge rounded-pill px-3 py-1 shadow-sm" style="@roleBadgeStyle">@(string.IsNullOrEmpty(item.RoleType) ? "غير محدد" : item.RoleType)</span></td>
+                        <td>
+                            <span class="badge rounded-pill px-3 py-1 shadow-sm fw-bold" style="@roleBadgeStyle">
+                                @(string.IsNullOrEmpty(item.RoleType) ? "غير محدد" : item.RoleType)
+                            </span>
+                            @if (!string.IsNullOrEmpty(item.SubRoleType))
+                            {
+                                <div class="small text-muted fw-bold mt-1" style="font-size: 0.8rem;">
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-layers-half text-danger me-1"></i>@item.SubRoleType</span>
+                                </div>
+                            }
+                        </td>
 
                         <td>
                             <div class="fw-bold">@item.ExamSchedule?.Exam?.Subject?.SubjectName</div>
                             <div class="small text-muted">@item.ExamSchedule?.Exam?.ExamDate.ToString("yyyy/MM/dd")</div>
                         </td>
 
-                        <td>@(item.AssignmentType == "Auto" ? "توزيع تلقائي" : "يدوي")</td>
+                        <td>
+                            <span class="badge @(item.AssignmentType == "Auto" ? "bg-light text-success border border-success" : "bg-light text-secondary border") px-2 py-1" style="font-size: 0.75rem;">
+                                @(item.AssignmentType == "Auto" ? "توزيع تلقائي" : "يدوي")
+                            </span>
+                        </td>
 
                         <td>
-                            <a asp-action="Details" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
-                            <a asp-action="Edit" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
-                            <a asp-action="Delete" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            <div class="btn-group" role="group">
+                                <a asp-action="Details" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-info" title="عرض"><i class="bi bi-eye"></i></a>
+                                <a asp-action="Edit" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                                <a asp-action="Delete" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </div>
                         </td>
                     </tr>
                 }

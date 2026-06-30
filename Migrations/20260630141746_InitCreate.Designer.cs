@@ -12,8 +12,8 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260626142615_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260630141746_InitCreate")]
+    partial class InitCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -247,6 +247,9 @@ namespace projectweb.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("RoleType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SubRoleType")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("AssignmentId");

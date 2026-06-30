@@ -242,8 +242,16 @@
                                 <div class="info-line">الزمن: <span class="line-draw" style="direction: ltr;">@pageModel.ExamTime</span></div>
                             </div>
                             <div class="left-info">
-                                <div class="info-line">رئيس اللجان الأساسي: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead1</span></div>
-                                <div class="info-line">مراقب اللجان الأساسي: <span class="line-draw" style="min-width:240px;">@block.BlockObserverName</span></div>
+                                <div class="info-line">رئيس الجراش: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead1</span></div>
+                                @if (!string.IsNullOrEmpty(pageModel.MainHead2))
+                                {
+                                    <div class="info-line">رئيس القطاع الثاني: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead2</span></div>
+                                }
+                                @if (!string.IsNullOrEmpty(pageModel.MainHead3))
+                                {
+                                    <div class="info-line">رئيس القطاع الثالث: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead3</span></div>
+                                }
+                                <div class="info-line">مراقب اللجنة: <span class="line-draw" style="min-width:240px;">@block.BlockObserverName</span></div>
                             </div>
                         </div>
 
@@ -294,16 +302,33 @@
                             <div class="section-box">
                                 <div style="font-weight: bold; margin-bottom: 8px; text-decoration: underline; font-size: 11pt;">طاقم الاحتياطي العام للجنة:</div>
 
+                                <!-- رؤساء احتياطيين -->
                                 <div class="reserve-row">
-                                    <div>احتياطي رئيس اللجان: <span class="line-draw" style="min-width:180px;">@pageModel.ReserveHead1</span></div>
-                                    <div>التوقيع: .....................</div>
+                                    <div>رئيس احتياطي 1: <span class="line-draw" style="min-width:140px;">@pageModel.ReserveHead1</span></div>
+                                    <div>التوقيع: .........</div>
                                 </div>
+                                @if (!string.IsNullOrEmpty(pageModel.ReserveHead2) && pageModel.ReserveHead2 != "................")
+                                {
+                                    <div class="reserve-row">
+                                        <div>رئيس احتياطي 2: <span class="line-draw" style="min-width:140px;">@pageModel.ReserveHead2</span></div>
+                                        <div>التوقيع: .........</div>
+                                    </div>
+                                }
 
+                                <!-- مراقبين احتياطيين -->
                                 <div class="reserve-row">
-                                    <div>احتياطي مراقب اللجان: <span class="line-draw" style="min-width:180px;">@pageModel.ReserveObserver1</span></div>
-                                    <div>التوقيع: .....................</div>
+                                    <div>مراقب احتياطي 1: <span class="line-draw" style="min-width:140px;">@pageModel.ReserveObserver1</span></div>
+                                    <div>التوقيع: .........</div>
                                 </div>
+                                @if (!string.IsNullOrEmpty(pageModel.ReserveObserver2) && pageModel.ReserveObserver2 != "................")
+                                {
+                                    <div class="reserve-row">
+                                        <div>مراقب احتياطي 2: <span class="line-draw" style="min-width:140px;">@pageModel.ReserveObserver2</span></div>
+                                        <div>التوقيع: .........</div>
+                                    </div>
+                                }
 
+                                <!-- ملاحظين احتياطيين بالصالة -->
                                 @if (block.CommitteeObservers != null)
                                 {
                                     var reserveItems = block.CommitteeObservers.Where(o => o.CommitteeNumber == "ملاحظ احتياطي بالصالة").ToList();
@@ -316,6 +341,7 @@
                                     }
                                 }
 
+                                <!-- ملاحظين احتياطيين عام -->
                                 @if (pageModel.GeneralReserveObservers != null)
                                 {
                                     @foreach (var genRes in pageModel.GeneralReserveObservers)

@@ -26,7 +26,7 @@ namespace projectweb.Controllers
         }
 
         // ============================================================
-        // 1. Index: شاشة عرض وتصفية التكليفات القائمة - المعدلة
+        // 1. Index: شاشة عرض وتصفية التكليفات القائمة 
         // ============================================================
         public async Task<IActionResult> Index(int? examId, string academicYear)
         {
@@ -45,12 +45,13 @@ namespace projectweb.Controllers
             var levels = new List<string> { "المستوى الأول", "المستوى الثاني", "المستوى الثالث", "المستوى الرابع" };
             ViewBag.AcademicYears = new SelectList(levels, academicYear);
 
+            // بناء الاستعلام الأساسي مع جلب شجرة العلاقات بالكامل لقراءة الدورين والـ SubRoleType
             var query = _context.CommitteesAssignments
                 .Include(a => a.Person)
                 .Include(a => a.Role)
                 .Include(a => a.ExamLocation)
-                    .ThenInclude(l => l.ParentLocation) // تحميل الصالة التابع لها
-                    .ThenInclude(p => p.ParentLocation) // تحميل الجراش التابع له (المستوى الثالث)
+                    .ThenInclude(l => l.ParentLocation) // تحميل الصالة التابعة لها
+                    .ThenInclude(p => p.ParentLocation) // تحميل الجراش الرئيسي (المستوى الأعلى)
                 .Include(a => a.ExamSchedule).ThenInclude(es => es.Exam).ThenInclude(e => e.Subject)
                 .AsQueryable();
 
@@ -70,14 +71,22 @@ namespace projectweb.Controllers
                     _ => AcademicLevel.FirstYear
                 };
 
-                query = query.Where(a => a.ExamSchedule != null &&
-                                         a.ExamSchedule.Exam != null &&
-                                         a.ExamSchedule.Exam.Subject != null &&
-                                         a.ExamSchedule.Exam.Subject.AcademicYear == targetLevel);
+                // تعديل الفلترة: حماية طاقم إدارة الجراش من الاختفاء عند فلترة المستويات الأكاديمية للطلاب
+                query = query.Where(a => (a.ExamSchedule != null &&
+                                          a.ExamSchedule.Exam != null &&
+                                          a.ExamSchedule.Exam.Subject != null &&
+                                          a.ExamSchedule.Exam.Subject.AcademicYear == targetLevel)
+                                          || a.ExamLocation.Type == LocationType.Hall
+                                          || a.RoleType.Contains("رئيس")
+                                          || a.RoleType.Contains("مراقب احتياطي")
+                                          || a.RoleType.Contains("دكتور"));
             }
 
+            // ترتيب العرض برمجياً: وضع الإدارة العليا للجراش في الأعلى ثم المراقبين ثم الملاحظين لضمان النظافة البصرية
             var assignments = await query
-                .OrderBy(a => a.LocationId == null)
+                .OrderByDescending(a => a.RoleType.Contains("رئيس"))
+                .ThenByDescending(a => a.RoleType.Contains("مراقب"))
+                .ThenBy(a => a.LocationId == null)
                 .ToListAsync();
 
             foreach (var item in assignments)
@@ -378,12 +387,11 @@ namespace projectweb.Controllers
 
             if (!allAssignments.Any())
             {
-                TempData["ErrorMessage"] = $"عفواً، لا توجد تكليفات أو طواقم مراقبة مسجلة لموقع ({hall.LocationName}) في مادة ({exam.Subject?.SubjectName ?? ""}) حتى الآن.";
+                TempData["ErrorMessage"] = $"عفواً، لا توجد تكليفات مسجلة لموقع ({hall.LocationName}).";
                 return RedirectToAction(nameof(PreparePrintSheet));
             }
 
             var pagesList = new List<ExamControlSheetViewModel>();
-
             var blocksInHall = await _context.ExamLocations
                 .Where(l => l.ParentLocationId == locationId && l.Type == LocationType.Block)
                 .OrderBy(l => l.LocationName)
@@ -391,75 +399,72 @@ namespace projectweb.Controllers
 
             var targetAcademicLevel = exam.Subject?.AcademicYear;
 
+            // الفحص المتطابق مع الـ Service لمعرفة عدد الأدوار الفعلي للكيان
+            bool hasTwoFloors = (hall.Floor == 2) || await _context.ExamLocations.AnyAsync(l => l.ParentLocationId == locationId && l.Floor == 2);
+
             foreach (var b in blocksInHall)
             {
                 var activeObservers = allAssignments
-                    .Where(a => a.ExamLocation != null && a.ExamLocation.ParentLocationId == b.LocationId && a.RoleType.Contains("ملاحظ لجنة") && a.Person != null)
-                    .OrderBy(a => a.ExamLocation.LocationName)
+                    .Where(a => a.ExamLocation != null && a.ExamLocation.ParentLocationId == b.LocationId && a.RoleType == "ملاحظ لجنة")
                     .Select(a => new ObserverRowItem
                     {
                         ObserverName = a.Person.FullName,
                         CommitteeNumber = a.ExamLocation.LocationName,
                         BookletsCount = _context.Students.Count(s => s.LocationId == a.LocationId && s.AcademicYear == targetAcademicLevel)
-                    })
-                    .ToList();
+                    }).ToList();
 
                 var blockReserveObservers = allAssignments
-                    .Where(a => a.LocationId == b.LocationId && a.RoleType.Contains("ملاحظ احتياطي للمبنى") && a.Person != null)
+                    .Where(a => a.LocationId == b.LocationId && a.RoleType == "ملاحظ احتياطي" && a.SubRoleType == "احتياطي صالة")
                     .Select(a => new ObserverRowItem
                     {
                         ObserverName = a.Person.FullName,
                         CommitteeNumber = "ملاحظ احتياطي بالصالة",
                         BookletsCount = 0
-                    })
-                    .ToList();
+                    }).ToList();
 
                 var blockItem = new BlockGroupItem
                 {
                     BlockName = b.LocationName,
-                    BlockObserverName = allAssignments.FirstOrDefault(a => a.LocationId == b.LocationId && a.RoleType.Contains("مراقب"))?.Person?.FullName ?? "................",
+                    FloorNumber = b.Floor,
+                    BlockObserverName = allAssignments.FirstOrDefault(a => a.LocationId == b.LocationId && a.RoleType == "مراقب")?.Person?.FullName ?? "................",
                     CommitteeObservers = activeObservers.Concat(blockReserveObservers).ToList()
                 };
 
-                if (!blockItem.CommitteeObservers.Any() && blockItem.BlockObserverName == "................")
-                {
-                    continue;
-                }
+                if (!blockItem.CommitteeObservers.Any() && blockItem.BlockObserverName == "................") continue;
 
                 var pageModel = new ExamControlSheetViewModel
                 {
                     SubjectName = exam.Subject?.SubjectName ?? "---",
-                    TargetYear = exam.Subject?.AcademicYear switch
-                    {
-                        AcademicLevel.FirstYear => "المستوى الأول",
-                        AcademicLevel.SecondYear => "المستوى الثاني",
-                        AcademicLevel.ThirdYear => "المستوى الثالث",
-                        AcademicLevel.FourthYear => "المستوى الرابع",
-                        _ => "---"
-                    },
+                    TargetYear = exam.Subject?.AcademicYear switch { AcademicLevel.FirstYear => "المستوى الأول", AcademicLevel.SecondYear => "المستوى الثاني", AcademicLevel.ThirdYear => "المستوى الثالث", AcademicLevel.FourthYear => "المستوى الرابع", _ => "---" },
                     ExamDate = exam.ExamDate.ToString("yyyy/MM/dd"),
                     ExamDay = exam.ExamDate.ToString("dddd", new System.Globalization.CultureInfo("ar-EG")),
                     ExamTime = $"{DateTime.Today.Add(exam.StartTime):hh:mm tt} - {DateTime.Today.Add(exam.EndTime):hh:mm tt}",
                     HallName = hall.LocationName,
 
-                    MainHead1 = allAssignments.FirstOrDefault(a => a.RoleType != null && a.RoleType.Contains("رئيس جراش أساسي"))?.Person?.FullName ?? "................",
-                    ReserveHead1 = allAssignments.FirstOrDefault(a => a.RoleType.Contains("رئيس جراش احتياطي"))?.Person?.FullName ?? "................",
-                    ReserveObserver1 = allAssignments.FirstOrDefault(a => a.RoleType.Contains("مراقب احتياطي للجراش"))?.Person?.FullName ?? "................",
+                    // 1. طاقم إدارة الجراش المحدث بناءً على مسميات الـ Service الفرعية الدقيقة
+                    MainHead1 = allAssignments.FirstOrDefault(a => a.RoleType == "رئيس جراش" && a.SubRoleType == "قطاع أول")?.Person?.FullName ?? "................",
+                    MainHead2 = allAssignments.FirstOrDefault(a => a.RoleType == "رئيس جراش" && a.SubRoleType == "قطاع ثاني")?.Person?.FullName ?? "................",
+                    MainHead3 = hasTwoFloors ? (allAssignments.FirstOrDefault(a => a.RoleType == "رئيس جراش" && a.SubRoleType == "قطاع ثالث")?.Person?.FullName ?? "................") : null,
 
-                    MainHead2 = allAssignments.FirstOrDefault(a => a.RoleType.Contains("رئيس جراش أساسي (القطاع الثاني)"))?.Person?.FullName ?? "................",
-                    ReserveHead2 = "................",
-                    ReserveObserver2 = "................",
+                    // 2. احتياطي رؤساء الجراش المتوافق مع خيارات الـ Service للـ دور/الدورين
+                    ReserveHead1 = hasTwoFloors
+                        ? (allAssignments.FirstOrDefault(a => a.RoleType == "رئيس جراش احتياطي" && a.SubRoleType == "احتياطي دور أول")?.Person?.FullName ?? "................")
+                        : (allAssignments.FirstOrDefault(a => a.RoleType == "رئيس جراش احتياطي" && a.SubRoleType == "احتياطي")?.Person?.FullName ?? "................"),
 
-                    DoctorName = allAssignments.FirstOrDefault(a => a.RoleType != null && a.RoleType.Equals("دكتور"))?.Person?.FullName ?? "................",
-                    NurseName = allAssignments.FirstOrDefault(a => a.RoleType.Contains("مساعد دكتور"))?.Person?.FullName ?? "................",
+                    ReserveHead2 = hasTwoFloors ? (allAssignments.FirstOrDefault(a => a.RoleType == "رئيس جراش احتياطي" && a.SubRoleType == "احتياطي دور ثاني")?.Person?.FullName ?? "................") : null,
+
+                    // 3. طاقم المراقبين الاحتياطيين للأدوار والمقار
+                    ReserveObserver1 = hasTwoFloors
+                        ? (allAssignments.FirstOrDefault(a => a.RoleType == "مراقب احتياطي" && a.SubRoleType == "الدور الأول")?.Person?.FullName ?? "................")
+                        : (allAssignments.FirstOrDefault(a => a.RoleType == "مراقب احتياطي" && a.SubRoleType == "لجراش")?.Person?.FullName ?? "................"),
+
+                    ReserveObserver2 = hasTwoFloors ? (allAssignments.FirstOrDefault(a => a.RoleType == "مراقب احتياطي" && a.SubRoleType == "الدور الثاني")?.Person?.FullName ?? "................") : null,
+
+                    DoctorName = allAssignments.FirstOrDefault(a => a.RoleType == "دكتور")?.Person?.FullName ?? "................",
+                    NurseName = allAssignments.FirstOrDefault(a => a.RoleType == "مساعد دكتور")?.Person?.FullName ?? "................",
 
                     Blocks = new List<BlockGroupItem> { blockItem },
-
-                    GeneralReserveObservers = allAssignments
-                        .Where(a => a.RoleType.Contains("احتياطي عام") || a.RoleType.Contains("ملاحظ احتياطي للكلية"))
-                        .Select(a => a.Person?.FullName)
-                        .Where(name => name != null)
-                        .ToList()
+                    GeneralReserveObservers = allAssignments.Where(a => a.RoleType == "ملاحظ احتياطي" && a.SubRoleType == "احتياطي صالة").Select(a => a.Person.FullName).ToList()
                 };
 
                 pagesList.Add(pageModel);
@@ -467,13 +472,13 @@ namespace projectweb.Controllers
 
             if (!pagesList.Any())
             {
-                TempData["ErrorMessage"] = "عفواً، لا توجد لجان ممتلئة لعرضها داخل الصالات حالياً.";
+                TempData["ErrorMessage"] = "عفواً، لا توجد لجان ممتلئة لعرضها حالياً.";
                 return RedirectToAction(nameof(PreparePrintSheet));
             }
 
             return View(pagesList);
         }
-
+    
         // ============================================================
         // 10. Ajax Helpers
         // ============================================================

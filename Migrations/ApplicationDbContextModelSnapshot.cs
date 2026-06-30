@@ -246,6 +246,9 @@ namespace projectweb.Migrations
                     b.Property<string>("RoleType")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("SubRoleType")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("AssignmentId");
 
                     b.HasIndex("ExamScheduleId");

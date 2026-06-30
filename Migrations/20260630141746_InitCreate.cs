@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace projectweb.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -294,6 +294,7 @@ namespace projectweb.Migrations
                     PersonId = table.Column<int>(type: "int", nullable: false),
                     AssignmentType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RoleType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SubRoleType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LocationId = table.Column<int>(type: "int", nullable: true),
                     RoleId = table.Column<int>(type: "int", nullable: false),
                     ExamScheduleId = table.Column<int>(type: "int", nullable: false)
