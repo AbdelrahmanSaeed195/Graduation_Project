@@ -1,7 +1,7 @@
 ﻿@model projectweb.Models.ExamSchedule
 
 @{
-    ViewData["Title"] = "إضافة جلسة توزيع الصالات";
+    ViewData["Title"] = "إضافة جلسة توزيع الجراشات";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -11,7 +11,7 @@
             <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
                 <div class="card-header py-3" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border-bottom: none;">
                     <h4 class="card-title mb-0 fw-bold text-white text-center">
-                        <i class="bi bi-calendar-plus me-2"></i> تخصيص مبنى / صالة لامتحان
+                        <i class="bi bi-calendar-plus me-2"></i> تخصيص مبنى / جراش لامتحان
                     </h4>
                 </div>
 
@@ -30,9 +30,9 @@
                             </div>
 
                             <div class="col-md-12 mb-3">
-                                <label asp-for="LocationId" class="form-label fw-bold" style="color: #4a5568;">الصالات / المباني المتاحة <span class="text-danger">*</span></label>
+                                <label asp-for="LocationId" class="form-label fw-bold" style="color: #4a5568;">الجراشات / المباني المتاحة <span class="text-danger">*</span></label>
                                 <select asp-for="LocationId" id="LocationSelect" class="form-select form-select-lg shadow-sm border-light-subtle" style="font-size: 0.95rem; border-radius: 8px;">
-                                    <option value="">-- اختر الامتحان أولاً لعرض الصالات المتاحة --</option>
+                                    <option value="">-- اختر الامتحان أولاً لعرض الجراشات المتاحة --</option>
                                 </select>
                                 <span asp-validation-for="LocationId" class="text-danger small mt-1 d-block fw-bold"></span>
                             </div>
@@ -69,7 +69,7 @@
                 locationSelect.empty();
 
                 if (examId) {
-                    locationSelect.append('<option value="">-- جاري تحميل الصالات المتاحة... --</option>');
+                    locationSelect.append('<option value="">-- جاري تحميل الجراشات المتاحة... --</option>');
 
                     $.ajax({
                         url: '@Url.Action("GetAvailableLocations", "ExamSchedules")',
@@ -79,7 +79,7 @@
                         success: function (data) {
                             locationSelect.empty();
                             if (data && data.length > 0) {
-                                locationSelect.append('<option value="">-- اختر الصالة / المبنى المختص --</option>');
+                                locationSelect.append('<option value="">-- اختر الجراش / المبنى المختص --</option>');
                                 $.each(data, function (i, item) {
                                     locationSelect.append($('<option>', {
                                         value: item.id,
@@ -87,7 +87,7 @@
                                     }));
                                 });
                             } else {
-                                locationSelect.append('<option value="">-- لا توجد صالات متاحة في هذا الوقت --</option>');
+                                locationSelect.append('<option value="">-- لا توجد جراشات متاحة في هذا الوقت --</option>');
                             }
                         },
                         error: function (xhr, status, error) {
@@ -97,7 +97,7 @@
                         }
                     });
                 } else {
-                    locationSelect.append('<option value="">-- اختر الامتحان أولاً لعرض الصالات المتاحة --</option>');
+                    locationSelect.append('<option value="">-- اختر الامتحان أولاً لعرض الجراشات المتاحة --</option>');
                 }
             });
         });

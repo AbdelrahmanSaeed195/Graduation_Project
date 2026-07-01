@@ -1,0 +1,248 @@
+﻿@using projectweb.Models
+@{
+    Layout = null;
+    ExamLocation hall = ViewBag.Hall;
+    List<ExamLocation> rows = ViewBag.Rows;
+    List<ExamLocation> blocks = ViewBag.Blocks;
+    List<ExamLocation> committees = ViewBag.Committees;
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>تقرير الهيكل التنظيمي لجراش (@hall.LocationName)</title>
+    <style>
+        @@page {
+            size: auto;
+            margin: 0mm;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            padding: 0;
+            direction: rtl;
+            background: white;
+            color: black;
+            margin: 0;
+        }
+
+        .page-container {
+            padding: 30px 35px;
+            box-sizing: border-box;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .outer-frame {
+            border: 2px solid black;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex-grow: 1;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            font-weight: bold;
+            font-size: 14pt;
+            line-height: 1.6;
+        }
+
+        .logo-placeholder {
+            width: 80px;
+            height: 80px;
+            text-align: center;
+        }
+
+        .main-title {
+            text-align: center;
+            font-size: 18pt;
+            font-weight: bold;
+            margin: 15px 0;
+            text-decoration: underline;
+        }
+
+        .meta-summary {
+            background-color: #f9fafb;
+            border: 1px solid black;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 13pt;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+            .main-table th, .main-table td {
+                border: 1px solid black;
+                padding: 10px 8px;
+                text-align: center;
+                font-size: 12pt;
+            }
+
+            .main-table th {
+                background-color: #f2f2f2;
+                font-weight: bold;
+            }
+
+        .row-title-bg {
+            background-color: #fafafa;
+            font-weight: bold;
+            text-align: right !important;
+            padding-right: 15px !important;
+        }
+
+        .block-title-bg {
+            background-color: #ffffff;
+            font-weight: bold;
+        }
+
+        .footer-sigs {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 13pt;
+            padding: 0 20px;
+        }
+
+        .sig-item {
+            width: 30%;
+        }
+
+        @@media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                padding: 0;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print" style="text-align:center; padding:15px; background: #f8f9fa; border-bottom: 1px solid #ddd; margin-bottom: 10px;">
+        <button onclick="window.print()" style="background:#1a3a5a; color:white; padding:12px 30px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:14px;">🖨️ بدء طباعة تقرير الهيكل الآن</button>
+        <button onclick="window.history.back()" style="background:#6c757d; color:white; padding:12px 30px; border:none; border-radius:8px; cursor:pointer; margin-right:10px;">إغلاق التقرير</button>
+    </div>
+
+    <div class="page-container">
+        <div class="outer-frame">
+
+            <div class="header-section">
+                <div>
+                    جامعة أسيوط<br>
+                    كلية علوم الرياضة<br>
+                    إدارة شئون الطلاب والامتحانات
+                </div>
+                <div class="logo-placeholder">
+                    <img src="~/images/logo.png" style="width:75px; height:auto;" onerror="this.style.display='none'" />
+                </div>
+                <div style="text-align: left;">
+                    نموذج رقم: AU-EX-STR04<br>
+                    تاريخ التقرير: @DateTime.Now.ToString("yyyy/MM/dd")
+                </div>
+            </div>
+
+            <div class="main-title">بيان وتفاصيل السعة الاستيعابية الشجرية لجراش: (@hall.LocationName)</div>
+
+            <div class="meta-summary">
+                <div>عدد القطاعات / الصفوف: <span style="font-family: Arial; font-size: 14pt;">@rows.Count</span></div>
+                <div>إجمالي الصالات بداخلها: <span style="font-family: Arial; font-size: 14pt;">@blocks.Count</span></div>
+                <div>إجمالي اللجان الفرعية: <span style="font-family: Arial; font-size: 14pt;">@committees.Count</span></div>
+                <div>السعة الطلابية الإجمالية: <span style="font-family: Arial; font-size: 15pt; color: #1a3a5a;">@ViewBag.TotalHallCapacity طالب</span></div>
+            </div>
+
+            <table class="main-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">القطاع / الصف الرئيسي</th>
+                        <th style="width: 25%;">الصالة الفرعية</th>
+                        <th style="width: 25%;">اللجان التابعة لها</th>
+                        <th style="width: 25%;">سعة الطلاب المخصصة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in rows)
+                    {
+                        var blocksInRow = blocks.Where(b => b.ParentLocationId == r.LocationId).ToList();
+                        bool isFirstBlock = true;
+
+                        if (!blocksInRow.Any())
+                        {
+                            <tr>
+                                <td class="row-title-bg">@r.LocationName</td>
+                                <td colspan="3" class="text-muted small">لا توجد صالات مضافة لهذا الصف حالياً</td>
+                            </tr>
+                            continue;
+                        }
+
+                        foreach (var b in blocksInRow)
+                        {
+                            var commsInBlock = committees.Where(c => c.ParentLocationId == b.LocationId).ToList();
+                            bool isFirstComm = true;
+
+                            if (!commsInBlock.Any())
+                            {
+                                <tr>
+                                    @if (isFirstBlock)
+                                    {
+                                        <td class="row-title-bg" rowspan="@blocksInRow.Count">@r.LocationName</td>
+                                        isFirstBlock = false;
+                                    }
+                                    <td class="block-title-bg">@b.LocationName</td>
+                                    <td colspan="2" class="text-muted small">لا توجد لجان مضافة لهذه الصالة</td>
+                                </tr>
+                                continue;
+                            }
+
+                            foreach (var c in commsInBlock)
+                            {
+                                <tr>
+                                    @if (isFirstBlock && isFirstComm)
+                                    {
+                                        // حساب مجموع كل اللجان التابعة للصالات داخل هذا الصف لضبط الـ rowspan بدقة
+                                        int totalCommsInRow = blocksInRow.Sum(bl => committees.Count(co => bl.LocationId == co.ParentLocationId));
+                                        <td class="row-title-bg" rowspan="@totalCommsInRow">@r.LocationName</td>
+                                        isFirstBlock = false;
+                                    }
+                                    @if (isFirstComm)
+                                    {
+                                        <td class="block-title-bg" rowspan="@commsInBlock.Count">@b.LocationName</td>
+                                        isFirstComm = false;
+                                    }
+                                    <td class="fw-bold">@c.LocationName</td>
+                                    <td style="font-family: 'Arial'; font-weight: bold;">@c.StudentCapacity</td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+
+            <div class="footer-sigs">
+                <div class="sig-item">مسؤول الكنترول الإحصائي<br><br>...........................</div>
+                <div class="sig-item">رئيس لجنة المقار الإدارية<br><br>...........................</div>
+                <div class="sig-item">عميد الكلية / رئيس عام الامتحانات<br><br>...........................</div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

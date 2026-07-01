@@ -53,6 +53,21 @@ namespace projectweb.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AssignmentSettings",
+                columns: table => new
+                {
+                    SettingId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AcademicYearCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    JobRole = table.Column<int>(type: "int", nullable: false),
+                    MaxAssignmentsLimit = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AssignmentSettings", x => x.SettingId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ExamLocations",
                 columns: table => new
                 {
@@ -99,7 +114,8 @@ namespace projectweb.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     SubjectCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SubjectName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    AcademicYear = table.Column<int>(type: "int", nullable: false)
+                    AcademicYear = table.Column<int>(type: "int", nullable: false),
+                    Specialization = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -509,6 +525,12 @@ namespace projectweb.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AssignmentSettings_AcademicYearCode_JobRole",
+                table: "AssignmentSettings",
+                columns: new[] { "AcademicYearCode", "JobRole" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CommitteesAssignments_ExamScheduleId",
                 table: "CommitteesAssignments",
                 column: "ExamScheduleId");
@@ -630,6 +652,9 @@ namespace projectweb.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "AssignmentSettings");
 
             migrationBuilder.DropTable(
                 name: "CommitteesAssignments");

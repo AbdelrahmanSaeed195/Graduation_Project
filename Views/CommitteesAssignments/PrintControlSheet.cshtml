@@ -210,7 +210,6 @@
         {
             var block = pageModel.Blocks.FirstOrDefault();
             int rowsCount = 0;
-            int totalBookletsInPage = 0;
 
             if (block != null)
             {
@@ -228,7 +227,7 @@
                             </div>
                             <div style="text-align: left;">
                                 نموذج رقم: AU-EX-02<br>
-                                الموقع: جراش (@pageModel.HallName)  صالة (@block.BlockName)
+                                الموقع: (@pageModel.HallName) | صالة (@block.BlockName)
                             </div>
                         </div>
 
@@ -237,21 +236,21 @@
                         <div class="info-grid">
                             <div class="right-info">
                                 <div class="info-line">التاريخ: <span class="line-draw">@pageModel.ExamDate</span></div>
-                                <div class="info-line">الفرقة: <span class="line-draw">@pageModel.TargetYear</span></div>
+                                <div class="info-line">الفرقة/المستوى: <span class="line-draw">@pageModel.TargetYear</span></div>
                                 <div class="info-line">المادة: <span class="line-draw">@pageModel.SubjectName</span></div>
                                 <div class="info-line">الزمن: <span class="line-draw" style="direction: ltr;">@pageModel.ExamTime</span></div>
                             </div>
                             <div class="left-info">
-                                <div class="info-line">رئيس الجراش: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead1</span></div>
-                                @if (!string.IsNullOrEmpty(pageModel.MainHead2))
+                                <div class="info-line">رئيس القطاع الأول: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead1</span></div>
+                                @if (!string.IsNullOrEmpty(pageModel.MainHead2) && pageModel.MainHead2 != "................")
                                 {
                                     <div class="info-line">رئيس القطاع الثاني: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead2</span></div>
                                 }
-                                @if (!string.IsNullOrEmpty(pageModel.MainHead3))
+                                @if (!string.IsNullOrEmpty(pageModel.MainHead3) && pageModel.MainHead3 != "................")
                                 {
                                     <div class="info-line">رئيس القطاع الثالث: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead3</span></div>
                                 }
-                                <div class="info-line">مراقب اللجنة: <span class="line-draw" style="min-width:240px;">@block.BlockObserverName</span></div>
+                                <div class="info-line">مراقب الصالة الحالي: <span class="line-draw" style="min-width:240px;">@block.BlockObserverName</span></div>
                             </div>
                         </div>
 
@@ -268,23 +267,21 @@
                             <tbody>
                                 @if (block.CommitteeObservers != null)
                                 {
-                                    var activeObservers = block.CommitteeObservers.Where(o => o.CommitteeNumber != "ملاحظ احتياطي بالصالة").ToList();
+                                    var activeObservers = block.CommitteeObservers.Where(o => o.CommitteeNumber != "احتياطي صالة").ToList();
                                     @foreach (var obs in activeObservers)
                                     {
                                         rowsCount++;
-                                        int currentCommitteeBooklets = obs.BookletsCount;
-                                        totalBookletsInPage += currentCommitteeBooklets;
-
                                         <tr>
                                             <td style="font-weight: bold;">@obs.CommitteeNumber</td>
                                             <td class="col-observer" style="font-weight: bold;">@obs.ObserverName</td>
-                                            <td style="font-weight: bold;">@(currentCommitteeBooklets > 0 ? currentCommitteeBooklets.ToString() : "—")</td>
+                                            <td style="font-weight: bold;">@(obs.BookletsCount > 0 ? obs.BookletsCount.ToString() : "—")</td>
                                             <td></td>
                                             <td></td>
                                         </tr>
                                     }
                                 }
 
+                                @* الحفاظ على التنسيق المالي الموحد المكون من 10 أسطر بصرية للكشوف الرسمية *@
                                 @for (int j = rowsCount; j < 10; j++)
                                 {
                                     <tr style="height:36px;">
@@ -300,55 +297,51 @@
 
                         <div class="bottom-container">
                             <div class="section-box">
-                                <div style="font-weight: bold; margin-bottom: 8px; text-decoration: underline; font-size: 11pt;">طاقم الاحتياطي العام للجنة:</div>
+                                <div style="font-weight: bold; margin-bottom: 8px; text-decoration: underline; font-size: 11pt;">طاقم الإشراف والاحتياطي المعين باللجنة:</div>
 
-                                <!-- رؤساء احتياطيين -->
                                 <div class="reserve-row">
-                                    <div>رئيس احتياطي 1: <span class="line-draw" style="min-width:140px;">@pageModel.ReserveHead1</span></div>
+                                    <div>رئيس جراش احتياطي: <span class="line-draw" style="min-width:140px;">@pageModel.ReserveHead1</span></div>
                                     <div>التوقيع: .........</div>
                                 </div>
                                 @if (!string.IsNullOrEmpty(pageModel.ReserveHead2) && pageModel.ReserveHead2 != "................")
                                 {
                                     <div class="reserve-row">
-                                        <div>رئيس احتياطي 2: <span class="line-draw" style="min-width:140px;">@pageModel.ReserveHead2</span></div>
+                                        <div>رئيس جراش احتياطي ثانٍ: <span class="line-draw" style="min-width:140px;">@pageModel.ReserveHead2</span></div>
                                         <div>التوقيع: .........</div>
                                     </div>
                                 }
 
-                                <!-- مراقبين احتياطيين -->
                                 <div class="reserve-row">
-                                    <div>مراقب احتياطي 1: <span class="line-draw" style="min-width:140px;">@pageModel.ReserveObserver1</span></div>
+                                    <div>مراقب احتياطي (أول): <span class="line-draw" style="min-width:140px;">@pageModel.ReserveObserver1</span></div>
                                     <div>التوقيع: .........</div>
                                 </div>
                                 @if (!string.IsNullOrEmpty(pageModel.ReserveObserver2) && pageModel.ReserveObserver2 != "................")
                                 {
                                     <div class="reserve-row">
-                                        <div>مراقب احتياطي 2: <span class="line-draw" style="min-width:140px;">@pageModel.ReserveObserver2</span></div>
+                                        <div>مراقب احتياطي (ثانٍ): <span class="line-draw" style="min-width:140px;">@pageModel.ReserveObserver2</span></div>
                                         <div>التوقيع: .........</div>
                                     </div>
                                 }
 
-                                <!-- ملاحظين احتياطيين بالصالة -->
                                 @if (block.CommitteeObservers != null)
                                 {
-                                    var reserveItems = block.CommitteeObservers.Where(o => o.CommitteeNumber == "ملاحظ احتياطي بالصالة").ToList();
+                                    var reserveItems = block.CommitteeObservers.Where(o => o.CommitteeNumber == "احتياطي صالة").ToList();
                                     @foreach (var res in reserveItems)
                                     {
                                         <div class="reserve-row">
-                                            <div>احتياطي ملاحظ اللجان: <span class="line-draw" style="min-width:180px;">@res.ObserverName</span></div>
-                                            <div>التوقيع: .....................</div>
+                                            <div>ملاحظ احتياطي بالصالة: <span class="line-draw" style="min-width:140px;">@res.ObserverName</span></div>
+                                            <div>التوقيع: .........</div>
                                         </div>
                                     }
                                 }
 
-                                <!-- ملاحظين احتياطيين عام -->
                                 @if (pageModel.GeneralReserveObservers != null)
                                 {
                                     @foreach (var genRes in pageModel.GeneralReserveObservers)
                                     {
                                         <div class="reserve-row">
-                                            <div>احتياطي ملاحظ اللجان: <span class="line-draw" style="min-width:180px;">@genRes</span></div>
-                                            <div>التوقيع: .....................</div>
+                                            <div>احتياطي عام للمقر: <span class="line-draw" style="min-width:140px;">@genRes</span></div>
+                                            <div>التوقيع: .........</div>
                                         </div>
                                     }
                                 }
@@ -356,19 +349,19 @@
 
                             <div class="section-box" style="display: flex; flex-direction: column; justify-content: space-between;">
                                 <div>
-                                    <div class="info-line" style="margin-top: 3px;">طبيب اللجان: <span class="line-draw" style="min-width:200px;">@pageModel.DoctorName</span></div>
-                                    <div class="info-line" style="margin-top: 8px;">مساعد الطبيب: <span class="line-draw" style="min-width:200px;">@pageModel.NurseName</span></div>
+                                    <div class="info-line" style="margin-top: 3px;">طبيب مقر اللجان: <span class="line-draw" style="min-width:200px;">@pageModel.DoctorName</span></div>
+                                    <div class="info-line" style="margin-top: 8px;">مساعد طبيب المقر: <span class="line-draw" style="min-width:200px;">@pageModel.NurseName</span></div>
                                 </div>
                                 <div style="margin-bottom: 5px; font-size: 12pt; font-weight: bold; border-top: 1px dashed black; padding-top: 10px;">
-                                    إجمالي عدد الكراسات المسلمة: <span style="font-size: 13pt; font-family: 'Arial'; margin-right: 10px; font-weight: bold;">@(totalBookletsInPage > 0 ? totalBookletsInPage.ToString() : "........")</span>
+                                    إجمالي عدد الكراسات المستلمة للصالة: <span style="font-size: 13pt; font-family: 'Arial'; margin-right: 10px; font-weight: bold;">@(block.TotalStudentsInBlock > 0 ? block.TotalStudentsInBlock.ToString() : "........")</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="footer-sigs">
-                            <div class="sig-item">شئون طلاب<br><br>سارة محمود</div>
-                            <div class="sig-item">مراقب اللجنة<br><br>@pageModel.MainHead1</div>
-                            <div class="sig-item">رئيس اللجنة<br><br>@block.BlockObserverName</div>
+                            <div class="sig-item">مسؤول شئون الطلاب<br><br>سارة محمود</div>
+                            <div class="sig-item">مراقب الصالة العام<br><br>@block.BlockObserverName</div>
+                            <div class="sig-item">رئيس لجان الامتحانات<br><br>@pageModel.MainHead1</div>
                         </div>
 
                     </div>

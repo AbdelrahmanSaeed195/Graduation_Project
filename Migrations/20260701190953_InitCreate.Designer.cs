@@ -12,7 +12,7 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260630141746_InitCreate")]
+    [Migration("20260701190953_InitCreate")]
     partial class InitCreate
     {
         /// <inheritdoc />
@@ -221,6 +221,33 @@ namespace projectweb.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("projectweb.Models.AssignmentSettings", b =>
+                {
+                    b.Property<int>("SettingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SettingId"));
+
+                    b.Property<string>("AcademicYearCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("JobRole")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxAssignmentsLimit")
+                        .HasColumnType("int");
+
+                    b.HasKey("SettingId");
+
+                    b.HasIndex("AcademicYearCode", "JobRole")
+                        .IsUnique();
+
+                    b.ToTable("AssignmentSettings");
                 });
 
             modelBuilder.Entity("projectweb.Models.CommitteesAssignment", b =>
@@ -627,6 +654,9 @@ namespace projectweb.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubjectId"));
 
                     b.Property<int>("AcademicYear")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Specialization")
                         .HasColumnType("int");
 
                     b.Property<string>("SubjectCode")

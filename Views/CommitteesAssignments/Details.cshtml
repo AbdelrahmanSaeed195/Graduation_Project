@@ -1,4 +1,5 @@
 ﻿@model projectweb.Models.CommitteesAssignment
+@using projectweb.Models
 
 @{
     ViewData["Title"] = "تفاصيل التكليف";
@@ -9,18 +10,18 @@
     <div class="card mx-auto shadow-lg border-0 main-details-card" style="max-width: 800px; border-radius: 15px;">
         <div class="card-header bg-white py-4 text-center border-0 position-relative">
             <div class="position-absolute top-0 start-50 translate-middle-x mt-n3">
-                <span class="badge rounded-pill bg-primary px-4 py-2 shadow badge-animate">بطاقة تكليف إداري</span>
+                <span class="badge rounded-pill bg-primary px-4 py-2 shadow badge-animate">بطاقة تكليف إداري موحد</span>
             </div>
             <h3 class="fw-bold mt-3 header-title" style="color: #1a3a5a;">
                 <i class="bi bi-person-check-fill me-2"></i> تفاصيل التكليف النهائي
             </h3>
         </div>
 
-        <div class="card-body p-5 pt-0">
+        <div class="card-body p-4 p-md-5 pt-0">
             <div class="row g-4">
                 <div class="col-md-6 border-start border-light info-section">
                     <label class="text-muted small d-block mb-1">اسم الموظف المكلف:</label>
-                    <h5 class="fw-bold text-dark mb-0 person-name">@Model.Person.FullName</h5>
+                    <h5 class="fw-bold text-dark mb-0 person-name">@Model.Person?.FullName</h5>
                 </div>
 
                 <div class="col-md-6 info-section">
@@ -38,23 +39,35 @@
                         <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
                             @if (Model.ExamLocation != null)
                             {
-                                if (Model.ExamLocation.Type == projectweb.Models.LocationType.Hall)
+                                var loc = Model.ExamLocation;
+
+                                if (loc.Type == LocationType.Hall)
                                 {
-                                    <h4 class="mb-0 text-dark fw-bold"><i class="bi bi-building me-1 text-primary"></i> كامل نطاق الجراش الرئيسي: (@Model.ExamLocation.LocationName)</h4>
+                                    <h4 class="mb-0 text-dark fw-bold"><i class="bi bi-building me-1 text-primary"></i> كامل نطاق الجراش الرئيسي: (@loc.LocationName)</h4>
                                 }
-                                else if (Model.ExamLocation.Type == projectweb.Models.LocationType.Block)
+                                else if (loc.Type == LocationType.Row)
                                 {
-                                    <div class="text-muted">الجراش: @(Model.ExamLocation.ParentLocation?.LocationName ?? "عام")</div>
+                                    <div class="text-muted">جراش: @(loc.ParentLocation?.LocationName ?? "---")</div>
                                     <i class="bi bi-chevron-left text-primary mx-1"></i>
-                                    <h4 class="mb-0 text-dark fw-bold"><i class="bi bi-grid-3x3 me-1 text-info"></i>  نطاق الصالة : (@Model.ExamLocation.LocationName)</h4>
+                                    <h4 class="mb-0 text-dark fw-bold"><i class="bi bi-layers text-warning me-1"></i> نطاق الصف: (@loc.LocationName)</h4>
                                 }
-                                else if (Model.ExamLocation.Type == projectweb.Models.LocationType.Committee)
+                                else if (loc.Type == LocationType.Block)
                                 {
-                                    <div class="text-muted">الجراش: @(Model.ExamLocation.ParentLocation?.ParentLocation?.LocationName ?? "عام")</div>
+                                    <div class="text-muted">جراش: @(loc.ParentLocation?.ParentLocation?.LocationName ?? "---")</div>
                                     <i class="bi bi-chevron-left text-primary mx-1"></i>
-                                    <div class="text-muted">الصالة: @(Model.ExamLocation.ParentLocation?.LocationName ?? "عام")</div>
+                                    <div class="text-muted">صف: @(loc.ParentLocation?.LocationName ?? "---")</div>
                                     <i class="bi bi-chevron-left text-primary mx-1"></i>
-                                    <h4 class="mb-0 text-dark fw-bold"><i class="bi bi-person-workspace me-1 text-success"></i> @Model.ExamLocation.LocationName</h4>
+                                    <h4 class="mb-0 text-dark fw-bold"><i class="bi bi-grid-3x3 me-1 text-info"></i> نطاق الصالة: (@loc.LocationName)</h4>
+                                }
+                                else if (loc.Type == LocationType.Committee)
+                                {
+                                    <div class="text-muted">جراش: @(loc.ParentLocation?.ParentLocation?.ParentLocation?.LocationName ?? "---")</div>
+                                    <i class="bi bi-chevron-left text-primary mx-1"></i>
+                                    <div class="text-muted">صف: @(loc.ParentLocation?.ParentLocation?.LocationName ?? "---")</div>
+                                    <i class="bi bi-chevron-left text-primary mx-1"></i>
+                                    <div class="text-muted">صالة: @(loc.ParentLocation?.LocationName ?? "---")</div>
+                                    <i class="bi bi-chevron-left text-primary mx-1"></i>
+                                    <h4 class="mb-0 text-dark fw-bold"><i class="bi bi-person-workspace me-1 text-success"></i> لجنة فرعية: (@loc.LocationName)</h4>
                                 }
                             }
                             else
@@ -93,6 +106,10 @@
                                 @(DateTime.Today.Add(Model.ExamSchedule.Exam.StartTime).ToString("hh:mm tt"))
                                 <span> - </span>
                                 @(DateTime.Today.Add(Model.ExamSchedule.Exam.EndTime).ToString("hh:mm tt"))
+                            }
+                            else
+                            {
+                                <span>غير محدد</span>
                             }
                         </p>
                     </div>

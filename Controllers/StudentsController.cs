@@ -236,109 +236,93 @@ namespace projectweb.Controllers
         }
 
         // ======================================================================
-        // 7. التوزيع التلقائي للطلاب مع فحص منع تعارض صلة القرابة (محدث بالكامل)
+        // 7. التوزيع التلقائي للطلاب مع فحص منع تعارض صلة القرابة (محدث للأداء العالي)
         // ======================================================================
         public async Task<IActionResult> DistributeStudents()
         {
+            // 1. جلب البيانات الأساسية دفعة واحدة
             var allStudents = await _context.Students.ToListAsync();
-
-            if (!allStudents.Any())
-            {
-                TempData["ErrorMessage"] = "عفواً، لا يوجد طلاب مسجلين في النظام حالياً.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            foreach (var student in allStudents)
-            {
-                student.LocationId = null;
-            }
-
-           
-
-            // مصفوفة فحص التعارضات (بدون تغيير)
-            var studentConflictMap = new Dictionary<int, HashSet<int>>();
-            var allRelatives = await _context.Relatives.ToListAsync();
-
-            var committeeStaff = await _context.CommitteesAssignments
-                .Where(ca => ca.LocationId != null)
-                .Select(ca => new { ca.PersonId, LocationId = ca.LocationId.Value })
-                .Distinct()
+            var allCommittees = await _context.ExamLocations
+                .Where(l => l.Type == LocationType.Committee)
                 .ToListAsync();
 
-            foreach (var rel in allRelatives)
+            // 2. جلب عدد الطلاب الموزعين مسبقاً في كل لجنة (في الذاكرة) لتجنب استعلامات متكررة
+            var committeeOccupancy = await _context.Students
+                .Where(s => s.LocationId != null)
+                .GroupBy(s => s.LocationId)
+                .Select(g => new { LocId = g.Key.Value, Count = g.Count() })
+                .ToDictionaryAsync(x => x.LocId, x => x.Count);
+
+            // 3. جلب التعارضات (القرابة)
+            var studentConflictMap = await GetStudentConflictMap();
+
+            // 4. جلب الجداول المتاحة
+            var schedules = await _context.ExamSchedules
+                .Include(es => es.Exam).ThenInclude(e => e.Subject)
+                .ToListAsync();
+
+            // 5. التوزيع
+            var studentsByYear = allStudents.GroupBy(s => s.AcademicYear);
+
+            foreach (var yearGroup in studentsByYear)
             {
-                var forbiddenCommittees = committeeStaff
-                    .Where(cs => cs.PersonId == rel.PersonId)
-                    .Select(cs => cs.LocationId)
-                    .ToList();
-
-                if (forbiddenCommittees.Any())
-                {
-                    if (!studentConflictMap.ContainsKey(rel.StudentId))
-                        studentConflictMap[rel.StudentId] = new HashSet<int>();
-
-                    foreach (var locId in forbiddenCommittees)
-                        studentConflictMap[rel.StudentId].Add(locId);
-                }
-            }
-
-            // كاش للجان كل صالة (مش جراش دلوقتي)
-            var blockCommitteesMap = new Dictionary<int, List<ExamLocation>>();
-            var committeeOccupancy = new Dictionary<int, int>();
-
-            async Task<List<ExamLocation>> GetCommitteesForBlockAsync(int blockId)
-            {
-                if (blockCommitteesMap.TryGetValue(blockId, out var cachedCommittees))
-                    return cachedCommittees;
-
-                // اللجان التابعة لهذه الصالة مباشرة فقط
-                var committeesOfBlock = await _context.ExamLocations
-                    .Where(l => l.Type == LocationType.Committee && l.ParentLocationId == blockId)
-                    .OrderBy(l => l.LocationName)
-                    .ToListAsync();
-
-                blockCommitteesMap[blockId] = committeesOfBlock;
-
-                foreach (var committee in committeesOfBlock)
-                {
-                    if (!committeeOccupancy.ContainsKey(committee.LocationId))
-                        committeeOccupancy[committee.LocationId] = 0;
-                }
-
-                return committeesOfBlock;
-            }
-
-            var orderedStudents = allStudents.OrderBy(s => s.AcademicYear).ThenBy(s => s.FullName).ToList();
-
-            int totalAssigned = 0;
-            int skippedNoBlockForYear = 0;
-            int skippedNoCommitteesInBlock = 0;
-
-           
-
-            if (totalAssigned > 0)
-            {
-                await _context.SaveChangesAsync();
-
-                var affectedLocationIds = allStudents
-                    .Where(s => s.LocationId != null)
-                    .Select(s => s.LocationId.Value)
+                // اللجان المتاحة فقط للسنة الدراسية الحالية
+                var relevantLocIds = schedules
+                    .Where(s => s.Exam.Subject.AcademicYear == yearGroup.Key)
+                    .Select(s => s.LocationId)
                     .Distinct()
                     .ToList();
 
-                foreach (var locId in affectedLocationIds)
+                foreach (var student in yearGroup)
                 {
-                    await RecalculateSeatNumbersByCommittee(locId);
+                    foreach (var locId in relevantLocIds)
+                    {
+                        var committee = allCommittees.FirstOrDefault(c => c.LocationId == locId);
+                        if (committee == null) continue;
+
+                        int capacity = committee.StudentCapacity ?? 0;
+                        int currentCount = committeeOccupancy.ContainsKey(locId) ? committeeOccupancy[locId] : 0;
+
+                        if (currentCount < capacity)
+                        {
+                            // فحص تعارض القرابة
+                            if (studentConflictMap.TryGetValue(student.StudentId, out var forbiddenSet) && forbiddenSet.Contains(locId))
+                                continue;
+
+                            student.LocationId = locId;
+                            committeeOccupancy[locId] = currentCount + 1; // تحديث العداد في الذاكرة
+                            break;
+                        }
+                    }
                 }
-
-                TempData["SuccessMessage"] = $"تم التوزيع لـ {totalAssigned} طالب بنجاح، كل سنة دراسية التزمت بصالتها المخصصة، مع فحص تعارض صلة القرابة.";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = $"فشل التوزيع: {skippedNoBlockForYear} طالب بلا صالة مخصصة لسنتهم الدراسية، {skippedNoCommitteesInBlock} صالة بلا لجان تابعة لها، أو سعة اللجان ممتلئة/تعارضات قرابة تمنع التسكين.";
             }
 
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = $"تم توزيع {allStudents.Count} طالب بنجاح.";
             return RedirectToAction(nameof(Index));
+        }
+
+        // دالة مساعدة لجلب تعارضات القرابة بكفاءة
+        private async Task<Dictionary<int, HashSet<int>>> GetStudentConflictMap()
+        {
+            var map = new Dictionary<int, HashSet<int>>();
+            var committeeStaff = await _context.CommitteesAssignments
+                .Where(ca => ca.LocationId != null)
+                .Select(ca => new { ca.PersonId, LocationId = ca.LocationId.Value })
+                .ToListAsync();
+
+            var relatives = await _context.Relatives.ToListAsync();
+
+            foreach (var rel in relatives)
+            {
+                var forbiddenLocs = committeeStaff
+                    .Where(cs => cs.PersonId == rel.PersonId)
+                    .Select(cs => cs.LocationId);
+
+                if (!map.ContainsKey(rel.StudentId)) map[rel.StudentId] = new HashSet<int>();
+                foreach (var locId in forbiddenLocs) map[rel.StudentId].Add(locId);
+            }
+            return map;
         }
 
         // =====================================

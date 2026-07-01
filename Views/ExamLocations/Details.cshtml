@@ -1,4 +1,5 @@
 @model projectweb.Models.ExamLocation
+@using projectweb.Models
 
 @{
     ViewData["Title"] = "لوحة تفاصيل المكان";
@@ -22,33 +23,81 @@
                         <div class="p-3 bg-white rounded shadow-sm border-start border-primary border-4 h-100">
                             <div class="small text-muted mb-1">التبعية والمسار</div>
                             <div class="fw-bold text-dark fs-6">
-                                @(Model.ParentLocation != null ? $"{Model.ParentLocation.LocationName} ⬅️ {Model.LocationName}" : "جذر رئيسي")
+                                @if (Model.ParentLocation != null)
+                                {
+                                    <span>@Model.ParentLocation.LocationName <i class="bi bi-chevron-left small mx-1 text-muted"></i> @Model.LocationName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary"><i class="bi bi-diagram-2 me-1"></i>جذر رئيسي (جراش)</span>
+                                }
                             </div>
                         </div>
                     </div>
 
-                    @if (Model.Floor > 0)
+                    @if (Model.Type == LocationType.Hall && Model.Floor > 0)
                     {
                         <div class="col-md-4">
                             <div class="p-3 bg-white rounded shadow-sm border-start border-info border-4 h-100">
                                 <div class="small text-muted mb-1">الموقع الفعلي</div>
-                                <div class="fw-bold text-dark fs-5">الدور: @Model.Floor</div>
+                                <div class="fw-bold text-dark fs-5">عدد الأدوار: @Model.Floor</div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-4">
+                            <div class="p-3 bg-white rounded shadow-sm border-start border-info border-4 h-100">
+                                <div class="small text-muted mb-1">النوع التنظيمي للكيان</div>
+                                <div class="fw-bold text-dark fs-6">
+                                    @switch (Model.Type)
+                                    {
+                                        case LocationType.Hall:
+                                            <span class="text-primary">جراش رئيسي</span>
+                                            break;
+                                        case LocationType.Row:
+
+                                            <span class="text-warning">صف تنظيمي</span>
+                                            break;
+                                        case LocationType.Block:
+
+                                            <span class="text-info">صالة فرعية</span>
+                                            break;
+                                        case LocationType.Committee:
+
+                                            <span class="text-success">لجنة امتحانية</span>
+                                            break;
+                                    }
+                                </div>
                             </div>
                         </div>
                     }
 
                     <div class="col-md-4">
                         <div class="p-3 bg-white rounded shadow-sm border-start border-warning border-4 h-100">
-                            <div class="small text-muted mb-1">السعة التشغيلية</div>
+                            <div class="small text-muted mb-1">السعة والوحدات الفرعية</div>
                             <div class="fw-bold text-dark fs-6">
-                                @(Model.Type == LocationType.Committee ? $"{Model.StudentCapacity} مقعد طالب" : $"{Model.MaxSubLocations} وحدة فرعية")
+                                @if (Model.Type == LocationType.Committee)
+                                {
+                                    <span>@Model.StudentCapacity مقعد طالب</span>
+                                }
+                                else
+                                {
+                                    string subLabel = Model.Type switch
+                                    {
+                                        LocationType.Hall => "صفوف تنظيمية",
+                                        LocationType.Row => "صالات فرعية",
+                                        _ => "لجان امتحانية"
+                                    };
+                                    <span>الحد الأقصى: @Model.MaxSubLocations @subLabel</span>
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <h5 class="fw-bold pb-2 mb-3 border-bottom text-secondary" style="font-size: 1.1rem;">
-                    <i class="bi bi-calendar-event-fill ms-2 text-primary"></i> الجدولة الامتحانية
+                    <i class="bi bi-calendar-event-fill ms-2 text-primary"></i> الجدولة الامتحانية المباشرة
                 </h5>
 
                 @if (examSchedules != null && examSchedules.Any())

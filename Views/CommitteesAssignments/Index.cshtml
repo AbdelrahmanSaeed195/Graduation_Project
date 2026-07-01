@@ -4,19 +4,19 @@
 <div class="container-fluid mt-4 px-4 text-end" dir="rtl">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold mb-0" style="color: #1a3a5a;">إدارة توزيعات المراقبين</h3>
-            <span class="badge bg-secondary shadow-sm mt-1">إجمالي التكليفات: @Model.Count()</span>
+            <h3 class="fw-bold mb-0" style="color: #1a3a5a;">إدارة توزيعات القوى العاملة والمراقبين</h3>
+            <span class="badge bg-secondary shadow-sm mt-1">إجمالي التكليفات المسجلة: @Model.Count()</span>
         </div>
 
         <form asp-action="Index" method="get" class="d-flex gap-2 align-items-end border p-2 rounded bg-light shadow-sm">
             <div>
-                <label class="small fw-bold text-muted">البحث بالامتحان:</label>
+                <label class="small fw-bold text-muted">البحث بالامتحان الموحد:</label>
                 <select name="examId" class="form-select form-select-sm" asp-items="ViewBag.Exams" onchange="this.form.submit()">
                     <option value="">-- اختر الامتحان --</option>
                 </select>
             </div>
             <div>
-                <label class="small fw-bold text-muted">المستوى:</label>
+                <label class="small fw-bold text-muted">المستوى الأكاديمي:</label>
                 <select name="academicYear" class="form-select form-select-sm" asp-items="ViewBag.AcademicYears" onchange="this.form.submit()">
                     <option value="">-- كل المستويات --</option>
                 </select>
@@ -30,9 +30,21 @@
         </form>
 
         <div class="d-flex gap-2">
-            <a asp-action="PreparePrintSheet" class="btn btn-dark shadow-sm fw-bold"><i class="bi bi-printer me-1"></i> طباعة الكشوف</a>
-            <a asp-action="ConfirmAutoAssign" class="btn btn-success shadow-sm fw-bold"><i class="bi bi-robot me-1"></i> التوزيع التلقائي</a>
-            <a asp-action="Create" class="btn btn-primary text-white shadow-sm fw-bold"><i class="bi bi-plus-circle me-1"></i> إضافة تكليف</a>
+            <a asp-action="PreparePrintSheet" class="btn btn-dark shadow-sm fw-bold">
+                <i class="bi bi-printer me-1"></i> طباعة كشوف الكنترول
+            </a>
+
+            <a asp-action="PrepareHallStructurePrint" class="btn btn-info text-white shadow-sm fw-bold">
+                <i class="bi bi-diagram-3 me-1"></i> تقرير هيكل الجراشات
+            </a>
+
+            <a asp-action="ConfirmAutoAssign" class="btn btn-success shadow-sm fw-bold">
+                <i class="bi bi-robot me-1"></i> التوزيع التلقائي الذكي
+            </a>
+
+            <a asp-action="Create" class="btn btn-primary text-white shadow-sm fw-bold">
+                <i class="bi bi-plus-circle me-1"></i> إضافة تكليف يدوي
+            </a>
         </div>
     </div>
 
@@ -41,7 +53,7 @@
             <thead class="table-light border-bottom">
                 <tr class="text-secondary small text-uppercase">
                     <th>المراقب / الموظف</th>
-                    <th>نطاق المسئولية (المكان)</th>
+                    <th>نطاق المسئولية وهيكل المقر</th>
                     <th>الدور الوظيفي في اللجنة</th>
                     <th>المادة / التفاصيل الزمنية</th>
                     <th>المصدر</th>
@@ -49,7 +61,6 @@
                 </tr>
             </thead>
             <tbody>
-                @* ترتيب مخصص للعرض داخل الجدول: الرؤساء الأساسيون أولاً، ثم رؤساء الاحتياط، ثم المراقبون، ثم الملاحظون *@
                 @{
                     var sortedModel = Model
                     .OrderByDescending(a => a.RoleType == "رئيس جراش")
@@ -61,34 +72,32 @@
 
                 @foreach (var item in sortedModel)
                 {
-                    @* هندسة لوحة الألوان برمجياً للفصل الحاسم بين قطاعات وأدوار الجراش الموحد *@
                     string roleBadgeStyle = "background-color: #6c757d; color: #fff;";
                     string currentRole = item.RoleType ?? "";
-                    string subRole = item.SubRoleType ?? "";
 
                     if (currentRole == "رئيس جراش")
                     {
-                        roleBadgeStyle = "background-color: #6f42c1; color: #fff;"; // البنفسجي الغامق للأساسي (الـ 3 في الدورين / الـ 2 في الدور الواحد)
+                        roleBadgeStyle = "background-color: #6f42c1; color: #fff;";
                     }
                     else if (currentRole == "رئيس جراش احتياطي")
                     {
-                        roleBadgeStyle = "background-color: #b197fc; color: #fff;"; // البنفسجي الفاتح للاحتياطي (2 في الدورين / 1 في الدور الواحد)
+                        roleBadgeStyle = "background-color: #b197fc; color: #fff;";
                     }
-                    else if (currentRole == "مراقب" && !currentRole.Contains("احتياطي"))
+                    else if (currentRole == "مراقب")
                     {
-                        roleBadgeStyle = "background-color: #198754; color: #fff;"; // الأخضر الأساسي لمراقب الصالة
+                        roleBadgeStyle = "background-color: #198754; color: #fff;";
                     }
                     else if (currentRole == "مراقب احتياطي")
                     {
-                        roleBadgeStyle = "background-color: #fd7e14; color: #fff;"; // البرتقالي للمراقبين الاحتياطيين للأدوار والمقار
+                        roleBadgeStyle = "background-color: #fd7e14; color: #fff;";
                     }
                     else if (currentRole.Contains("ملاحظ") && !currentRole.Contains("احتياطي"))
                     {
-                        roleBadgeStyle = "background-color: #0d6efd; color: #fff;"; // الأزرق القياسي لملاحظ اللجنة
+                        roleBadgeStyle = "background-color: #0d6efd; color: #fff;";
                     }
-                    else if (currentRole.Contains("ملاحظ احتياطي"))
+                    else if (currentRole.Contains("ملاحظ احتياطي") || currentRole.Contains("احتياطي صالة"))
                     {
-                        roleBadgeStyle = "background-color: #e83e8c; color: #fff;"; // الوردي المخصص للاحتياطي الفرعي
+                        roleBadgeStyle = "background-color: #e83e8c; color: #fff;";
                     }
 
                     <tr>
@@ -102,31 +111,38 @@
                         <td>
                             @if (item.ExamLocation != null)
                             {
-                                var job = item.Person?.JobRole;
                                 var role = item.RoleType ?? "";
+                                var loc = item.ExamLocation;
 
-                                if (role.Contains("مراقب احتياطي") || role.Contains("رئيس"))
+                                @* فحص طبقات الهيكل المكاني وعرض المسميات التتابعية الفرعية بدقة *@
+                                if (role.Contains("رئيس") || role.Contains("مراقب احتياطي") || loc.Type == LocationType.Hall)
                                 {
                                     <span class="badge px-3 py-2 shadow-sm" style="background-color: #f8f9fa; color: #212529; border: 1px solid #dee2e6; border-radius: 8px;">
-                                        <i class="bi bi-building me-1 text-primary"></i> جراش: @(item.ExamLocation.ParentLocation?.ParentLocation?.LocationName ?? item.ExamLocation.ParentLocation?.LocationName ?? item.ExamLocation.LocationName)
+                                        <i class="bi bi-building me-1 text-primary"></i> جراش: @(loc.ParentLocation?.ParentLocation?.ParentLocation?.LocationName ?? loc.ParentLocation?.ParentLocation?.LocationName ?? loc.ParentLocation?.LocationName ?? loc.LocationName)
                                     </span>
                                 }
-                                else if (role == "مراقب" || role.Contains("ملاحظ احتياطي"))
+                                else if (role == "مراقب" || loc.Type == LocationType.Block)
                                 {
                                     <span class="badge px-3 py-2 shadow-sm" style="background-color: #e8f5e9; color: #198754; border-radius: 8px;">
-                                        صالة: @(item.ExamLocation.ParentLocation?.LocationName ?? item.ExamLocation.LocationName)
+                                        <i class="bi bi-layers-half text-success me-1"></i> صالة: @loc.LocationName (صف: @(loc.ParentLocation?.LocationName ?? "---"))
+                                    </span>
+                                }
+                                else if (loc.Type == LocationType.Committee)
+                                {
+                                    <span class="badge px-3 py-2 shadow-sm" style="background-color: #e0f7fa; color: #008094; border-radius: 8px;">
+                                        <i class="bi bi-border-style me-1 text-info"></i> لجنة: @loc.LocationName (صالة: @(loc.ParentLocation?.LocationName ?? "---"))
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="badge px-3 py-2 shadow-sm" style="background-color: #e0f7fa; color: #008094; border-radius: 8px;">
-                                        لجنة: @item.ExamLocation.LocationName (صالة: @(item.ExamLocation.ParentLocation?.LocationName ?? "---"))
+                                    <span class="badge px-3 py-2 shadow-sm" style="background-color: #fff; color: #333; border: 1px solid #eee; border-radius: 8px;">
+                                        @loc.LocationName
                                     </span>
                                 }
                             }
                             else
                             {
-                                <span class="text-muted small">غير محدد</span>
+                                <span class="text-muted small">غير محدد للمقر</span>
                             }
                         </td>
 
@@ -137,14 +153,14 @@
                             @if (!string.IsNullOrEmpty(item.SubRoleType))
                             {
                                 <div class="small text-muted fw-bold mt-1" style="font-size: 0.8rem;">
-                                    <span class="badge bg-light text-dark border"><i class="bi bi-layers-half text-danger me-1"></i>@item.SubRoleType</span>
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-geo-alt text-danger me-1"></i>@item.SubRoleType</span>
                                 </div>
                             }
                         </td>
 
                         <td>
                             <div class="fw-bold">@item.ExamSchedule?.Exam?.Subject?.SubjectName</div>
-                            <div class="small text-muted">@item.ExamSchedule?.Exam?.ExamDate.ToString("yyyy/MM/dd")</div>
+                            <div class="small text-muted">📅 @item.ExamSchedule?.Exam?.ExamDate.ToString("yyyy/MM/dd")</div>
                         </td>
 
                         <td>
@@ -155,9 +171,9 @@
 
                         <td>
                             <div class="btn-group" role="group">
-                                <a asp-action="Details" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-info" title="عرض"><i class="bi bi-eye"></i></a>
-                                <a asp-action="Edit" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
-                                <a asp-action="Delete" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                                <a asp-action="Details" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-white text-info border" title="عرض التفاصيل"><i class="bi bi-eye-fill"></i></a>
+                                <a asp-action="Edit" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-white text-primary border" title="تعديل"><i class="bi bi-pencil-square"></i></a>
+                                <a asp-action="Delete" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-white text-danger border" title="حذف وإلغاء"><i class="bi bi-trash-fill"></i></a>
                             </div>
                         </td>
                     </tr>
@@ -166,3 +182,15 @@
         </table>
     </div>
 </div>
+
+<style>
+    .btn-white {
+        background-color: #fff;
+        transition: all 0.2s;
+    }
+
+        .btn-white:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-1px);
+        }
+</style>

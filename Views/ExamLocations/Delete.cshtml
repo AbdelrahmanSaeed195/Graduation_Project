@@ -1,4 +1,5 @@
 @model projectweb.Models.ExamLocation
+@using projectweb.Models
 
 @{
     ViewData["Title"] = "تأكيد حذف الكيان";
@@ -53,19 +54,19 @@
                                 @switch (Model.Type)
                                 {
                                     case LocationType.Hall:
-                                        <span>جراش</span>
+                                        <span class="badge bg-primary px-2 py-1 text-white">جراش</span>
+                                        break;
+                                    case LocationType.Row:
+                                        <span class="badge bg-warning px-2 py-1 text-dark">صف تنظيمي</span>
                                         break;
                                     case LocationType.Block:
-
-                                        <span>صالة</span>
+                                        <span class="badge bg-info px-2 py-1 text-dark">صالة</span>
                                         break;
                                     case LocationType.Committee:
-
-                                        <span>لجنة</span>
+                                        <span class="badge bg-success px-2 py-1 text-white">لجنة</span>
                                         break;
                                     default:
-
-                                        <span>غير معروف</span>
+                                        <span class="badge bg-secondary px-2 py-1 text-white">غير معروف</span>
                                         break;
                                 }
                             </div>

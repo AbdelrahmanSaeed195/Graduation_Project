@@ -1,4 +1,5 @@
 @model IEnumerable<projectweb.Models.ExamLocation>
+@using projectweb.Models
 
 @{
     ViewData["Title"] = "إدارة أماكن الامتحانات الموحدة";
@@ -29,10 +30,12 @@
         </a>
     </div>
 
-    <div class="mb-3 d-flex gap-2">
+    @* أزرار الفلترة المحدثة لتشمل الصفوف *@
+    <div class="mb-3 d-flex gap-2 flex-wrap">
         <a asp-action="Index" class="btn btn-sm btn-outline-secondary shadow-sm">الكل</a>
         <a asp-action="Index" asp-route-type="@LocationType.Hall" class="btn btn-sm btn-outline-primary shadow-sm">الجراشات الرئيسية</a>
-        <a asp-action="Index" asp-route-type="@LocationType.Block" class="btn btn-sm btn-outline-info shadow-sm">الصالات الرئيسية</a>
+        <a asp-action="Index" asp-route-type="@LocationType.Row" class="btn btn-sm btn-outline-warning text-dark shadow-sm">الصفوف التنظيمية</a>
+        <a asp-action="Index" asp-route-type="@LocationType.Block" class="btn btn-sm btn-outline-info shadow-sm">الصالات الفرعية</a>
         <a asp-action="Index" asp-route-type="@LocationType.Committee" class="btn btn-sm btn-outline-success shadow-sm">اللجان الامتحانية</a>
     </div>
 
@@ -62,12 +65,13 @@
                                         case LocationType.Hall:
                                             <span class="badge bg-primary px-3 py-2">جراش رئيسي</span>
                                             break;
+                                        case LocationType.Row:
+                                            <span class="badge bg-warning text-dark px-3 py-2">صف تنظيمي</span>
+                                            break;
                                         case LocationType.Block:
-
-                                            <span class="badge bg-info text-dark px-3 py-2">صالة</span>
+                                            <span class="badge bg-info text-dark px-3 py-2">صالة فرعية</span>
                                             break;
                                         case LocationType.Committee:
-
                                             <span class="badge bg-success px-3 py-2">لجنة امتحانية</span>
                                             break;
                                     }
@@ -85,7 +89,11 @@
                                 <td>
                                     @if (item.Type == LocationType.Hall)
                                     {
-                                        <span class="small text-dark">الدور: @item.Floor | الحد الأقصى: @item.MaxSubLocations صالات</span>
+                                        <span class="small text-dark">الدور: @item.Floor | الحد الأقصى: @item.MaxSubLocations صفوف</span>
+                                    }
+                                    else if (item.Type == LocationType.Row)
+                                    {
+                                        <span class="small text-dark">الحد الأقصى: @item.MaxSubLocations صالات</span>
                                     }
                                     else if (item.Type == LocationType.Block)
                                     {
@@ -104,7 +112,12 @@
                                     else
                                     {
                                         var subCount = item.SubLocations?.Count ?? 0;
-                                        var label = item.Type == LocationType.Hall ? "صالات" : "لجان";
+                                        string label = item.Type switch
+                                        {
+                                            LocationType.Hall => "صفوف",
+                                            LocationType.Row => "صالات",
+                                            _ => "لجان"
+                                        };
                                         <span class="badge bg-light text-dark border px-2 py-1 small">
                                             يحتوي على (@subCount) @label
                                         </span>

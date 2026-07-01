@@ -1,7 +1,7 @@
 ﻿@model projectweb.Models.ExamSchedule
 
 @{
-    ViewData["Title"] = "تعديل جلسة توزيع الصالات";
+    ViewData["Title"] = "تعديل جلسة توزيع الجراشات";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -12,7 +12,7 @@
 
                 <div class="card-header py-3" style="background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%); border-bottom: none;">
                     <h4 class="card-title mb-0 fw-bold text-white text-center">
-                        <i class="bi bi-pencil-square me-2"></i> تعديل بيانات توزيع الصالات
+                        <i class="bi bi-pencil-square me-2"></i> تعديل بيانات تخصيص الجراشات
                     </h4>
                 </div>
 
@@ -31,7 +31,7 @@
                             </div>
 
                             <div class="col-12 mb-3">
-                                <label asp-for="LocationId" class="form-label fw-bold small text-muted mb-1">الصالة المختصة <span class="text-danger">*</span></label>
+                                <label asp-for="LocationId" class="form-label fw-bold small text-muted mb-1">الجراش المختص <span class="text-danger">*</span></label>
                                 <select asp-for="LocationId" id="LocationSelect" class="form-select form-select-lg shadow-sm border-light-subtle" asp-items="@(ViewBag.LocationId as SelectList)" style="border-radius: 8px; font-size: 0.95rem;">
                                 </select>
                                 <span asp-validation-for="LocationId" class="text-danger small mt-1 d-block fw-bold"></span>
@@ -71,19 +71,17 @@
                 var locationSelect = $('#LocationSelect');
 
                 if (!isInitialLoad) {
-                    locationSelect.empty().append('<option value="">-- جاري تحميل الصالات المتاحة --</option>');
+                    locationSelect.empty().append('<option value="">-- جاري تحميل الجراشات المتاحة --</option>');
 
                     $.getJSON('@Url.Action("GetAvailableLocations")', { examId: examId }, function (data) {
                         locationSelect.empty();
-                        locationSelect.append('<option value="">-- اختر الصالة --</option>');
+                        locationSelect.append('<option value="">-- اختر الجراش --</option>');
                         $.each(data, function (i, item) {
                             locationSelect.append($('<option>', { value: item.id, text: item.name }));
                         });
                     });
                 } else {
-                    // في التحميل الأولي، نكتفي بالتأكد من جلب البيانات وتعبئتها إذا لزم الأمر
                     $.getJSON('@Url.Action("GetAvailableLocations")', { examId: examId }, function (data) {
-                        // المنطق هنا للتأكد من بقاء القيمة المختارة كما هي
                         $.each(data, function (i, item) {
                             if (item.id != currentLocationId && locationSelect.find('option[value="' + item.id + '"]').length === 0) {
                                 locationSelect.append($('<option>', { value: item.id, text: item.name }));

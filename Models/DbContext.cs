@@ -27,9 +27,15 @@ namespace projectweb.Models
         public DbSet<Report> Reports { get; set; }
         public DbSet<ReportPerson> ReportPersons { get; set; }
 
+        public DbSet<AssignmentSettings> AssignmentSettings { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<AssignmentSettings>()
+                .HasIndex(s => new { s.AcademicYearCode, s.JobRole })
+                .IsUnique();
 
             // بيانات الأدوار الثابتة
             modelBuilder.Entity<Role>().HasData(
@@ -59,9 +65,7 @@ namespace projectweb.Models
                 .HasOne(l => l.ParentLocation)
                 .WithMany(l => l.SubLocations)
                 .HasForeignKey(l => l.ParentLocationId)
-                .OnDelete(DeleteBehavior.Restrict); 
-
-         
+                .OnDelete(DeleteBehavior.Restrict);
 
             // ========================================================
             // تحديث علاقات التكليفات (CommitteesAssignment)
@@ -91,7 +95,6 @@ namespace projectweb.Models
                 .HasForeignKey(ca => ca.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // تعديل ربط التكليفات بجدول الأماكن الموحد بدلاً من الـ 3 جداول الفرعية
             modelBuilder.Entity<CommitteesAssignment>()
                 .HasOne(ca => ca.ExamLocation)
                 .WithMany(l => l.CommitteesAssignments)
@@ -114,14 +117,12 @@ namespace projectweb.Models
                 .HasForeignKey(r => r.PersonId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // تعديل ربط جدول الطلاب بالمكان الموحد (اللجنة)
             modelBuilder.Entity<Student>()
                 .HasOne(s => s.ExamLocation)
                 .WithMany(l => l.Students)
                 .HasForeignKey(s => s.LocationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // تعديل ربط جدول جدول الامتحانات (ExamSchedule) بالمكان الموحد (الصالة/البلوك)
             modelBuilder.Entity<ExamSchedule>()
                 .HasOne(es => es.Exam)
                 .WithMany(e => e.ExamSchedules)
@@ -167,8 +168,6 @@ namespace projectweb.Models
                 .WithMany(r => r.ReportPersons)
                 .HasForeignKey(rp => rp.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-
         }
     }
 }

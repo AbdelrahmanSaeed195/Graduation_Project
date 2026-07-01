@@ -90,10 +90,10 @@
     </div>
 
     <h4 class="mb-3 fw-bold text-navy border-bottom pb-2">
-        إعداد الامتحان
+        إعداد الامتحانات
     </h4>
     <div class="row g-4 mb-5">
-        <div class="col-md-6 col-lg-4">
+        <div class="col-md-6 col-lg-3">
             <div class="card dash-card text-center p-4 h-100 shadow-sm">
                 <div class="card-body d-flex flex-column">
                     <div class="icon-box bg-dark bg-opacity-10 text-dark mx-auto mb-3"><i class="bi bi-journal-text fs-1"></i></div>
@@ -103,7 +103,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-4">
+
+        <div class="col-md-6 col-lg-3">
             <div class="card dash-card text-center p-4 h-100 shadow-sm">
                 <div class="card-body d-flex flex-column">
                     <div class="icon-box mx-auto mb-3" style="background-color: rgba(111, 66, 193, 0.1); color: #6f42c1;"><i class="bi bi-book-half fs-1"></i></div>
@@ -113,15 +114,29 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-4">
+
+        <div class="col-md-6 col-lg-3">
             <div class="card dash-card text-center p-4 h-100 shadow-sm">
                 <div class="card-body d-flex flex-column">
                     <div class="icon-box mx-auto mb-3" style="background-color: rgba(32, 201, 151, 0.1); color: #20c997;">
                         <i class="bi bi-calendar-event-fill fs-1"></i>
                     </div>
-                    <h5 class="card-title fw-bold text-navy">جدولة جلسات الامتحانات</h5>
+                    <h5 class="card-title fw-bold text-navy">جدولة الجلسات</h5>
                     <p class="text-muted small mb-4 flex-grow-1">تنظيم مواعيد الامتحانات وتسكينها داخل اللجان الصالات المخصصة.</p>
                     <a asp-controller="ExamSchedules" asp-action="Index" class="btn btn-academic-primary btn-enter mt-auto">دخول النظام</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card dash-card text-center p-4 h-100 shadow-sm border-danger border-top">
+                <div class="card-body d-flex flex-column">
+                    <div class="icon-box mx-auto mb-3" style="background-color: rgba(220, 53, 69, 0.1); color: #dc3545;">
+                        <i class="bi bi-sliders fs-1"></i>
+                    </div>
+                    <h5 class="card-title fw-bold text-navy">سقوف التكليفات</h5>
+                    <p class="text-muted small mb-4 flex-grow-1">ضبط الحد الأقصى لتكليفات أعضاء هيئة التدريس ديناميكياً لكل سنة جامعية.</p>
+                    <a asp-controller="AssignmentSettings" asp-action="Manage" class="btn btn-outline-danger btn-enter fw-bold mt-auto">تعديل القواعد</a>
                 </div>
             </div>
         </div>

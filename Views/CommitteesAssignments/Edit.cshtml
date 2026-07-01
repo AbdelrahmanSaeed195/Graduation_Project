@@ -6,11 +6,11 @@
 }
 
 <div class="container mt-5 text-end" dir="rtl">
-    <div class="card mx-auto shadow border-0" style="max-width: 700px; border-radius: 15px;">
-        <div class="card-header text-white text-center py-3" style="border-radius: 15px 15px 0 0; background-color: #1a3a5a;">
-            <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i> تعديل بيانات التكليف</h4>
+    <div class="card mx-auto shadow border-0" style="max-width: 800px; border-radius: 15px;">
+        <div class="card-header text-white text-center py-3" style="border-radius: 15px 15px 0 0; background: linear-gradient(135deg, #1a3a5a 0%, #2e5a88 100%);">
+            <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i> تعديل بيانات التكليف الإداري</h4>
         </div>
-        <div class="card-body p-4 text-end">
+        <div class="card-body p-4 p-md-5 text-end bg-white">
             <form asp-action="Edit" method="post">
                 @Html.AntiForgeryToken()
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm border-0 mb-4 py-2 small"></div>
@@ -22,46 +22,53 @@
                 <input type="hidden" asp-for="RoleType" id="roleTypeText" />
 
                 <div class="mb-4">
-                    <label class="form-label fw-bold"><i class="bi bi-person-badge me-1"></i> الموظف المكلف</label>
+                    <label class="form-label fw-bold"><i class="bi bi-person-badge me-1 text-primary"></i> الموظف المكلف</label>
                     <select asp-for="PersonId" id="personSelect" class="form-select shadow-sm border-primary" asp-items="ViewBag.PersonId" style="border-radius: 8px;">
-                        <option value="">-- اختر الموظف --</option>
+                        <option value="">-- اختر الموظف أو عضو هيئة التدريس --</option>
                     </select>
-                    <span asp-validation-for="PersonId" class="text-danger small"></span>
+                    <span asp-validation-for="PersonId" class="text-danger small fw-bold"></span>
                 </div>
 
-                <div class="row bg-light p-3 rounded border mb-3 mx-0 shadow-sm" style="border-radius: 10px;">
-                    <h6 class="fw-bold border-bottom pb-2 mb-3 text-secondary">
-                        <i class="bi bi-geo-alt me-1"></i> تعديل نطاق المسئولية (المكان)
+                <div class="row bg-light p-4 rounded border mb-4 mx-0 shadow-sm" style="border-radius: 12px;">
+                    <h6 class="fw-bold border-bottom pb-2 mb-3 text-secondary" style="color: #1a3a5a !important;">
+                        <i class="bi bi-geo-alt-fill me-1 text-danger"></i> هندسة المسئولية المكانية التتابعية
                     </h6>
 
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold small text-muted">الجراش الرئيسي</label>
-                        <select asp-for="LocationId" id="hallSelect" class="form-select shadow-sm" asp-items="ViewBag.LocationId" style="border-radius: 8px;">
-                            <option value="">-- بلا --</option>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small text-muted">1. الجراش الرئيسي الأب</label>
+                        <select id="hallSelect" class="form-select shadow-sm" asp-items="ViewBag.LocationId" style="border-radius: 8px;">
+                            <option value="">-- اختر الجراش الرئيسي --</option>
                         </select>
-                        <small class="text-muted" style="font-size: 0.65rem;">خاص برؤساء الجراشات والطاقم الطبي</small>
+                        <div class="form-text" style="font-size: 0.7rem;"><i class="bi bi-info-circle"></i> خاص برؤساء الجراشات والقطاعات والأطباء</div>
                     </div>
 
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold small text-muted">الصالة </label>
-                        <select id="blockSelect" name="BlockLocationId" class="form-select shadow-sm" style="border-radius: 8px;">
-                            <option value="">-- بلا --</option>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small text-muted">2. القطاع / الصف الفرعي</label>
+                        <select id="rowSelect" class="form-select shadow-sm" style="border-radius: 8px;" disabled>
+                            <option value="">-- اختر الصف التنظيمي --</option>
                         </select>
-                        <small class="text-muted" style="font-size: 0.65rem;">خاص بمراقبي الصالات</small>
                     </div>
 
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold small text-muted">اللجنة الدقيقة</label>
-                        <select id="committeeSelect" name="CommitteeLocationId" class="form-select shadow-sm" style="border-radius: 8px;">
-                            <option value="">-- بلا --</option>
+                    <div class="col-md-6 mb-3 mt-2">
+                        <label class="form-label fw-bold small text-muted">3. الصالة المختصة</label>
+                        <select id="blockSelect" class="form-select shadow-sm" style="border-radius: 8px;" disabled>
+                            <option value="">-- اختر الصالة الفرعية --</option>
                         </select>
-                        <small class="text-muted" style="font-size: 0.65rem;">خاص بملاحظي اللجان</small>
+                        <div class="form-text" style="font-size: 0.7rem;"><i class="bi bi-info-circle"></i> النطاق التدريسي لمراقبي الصالات (مدرس)</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3 mt-2">
+                        <label class="form-label fw-bold small text-muted">4. اللجنة الدقيقة (المقاعد)</label>
+                        <select id="committeeSelect" class="form-select shadow-sm" style="border-radius: 8px;" disabled>
+                            <option value="">-- اختر اللجنة الفرعية --</option>
+                        </select>
+                        <div class="form-text" style="font-size: 0.7rem;"><i class="bi bi-info-circle"></i> النطاق الرقابي للملاحظين (معيد / موظف)</div>
                     </div>
                 </div>
 
                 <div class="d-grid gap-2 mt-4">
                     <button type="submit" class="btn btn-primary btn-lg shadow fw-bold py-2" style="background-color: #1a3a5a; border: none; border-radius: 8px;">
-                        <i class="bi bi-save me-1"></i> حفظ التغييرات
+                        <i class="bi bi-save me-1"></i> حفظ التغييرات الحالية
                     </button>
                     <a asp-action="Index" class="btn btn-outline-secondary btn-lg fw-bold py-2" style="border-radius: 8px;">
                         <i class="bi bi-x-circle me-1"></i> إلغاء والعودة للقائمة
@@ -81,73 +88,137 @@
         $(document).ready(function () {
             const personSelect = $('#personSelect');
             const hallSelect = $('#hallSelect');
+            const rowSelect = $('#rowSelect');
             const blockSelect = $('#blockSelect');
             const committeeSelect = $('#committeeSelect');
 
-            const savedHallId = '@ViewBag.SelectedHallId';
-            const savedLocationId = '@Model.LocationId';
+            // قراءة الأكواد المحملة من السجل الحالي لغرض إعادة التسكين التلقائي عند فتح الشاشة
+            const initialLocationId = '@Model.LocationId';
 
             function updateFieldsAvailability() {
                 const selectedText = personSelect.find('option:selected').text() || "";
 
+                // إعادة الضبط الأولية لخيارات التمكين
                 hallSelect.prop('disabled', false);
-                blockSelect.prop('disabled', false);
-                committeeSelect.prop('disabled', false);
+                rowSelect.prop('disabled', !hallSelect.val());
+                blockSelect.prop('disabled', !rowSelect.val());
+                committeeSelect.prop('disabled', !blockSelect.val());
 
-                const isSenior = selectedText.includes("أستاذ") || selectedText.includes("دكتور") ||
-                                 selectedText.includes("عميد") || selectedText.includes("ممرض");
-                const isMidLevel = selectedText.includes("مدرس") || selectedText.includes("معيد");
+                // تطبيق الفحص الرتبي الصارم المتوافق مع الـ Service والـ JobTitle
+                const isSenior = selectedText.includes("أستاذ") || selectedText.includes("دكتور") || selectedText.includes("مساعد دكتور");
+                const isObserver = selectedText.includes("مدرس") && !selectedText.includes("مساعد");
 
                 if (isSenior) {
+                    // رؤساء الجراش والأطباء يربطون بالجراش مباشرة ويغلق ما دونه
+                    rowSelect.val("").prop('disabled', true);
                     blockSelect.val("").prop('disabled', true);
                     committeeSelect.val("").prop('disabled', true);
-                } else if (isMidLevel) {
+                } else if (isObserver) {
+                    // المراقب يربط بالصالة الفرعية ويغلق اللجان الدقيقة
                     committeeSelect.val("").prop('disabled', true);
                 }
             }
 
-            function loadHallDetails(hallId, selectedLocationId) {
-                if (!hallId) return;
-
-                $.getJSON('@Url.Action("GetHallDetails")', { hallId: hallId }, function (data) {
-                    blockSelect.empty().append('<option value="">-- بلا --</option>');
-                    committeeSelect.empty().append('<option value="">-- بلا --</option>');
-
-                    $.each(data.blocks, function (i, b) {
-                        blockSelect.append($('<option>', { value: b.id, text: b.name, selected: (b.id == selectedLocationId) }));
-                    });
-                    $.each(data.committees, function (i, c) {
-                        committeeSelect.append($('<option>', { value: c.id, text: c.name, selected: (c.id == selectedLocationId) }));
-                    });
-
-                    updateFieldsAvailability();
-                });
-            }
-
-            if (savedHallId) {
-                hallSelect.val(savedHallId);
-                loadHallDetails(savedHallId, savedLocationId);
-            } else {
-                updateFieldsAvailability();
-            }
-
-            personSelect.change(updateFieldsAvailability);
+            // الماكينة الهجين للـ AJAX: التتبع الرباعي الكامل لربط القوائم بالتتابع
             hallSelect.change(function () {
-                loadHallDetails($(this).val(), null);
+                const hallId = $(this).val();
+                rowSelect.empty().append('<option value="">-- اختر الصف التنظيمي --</option>').prop('disabled', true);
+                blockSelect.empty().append('<option value="">-- اختر الصالة الفرعية --</option>').prop('disabled', true);
+                committeeSelect.empty().append('<option value="">-- اختر اللجنة الفرعية --</option>').prop('disabled', true);
+
+                if (hallId) {
+                    $.getJSON('@Url.Action("GetHallDetails")', { hallId: hallId }, function (data) {
+                        rowSelect.prop('disabled', false);
+                        $.each(data.rows, function (i, r) {
+                            rowSelect.append($('<option>', { value: r.id, text: r.name }));
+                        });
+                        updateFieldsAvailability();
+                    });
+                }
             });
 
-            $('form').submit(function() {
+            // السحب الديناميكي للمقرات المندرجة برمجياً تحت الكيان المختار
+            rowSelect.change(function () {
+                const rowId = $(this).val();
+                blockSelect.empty().append('<option value="">-- اختر الصالة الفرعية --</option>').prop('disabled', true);
+                committeeSelect.empty().append('<option value="">-- اختر اللجنة الفرعية --</option>').prop('disabled', true);
+
+                if (rowId) {
+                    // جلب الصالات التابعة للصف
+                    $.getJSON('/ExamLocations/GetSubLocations', { parentId: rowId }, function (blocks) {
+                        blockSelect.prop('disabled', false);
+                        $.each(blocks, function (i, b) {
+                            blockSelect.append($('<option>', { value: b.locationId, text: b.locationName }));
+                        });
+                        updateFieldsAvailability();
+                    });
+                }
+            });
+
+            blockSelect.change(function () {
+                const blockId = $(this).val();
+                committeeSelect.empty().append('<option value="">-- اختر اللجنة الفرعية --</option>').prop('disabled', true);
+
+                if (blockId) {
+                    // جلب اللجان التابعة للصالة
+                    $.getJSON('/ExamLocations/GetSubLocations', { parentId: blockId }, function (committees) {
+                        committeeSelect.prop('disabled', false);
+                        $.each(committees, function (i, c) {
+                            committeeSelect.append($('<option>', { value: c.locationId, text: c.locationName }));
+                        });
+                        updateFieldsAvailability();
+                    });
+                }
+            });
+
+            committeeSelect.change(updateFieldsAvailability);
+            personSelect.change(updateFieldsAvailability);
+
+            // تجميع وتحديد القيمة المكتسبة النهائية لإسنادها لـ LocationId قبل الـ Submit
+            $('form').submit(function () {
                 let finalVal = hallSelect.val();
+
                 if (committeeSelect.val() && !committeeSelect.prop('disabled')) {
                     finalVal = committeeSelect.val();
                 } else if (blockSelect.val() && !blockSelect.prop('disabled')) {
                     finalVal = blockSelect.val();
+                } else if (rowSelect.val() && !rowSelect.prop('disabled')) {
+                    finalVal = rowSelect.val();
                 }
 
-                hallSelect.attr('name', 'OldLocationId'); 
-                $('<input>').attr({type: 'hidden', name: 'LocationId', value: finalVal}).appendTo('form');
+                // إلغاء تسمية الـ select لكي لا يتعارض مع الحقل المخفي الممرر للموديل
+                hallSelect.removeAttr('name');
+
+                $('<input>').attr({
+                    type: 'hidden',
+                    name: 'LocationId',
+                    value: finalVal
+                }).appendTo('form');
             });
+
+            // منطق سحب الهيكل بالكامل خلفياً وعرضه مسكناً تلقائياً عند فتح شاشة التعديل للتكليفات الحالية
+            if (initialLocationId) {
+                // استعلام خلفي سريع لـ معرف الأب والجد لتثبيت قيم المنسدلات للمستخدم
+                $.getJSON('/ExamLocations/GetLocationHierarchy', { locationId: initialLocationId }, function (h) {
+                    if (h) {
+                        if (h.hallId) hallSelect.val(h.hallId).trigger('change');
+
+                        // استخدام تكتيك التأخير الزمني لضمان اكتمال استعلامات الـ AJAX التتابعية وتأمين الاختيارات
+                        setTimeout(function () {
+                            if (h.rowId) rowSelect.val(h.rowId).trigger('change');
+                            setTimeout(function () {
+                                if (h.blockId) blockSelect.val(h.blockId).trigger('change');
+                                setTimeout(function () {
+                                    if (h.committeeId) committeeSelect.val(h.committeeId);
+                                    updateFieldsAvailability();
+                                }, 300);
+                            }, 300);
+                        }, 300);
+                    }
+                });
+            } else {
+                updateFieldsAvailability();
+            }
         });
     </script>
-}
 }

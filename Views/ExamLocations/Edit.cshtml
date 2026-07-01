@@ -1,6 +1,7 @@
 @model projectweb.Models.ExamLocation
 @using System.ComponentModel.DataAnnotations
 @using System.Reflection
+@using projectweb.Models
 
 @{
     ViewData["Title"] = "تعديل بيانات المكان";
@@ -76,8 +77,6 @@
                                    style="border-radius: 8px;" />
                         </div>
 
-                       
-
                         <div class="col-md-6 dependency-field capacity-fields">
                             <label asp-for="MaxSubLocations"
                                    id="maxSubLabel"
@@ -130,47 +129,69 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        var allLocations = @Html.Raw(ViewBag.AllLocationsJson ?? "[]");
-        var selectedParentId = "@Model.ParentLocationId";
-        var typeValue = "@((int)Model.Type)";
-
-        function adjustFields(val) {
-            var parentSelect = $("#parentLocationSelect");
-            $(".dependency-field").hide();
-            parentSelect.empty().append('<option value="" disabled selected>-- اختر الأب التراتبي --</option>');
-
-            if (val === "1") {
-                // جراش: يظهر رقم الدور + الحد الأقصى
-                $(".hall-fields, .capacity-fields").show();
-                $("#maxSubLabel").text("أقصى عدد صالات داخل الجراش");
-            }
-            else if (val === "2") {
-                // صالة: يظهر المكان الرئيسي (جراش) + الحد الأقصى + السنة الدراسية
-                $(".parent-location-container, .capacity-fields").show();
-                $("#maxSubLabel").text("أقصى عدد لجان داخل الصالة");
-                allLocations.filter(l => l.Type == 1).forEach(l => {
-                    var isSelected = (l.LocationId == selectedParentId) ? "selected" : "";
-                    parentSelect.append(
-                        `<option value="${l.LocationId}" ${isSelected}>جراش: ${l.LocationName}</option>`
-                    );
-                });
-            }
-            else if (val === "3") {
-                // لجنة: يظهر المكان الرئيسي (صالة) + سعة الطلاب
-                $(".parent-location-container, .committee-fields").show();
-                allLocations.filter(l => l.Type == 2).forEach(l => {
-                    var parentHall = allLocations.find(hall => hall.LocationId == l.ParentLocationId);
-                    var hallName = parentHall ? `(جراش: ${parentHall.LocationName})` : "";
-                    var isSelected = (l.LocationId == selectedParentId) ? "selected" : "";
-                    parentSelect.append(
-                        `<option value="${l.LocationId}" ${isSelected}>صالة: ${l.LocationName} ${hallName}</option>`
-                    );
-                });
-            }
-        }
-
         $(document).ready(function () {
-            adjustFields(typeValue);
+            // استلام متغيرات قاعدة البيانات الشجرية بالكامل برمجياً
+            var allLocations = @Html.Raw(ViewBag.AllLocationsJson ?? "[]");
+            var currentType = @((int)Model.Type);
+            var currentParentId = '@Model.ParentLocationId';
+
+            var locationSelect = $('#LocationSelect');
+            var parentSelect = $('#ParentLocationId');
+
+            // دالة الفحص المركب لتعديل الحقول والمسميات ديناميكياً حسب تدرج الكيان المحدث
+            function adjustFieldsByLocationType(typeId) {
+                $('.dependency-field').hide();
+
+                if (typeId === 1) { // 1. حالة الجراش (Hall)
+                    $('.hall-fields').show();
+                    $('.capacity-fields').show();
+                    $('#maxSubLabel').text('أقصى عدد صفوف داخل الجراش');
+                }
+                else if (typeId === 2) { // 2. حالة الصف (Row)
+                    $('.parent-location-container').show();
+                    $('.capacity-fields').show();
+                    $('#maxSubLabel').text('أقصى عدد صالات داخل الصف');
+
+                    // شحن آباء الجراشات (Type == 1)
+                    var halls = allLocations.filter(function(l) { return l.Type === 1; });
+                    fillParentDropdown(halls, "جراش");
+                }
+                else if (typeId === 3) { // 3. حالة الصالة (Block)
+                    $('.parent-location-container').show();
+                    $('.capacity-fields').show();
+                    $('#maxSubLabel').text('أقصى عدد لجان داخل الصالة');
+
+                    // شحن آباء الصفوف (Type == 2)
+                    var rows = allLocations.filter(function(l) { return l.Type === 2; });
+                    fillParentDropdown(rows, "صف");
+                }
+                else if (typeId === 4) { // 4. حالة اللجنة (Committee)
+                    $('.parent-location-container').show();
+                    $('.committee-fields').show();
+
+                    // شحن آباء الصالات (Type == 3)
+                    var blocks = allLocations.filter(function(l) { return l.Type === 3; });
+                    fillParentDropdown(blocks, "صالة");
+                }
+            }
+
+            function fillParentDropdown(items, typeLabel) {
+                var selectElement = $('#parentLocationSelect');
+                selectElement.empty().append('<option value="" disabled>-- اختر الأب التراتبي --</option>');
+
+                items.forEach(function (l) {
+                    // منع إسناد المكان لنفسه حماية للشجرة من التكرار اللانهائي
+                    if(l.LocationId != '@Model.LocationId') {
+                        var isSelected = (l.LocationId == currentParentId) ? "selected" : "";
+                        selectElement.append(
+                            `<option value="${l.LocationId}" ${isSelected}>${typeLabel}: ${l.LocationName}</option>`
+                        );
+                    }
+                });
+            }
+
+            // تشغيل تهيئة الحقول الفورية بمجرد تحميل الصفحة للتعديل
+            adjustFieldsByLocationType(currentType);
         });
     </script>
 }

@@ -8,11 +8,11 @@
 }
 
 <div class="container mt-5 text-center" dir="rtl">
-    <div class="card shadow border-0 mx-auto" style="max-width: 600px; border-radius: 20px; overflow: hidden;">
+    <div class="card shadow border-0 mx-auto" style="max-width: 650px; border-radius: 20px; overflow: hidden;">
         
         <div class="py-2 bg-danger"></div>
         
-        <div class="card-body p-5">
+        <div class="card-body p-4 p-md-5">
             
             <div class="text-danger mb-4">
                 <div class="d-inline-block p-3 rounded-circle bg-danger bg-opacity-10">
@@ -20,54 +20,64 @@
                 </div>
             </div>
 
-            <h3 class="fw-bold text-dark mb-3">تأكيد حذف التكليف</h3>
-            <p class="text-muted mb-4">أنت على وشك حذف هذا التكليف نهائياً. يرجى مراجعة البيانات بعناية قبل التأكيد:</p>
+            <h3 class="fw-bold text-dark mb-3">تأكيد حذف وإلغاء التكليف</h3>
+            <p class="text-muted mb-4">أنت على وشك حذف هذا التكليف نهائياً من النظام الفعلي للكلية. يرجى مراجعة الحصانة الهيكلية للبيانات قبل التأكيد:</p>
 
-            <div class="alert alert-light border shadow-sm text-end mb-4 p-4" style="border-radius: 15px;">
+            <div class="alert alert-light border shadow-sm text-end mb-4 p-4" style="border-radius: 15px; background-color: #fafbfc;">
                 
                 <div class="mb-3 border-bottom pb-2">
-                    <span class="text-muted small d-block mb-1">المراقب / الموظف:</span>
+                    <span class="text-muted small d-block mb-1">المراقب / الموظف المستهدف:</span>
                     <strong class="text-dark fs-5">@Model.Person?.FullName</strong>
                 </div>
 
                 <div class="mb-3 border-bottom pb-2">
-                    <span class="text-muted small d-block mb-1">نطاق المسئولية (المكان):</span>
+                    <span class="text-muted small d-block mb-1">نطاق المسئولية وهيكل المقر الحالي:</span>
                     <strong class="text-dark">
                         @if (Model.ExamLocation != null)
                         {
-                            if (Model.ExamLocation.Type == projectweb.Models.LocationType.Hall)
+                            var loc = Model.ExamLocation;
+
+                            if (loc.Type == projectweb.Models.LocationType.Hall)
                             {
-                                <i class="bi bi-building me-1 text-primary"></i> @:جراش رئيسي: @Model.ExamLocation.LocationName
+                                <span class="text-primary"><i class="bi bi-building me-1"></i> جراش رئيسي الأب: @loc.LocationName</span>
                             }
-                            else if (Model.ExamLocation.Type == projectweb.Models.LocationType.Block)
+                            else if (loc.Type == projectweb.Models.LocationType.Row)
                             {
-                                <i class="bi bi-grid-3x3 me-1 text-info"></i> @:صالة: @Model.ExamLocation.LocationName <small class="text-muted">(@Model.ExamLocation.ParentLocation?.LocationName)</small>
+                                <span class="text-warning"><i class="bi bi-layers me-1"></i> نطاق الصف الفرعي: @loc.LocationName <small class="text-muted">(جراش: @(loc.ParentLocation?.LocationName ?? "---"))</small></span>
                             }
-                            else if (Model.ExamLocation.Type == projectweb.Models.LocationType.Committee)
+                            else if (loc.Type == projectweb.Models.LocationType.Block)
                             {
-                                <i class="bi bi-person-workspace me-1 text-success"></i> @:لجنة: @Model.ExamLocation.LocationName <small class="text-muted">(@Model.ExamLocation.ParentLocation?.LocationName  @Model.ExamLocation.ParentLocation?.ParentLocation?.LocationName)</small>
+                                <span class="text-info"><i class="bi bi-grid-3x3 me-1"></i> نطاق الصالة المختصة: @loc.LocationName <small class="text-muted">(صف: @(loc.ParentLocation?.LocationName ?? "---") | جراش: @(loc.ParentLocation?.ParentLocation?.LocationName ?? "---"))</small></span>
+                            }
+                            else if (loc.Type == projectweb.Models.LocationType.Committee)
+                            {
+                                <span class="text-success"><i class="bi bi-person-workspace me-1"></i> لجنة فرعية دقيقة: @loc.LocationName <small class="text-muted">(صالة: @(loc.ParentLocation?.LocationName ?? "---") | صف: @(loc.ParentLocation?.ParentLocation?.LocationName ?? "---"))</small></span>
                             }
                         }
                         else
                         {
-                            <span class="text-muted fw-normal">غير محدد (احتياطي عام)</span>
+                            <span class="text-muted fw-normal"><i class="bi bi-shield-slash me-1"></i> غير محدد للمقر (قوة احتياطية عامة بالكلية)</span>
                         }
                     </strong>
                 </div>
                 
                 <div class="mb-3 border-bottom pb-2">
-                    <span class="text-muted small d-block mb-1">الدور المكلف به:</span>
-                    <span class="badge bg-secondary px-3 py-2">@Model.RoleType</span>
+                    <span class="text-muted small d-block mb-1">الدور الوظيفي المنسوب باللجنة:</span>
+                    <span class="badge bg-secondary px-3 py-2 fw-bold" style="font-size: 0.85rem;">@Model.RoleType</span>
+                    @if (!string.IsNullOrEmpty(Model.SubRoleType))
+                    {
+                        <span class="badge bg-light text-dark border ms-1">@Model.SubRoleType</span>
+                    }
                 </div>
 
                 <div class="mb-3 border-bottom pb-2">
-                    <span class="text-muted small d-block mb-1">المادة الدراسية:</span>
+                    <span class="text-muted small d-block mb-1">المادة الدراسية المسجلة:</span>
                     <strong class="text-primary fs-6">@Model.ExamSchedule?.Exam?.Subject?.SubjectName</strong>
                 </div>
 
                 <div class="mb-1">
-                    <span class="text-muted small d-block mb-1">التوقيت الفعلي:</span>
-                    <div class="small fw-bold">
+                    <span class="text-muted small d-block mb-1">التوقيت الفعلي للجلسة:</span>
+                    <div class="small fw-bold text-dark">
                         <i class="bi bi-calendar3 me-1 text-primary"></i>
                         @Model.ExamSchedule?.Exam?.ExamDate.ToString("yyyy/MM/dd")
                     </div>
@@ -90,12 +100,12 @@
 
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-danger btn-lg shadow-sm fw-bold py-3" style="border-radius: 12px;">
-                        <i class="bi bi-trash3 me-1"></i> تأكيد الحذف النهائي
+                        <i class="bi bi-trash3-fill me-1"></i> تأكيد الحذف النهائي من المنظومة
                     </button>
 
                     <a asp-action="Index" asp-route-examId="@Model.ExamSchedule?.ExamId" 
                        class="btn btn-light btn-lg border fw-bold text-secondary py-3" style="border-radius: 12px;">
-                        إلغاء والعودة للقائمة
+                        إلغاء والعودة للقائمة الرئيسية
                     </a>
                 </div>
             </form>
@@ -109,18 +119,25 @@
         background-color: #f4f7f9;
     }
     .card {
-        transition: transform 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+        box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;
     }
     .btn-lg {
-        font-size: 1.1rem;
-        transition: 0.3s;
+        font-size: 1.05rem;
+        transition: all 0.2s ease;
     }
     .btn-danger:hover {
         background-color: #bb2d3b;
-        transform: translateY(-2px);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
     }
     .btn-light:hover {
         background-color: #e2e6ea;
-        transform: translateY(-2px);
+        transform: translateY(-1px);
+    }
+    .badge-animate {
+        animation: pulse 2s infinite;
     }
 </style>

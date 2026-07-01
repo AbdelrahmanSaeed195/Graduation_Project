@@ -1,7 +1,7 @@
 ﻿@model projectweb.Models.ExamSchedule
 
 @{
-    ViewData["Title"] = "حذف جلسة توزيع الصالات";
+    ViewData["Title"] = "حذف جلسة توزيع الجراشات";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -11,7 +11,7 @@
             <div class="card shadow-lg border-0 rounded-3 border-danger" style="border-top-width: 5px !important; border-radius: 12px; overflow: hidden;">
                 <div class="card-header bg-danger text-white py-3 border-0 text-center">
                     <h3 class="card-title mb-0 fw-bold">
-                        <i class="bi bi-exclamation-triangle me-2"></i> تأكيد حذف توزيع الصالة
+                        <i class="bi bi-exclamation-triangle me-2"></i> تأكيد حذف توزيع الجراش
                     </h3>
                 </div>
 
@@ -20,7 +20,7 @@
                         <i class="bi bi-patch-exclamation-fill text-warning fs-1 mb-3"></i>
                         <h4 class="fw-bold text-dark">هل أنت متأكد نهائياً من رغبتك في حذف هذا التوزيع؟</h4>
                         <p class="text-danger mb-0 fw-bold">
-                            تحذير: سيتم إزالة ربط الصالة بالكامل بهذا الامتحان، وهذا الإجراء لا يمكن التراجع عنه.
+                            تحذير: سيتم إزالة ربط الجراش بالكامل بهذا الامتحان، وهذا الإجراء لا يمكن التراجع عنه.
                         </p>
                     </div>
 
@@ -31,7 +31,7 @@
                                 <small class="text-muted fw-bold fs-6">(@(ViewBag.ArabicAcademicYear ?? "غير محدد"))</small>
                             </h5>
 
-                            <p class="mb-2"><strong><i class="bi bi-building me-1 text-secondary"></i> الصالة المعينة:</strong> @(Model.ExamLocation?.LocationName ?? "غير محدد")</p>
+                            <p class="mb-2"><strong><i class="bi bi-building me-1 text-secondary"></i> الجراش المعين:</strong> @(Model.ExamLocation?.LocationName ?? "غير محدد")</p>
                             <p class="mb-2"><strong><i class="bi bi-calendar3 me-1 text-secondary"></i> التاريخ المقرر:</strong> @(Model.Exam?.ExamDate.ToString("yyyy / MM / dd") ?? "—")</p>
 
                             <p class="mb-0">

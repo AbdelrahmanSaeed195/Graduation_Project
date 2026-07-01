@@ -30,7 +30,6 @@ namespace projectweb.Services
                 return "الجلسة المطلوبة غير موجودة.";
 
             var currentLocId = current.LocationId;
-            var parentLocId = current.ExamLocation.ParentLocationId;
             var examDate = current.Exam.ExamDate.Date;
             var startTime = current.Exam.StartTime;
             var endTime = current.Exam.EndTime;
@@ -40,9 +39,9 @@ namespace projectweb.Services
                 .Include(a => a.ExamLocation)
                 .Where(a => a.ExamSchedule.ExamId != current.ExamId &&
                             (a.LocationId == currentLocId ||
-                             a.LocationId == parentLocId ||
                              a.ExamLocation.ParentLocationId == currentLocId ||
-                             a.ExamLocation.ParentLocation.ParentLocationId == parentLocId) &&
+                             a.ExamLocation.ParentLocation.ParentLocationId == currentLocId ||
+                             a.ExamLocation.ParentLocation.ParentLocation.ParentLocationId == currentLocId) &&
                             a.ExamSchedule.Exam.ExamDate.Date == examDate &&
                             ((startTime >= a.ExamSchedule.Exam.StartTime && startTime < a.ExamSchedule.Exam.EndTime) ||
                              (endTime > a.ExamSchedule.Exam.StartTime && endTime <= a.ExamSchedule.Exam.EndTime)))
@@ -59,7 +58,7 @@ namespace projectweb.Services
         }
 
         // ========================================================================
-        // 2. RunAssignmentAsync: تشغيل ماكينة التوزيع التلقائي وهندسة المقاعد والأقارب
+        // 2. RunAssignmentAsync: ماكينة التوزيع الذكية الشجرية المتوافقة مع السقوف الديناميكية
         // ========================================================================
         public async Task<bool> RunAssignmentAsync(int examScheduleId)
         {
@@ -71,16 +70,20 @@ namespace projectweb.Services
             if (currentSchedule == null || currentSchedule.Exam == null || currentSchedule.ExamLocation == null)
                 return false;
 
-            var currentLocId = currentSchedule.LocationId;
+            var currentLocId = currentSchedule.LocationId; // كود الجراش الموحد
             var examId = currentSchedule.ExamId;
             var examDate = currentSchedule.Exam.ExamDate.Date;
+            string currentYearCode = "2025 / 2026";
 
-            // 1. تنظيف التوزيع التلقائي القديم
+            // 1. تنظيف التوزيع التلقائي القديم للجراش وفروعه بالكامل
             var oldAutoAssignments = await _context.CommitteesAssignments
                 .Include(a => a.ExamSchedule)
                 .Include(a => a.ExamLocation)
                 .Where(a => a.ExamSchedule.ExamId == examId &&
-                            (a.LocationId == currentLocId || a.ExamLocation.ParentLocationId == currentLocId || a.ExamLocation.ParentLocation.ParentLocationId == currentLocId) &&
+                            (a.LocationId == currentLocId ||
+                             a.ExamLocation.ParentLocationId == currentLocId ||
+                             a.ExamLocation.ParentLocation.ParentLocationId == currentLocId ||
+                             a.ExamLocation.ParentLocation.ParentLocation.ParentLocationId == currentLocId) &&
                             a.AssignmentType == "Auto")
                 .ToListAsync();
 
@@ -90,75 +93,29 @@ namespace projectweb.Services
                 await _context.SaveChangesAsync();
             }
 
-            var scheduledSchedules = await _context.ExamSchedules
-     .Include(es => es.ExamLocation)
-         .ThenInclude(l => l.ParentLocation)
-     .Where(es => es.ExamId == examId &&
-         (es.LocationId == currentLocId ||
-          es.ExamLocation.ParentLocationId == currentLocId))
-     .ToListAsync();
-
-            if (!scheduledSchedules.Any()) return false;
-
-            // استخراج الجراشات المستخدمة
-            var hallIds = scheduledSchedules
-                .Select(s =>
-                {
-                    if (s.ExamLocation.Type == LocationType.Hall)
-                        return s.ExamLocation.LocationId;
-
-                    if (s.ExamLocation.Type == LocationType.Row)
-                        return s.ExamLocation.ParentLocationId;
-
-                    if (s.ExamLocation.Type == LocationType.Block)
-                        return s.ExamLocation.ParentLocation?.ParentLocationId;
-
-                    if (s.ExamLocation.Type == LocationType.Committee)
-                        return s.ExamLocation.ParentLocation?.ParentLocation?.ParentLocationId;
-
-                    return null;
-                })
-                .Where(x => x.HasValue)
-                .Select(x => x.Value)
-                .Distinct()
-                .ToList();
-
-
-            // الصفوف الموجودة داخل الجراشات
+            // 2. سحب فروع المقرات (صفوف -> صالات -> لجان) التابعة للجراش
             var activeRows = await _context.ExamLocations
-                .Where(x =>
-                    x.Type == LocationType.Row &&
-                    x.ParentLocationId != null &&
-                    hallIds.Contains(x.ParentLocationId.Value))
+                .Where(x => x.Type == LocationType.Row && x.ParentLocationId == currentLocId)
                 .OrderBy(x => x.LocationName)
                 .ToListAsync();
 
-            if (!activeRows.Any())
-                return false;
+            if (!activeRows.Any()) return false;
 
-
-            // الصالات الموجودة داخل الصفوف
+            var activeRowIds = activeRows.Select(r => r.LocationId).ToList();
             var activeBlocks = await _context.ExamLocations
-                .Where(x =>
-                    x.Type == LocationType.Block &&
-                    x.ParentLocationId != null &&
-                    activeRows.Select(r => r.LocationId).Contains(x.ParentLocationId.Value))
+                .Where(x => x.Type == LocationType.Block && x.ParentLocationId != null && activeRowIds.Contains(x.ParentLocationId.Value))
                 .OrderBy(x => x.LocationName)
                 .ToListAsync();
 
-            if (!activeBlocks.Any())
-                return false;
+            if (!activeBlocks.Any()) return false;
 
-
-            // اللجان الموجودة داخل الصالات
+            var activeBlockIds = activeBlocks.Select(b => b.LocationId).ToList();
             var activeCommitteeIds = await _context.ExamLocations
-                .Where(x =>
-                    x.Type == LocationType.Committee &&
-                    x.ParentLocationId != null &&
-                    activeBlocks.Select(b => b.LocationId).Contains(x.ParentLocationId.Value))
+                .Where(x => x.Type == LocationType.Committee && x.ParentLocationId != null && activeBlockIds.Contains(x.ParentLocationId.Value))
                 .Select(x => x.LocationId)
                 .ToListAsync();
 
+            // حصر الطلاب وموانع الأقارب والتعارضات التزامية
             var studentIdsInHall = await _context.Students
                 .Where(s => (s.LocationId != null && activeCommitteeIds.Contains(s.LocationId.Value)) || s.ExamScheduleId == examScheduleId)
                 .Select(s => s.StudentId)
@@ -198,6 +155,11 @@ namespace projectweb.Services
                 .Select(a => new { a.PersonId, LocationId = a.LocationId.Value })
                 .ToListAsync();
 
+            // جلب سقوف التكليفات السنوية ديناميكياً من جدول AssignmentSettings لمنع تخطي الحدود
+            var limitsDict = await _context.AssignmentSettings
+                .Where(s => s.AcademicYearCode == currentYearCode)
+                .ToDictionaryAsync(s => s.JobRole, s => s.MaxAssignmentsLimit);
+
             var finalAssignments = new List<CommitteesAssignment>();
             var random = new Random();
 
@@ -208,6 +170,20 @@ namespace projectweb.Services
 
             foreach (var staff in allAvailableStaff)
             {
+                // ✅ هنا تم تصحيح الخطأ التجميعي ليعتمد الفحص على القاموس بشكل صحيح وديناميكي
+                if (staff.JobRole == JobTitle.Professor ||
+                    staff.JobRole == JobTitle.AssistantProfessor ||
+                    staff.JobRole == JobTitle.ProfessorEmeritus)
+                {
+                    int totalAssignmentsCount = await _context.CommitteesAssignments.CountAsync(a => a.PersonId == staff.PersonId);
+                    int allowedLimit = limitsDict.ContainsKey(staff.JobRole) ? limitsDict[staff.JobRole] : 4;
+
+                    if (totalAssignmentsCount >= allowedLimit)
+                    {
+                        continue; // تخطي الشخص وتجاوز السقف فوراً
+                    }
+                }
+
                 if (staffWhoWorkedInThisHallToday.Contains(staff.PersonId))
                 {
                     currentDayHallPriorityStaff.Add(staff);
@@ -221,6 +197,7 @@ namespace projectweb.Services
                 }
             }
 
+            // تجميع وتصنيف الرتب الوظيفية لقادة اللجان والجراشات
             var poolManagers = new List<Person>();
             var managerRoles = new HashSet<JobTitle> { JobTitle.Professor, JobTitle.AssistantProfessor, JobTitle.ProfessorEmeritus };
             poolManagers.AddRange(currentDayHallPriorityStaff.Where(p => managerRoles.Contains(p.JobRole)).OrderBy(p => random.Next()));
@@ -244,107 +221,79 @@ namespace projectweb.Services
             var poolDoctors = allAvailableStaff.Where(p => p.JobRole == JobTitle.Doctor).OrderBy(p => random.Next()).ToList();
             var poolNurses = allAvailableStaff.Where(p => p.JobRole == JobTitle.Nurse).OrderBy(p => random.Next()).ToList();
 
-            int mainHallId = currentSchedule.ExamLocation.Type == LocationType.Hall
-                 ? currentSchedule.ExamLocation.LocationId
-                 : (currentSchedule.ExamLocation.ParentLocation?.ParentLocationId
-                    ?? currentSchedule.ExamLocation.ParentLocationId
-                    ?? currentLocId);
+            // توزيع رؤساء الجراشات والقطاعات الفرعية بناءً على خيار (دور واحد أو دورين)
+            bool hasTwoFloors = (currentSchedule.ExamLocation.Floor == 2);
+            int totalManagersNeeded = hasTwoFloors ? 5 : 3;
 
-            // 2. جلب الكيان الرئيسي بالكامل من قاعدة البيانات لفحص حقله الفعلي
-            // توزيع رؤساء اللجان على الصفوف
+            if (poolManagers.Count < totalManagersNeeded) return false;
 
-            // =======================
-            // حساب عدد رؤساء اللجان المطلوبين
-            // =======================
-
-            int reserveManagers = activeRows.Count <= 2 ? 1 : 2;
-            int totalManagersNeeded = activeRows.Count + reserveManagers;
-
-            if (poolManagers.Count < totalManagersNeeded)
-                return false;
-
-
-            // =======================
-            // توزيع رؤساء اللجان الأساسيين
-            // =======================
-
-            foreach (var row in activeRows)
+            for (int i = 0; i < totalManagersNeeded; i++)
             {
-                var manager = poolManagers.First();
+                var manager = poolManagers[i];
+                string roleType = "رئيس جراش";
+                string subRole = "";
+
+                if (hasTwoFloors)
+                {
+                    subRole = i switch
+                    {
+                        0 => "قطاع أول",
+                        1 => "قطاع ثاني",
+                        2 => "قطاع ثالث",
+                        3 => "احتياطي دور أول",
+                        4 => "احتياطي دور ثاني",
+                        _ => "رئيس"
+                    };
+                    if (i >= 3) roleType = "رئيس جراش احتياطي";
+                }
+                else
+                {
+                    subRole = i switch
+                    {
+                        0 => "قطاع أول",
+                        1 => "قطاع ثاني",
+                        2 => "احتياطي",
+                        _ => "رئيس"
+                    };
+                    if (i == 2) roleType = "رئيس جراش احتياطي";
+                }
 
                 finalAssignments.Add(new CommitteesAssignment
                 {
                     PersonId = manager.PersonId,
                     ExamScheduleId = examScheduleId,
                     RoleId = manager.RoleId,
-                    LocationId = row.LocationId,
+                    LocationId = currentLocId,
                     AssignmentType = "Auto",
-                    RoleType = "رئيس لجنة",
-                    SubRoleType = row.LocationName
+                    RoleType = roleType,
+                    SubRoleType = subRole
                 });
-
-                poolManagers.Remove(manager);
             }
 
+            // توزيع المراقبين الاحتياطيين للأدوار والمبنى
+            int reserveLeadersCount = hasTwoFloors ? 2 : 1;
+            var reserveLeaders = poolLeaders.Take(reserveLeadersCount).ToList();
 
-            // =======================
-            // توزيع رؤساء اللجان الاحتياطيين
-            // =======================
-
-            for (int i = 0; i < reserveManagers; i++)
+            foreach (var res in reserveLeaders)
             {
-                if (!poolManagers.Any())
-                    break;
-
-                var reserve = poolManagers.First();
+                int index = reserveLeaders.IndexOf(res);
+                string roleType = "مراقب احتياطي";
+                string subRole = hasTwoFloors ? (index == 0 ? "الدور الأول" : "الدور الثاني") : "لجراش";
 
                 finalAssignments.Add(new CommitteesAssignment
                 {
-                    PersonId = reserve.PersonId,
+                    PersonId = res.PersonId,
                     ExamScheduleId = examScheduleId,
-                    RoleId = reserve.RoleId,
+                    RoleId = res.RoleId,
                     LocationId = currentLocId,
                     AssignmentType = "Auto",
-                    RoleType = "رئيس لجنة احتياطي",
-                    SubRoleType = $"احتياطي {i + 1}"
+                    RoleType = roleType,
+                    SubRoleType = subRole
                 });
-
-                poolManagers.Remove(reserve);
+                poolLeaders.Remove(res);
             }
 
-            // 3. توزيع المراقبين الاحتياطيين
-            // توزيع مراقب احتياطي واحد لكل جراش
-
-            int reserveCount = activeRows.Count <= 2 ? 1 : 2;
-
-            var reserveLeaders = poolLeaders.Take(reserveCount).ToList();
-
-            foreach (var reserve in reserveLeaders)
-            {
-                finalAssignments.Add(new CommitteesAssignment
-                {
-                    PersonId = reserve.PersonId,
-                    ExamScheduleId = examScheduleId,
-                    RoleId = reserve.RoleId,
-                    LocationId = currentLocId,
-                    AssignmentType = "Auto",
-                    RoleType = "مراقب احتياطي",
-                    SubRoleType = "احتياطي لجته"
-                });
-
-                poolLeaders.Remove(reserve);
-            }
-
-            // حساب الـ 5% ملاحظين احتياطيين
-            int totalCommitteesCount = await _context.ExamSchedules
-                .Include(es => es.ExamLocation)
-                .Where(es => es.ExamId == examId && (es.LocationId == currentLocId || es.ExamLocation.ParentLocationId == currentLocId))
-                .CountAsync();
-
-            int requiredReserveObserversCount = (int)Math.Ceiling(totalCommitteesCount * 0.05);
-            if (requiredReserveObserversCount < 1) requiredReserveObserversCount = 1;
-
-            // توزيع الطاقم الطبي
+            // توزيع الطواقم الطبية المسؤولة عن الجراش
             var doctor = poolDoctors.FirstOrDefault();
             if (doctor != null)
             {
@@ -357,12 +306,9 @@ namespace projectweb.Services
                 finalAssignments.Add(new CommitteesAssignment { PersonId = nurse.PersonId, ExamScheduleId = examScheduleId, LocationId = currentLocId, AssignmentType = "Auto", RoleType = "مساعد دكتور", RoleId = nurse.RoleId });
             }
 
-            // 4. توزيع المراقبين الأساسيين والملاحظين
-            // توزيع المراقبين والملاحظين حسب الصفوف
-
+            // هندسة التوزيع الشجري المتتابع: الدوران صفاً صفاً وتغطية صالاته ولجانه الداخلية بالكامل
             foreach (var row in activeRows)
             {
-                // الصالات الموجودة داخل الصف الحالي
                 var blocksInRow = activeBlocks
                     .Where(b => b.ParentLocationId == row.LocationId)
                     .OrderBy(b => b.LocationName)
@@ -370,12 +316,7 @@ namespace projectweb.Services
 
                 foreach (var block in blocksInRow)
                 {
-                    // ===============================
-                    // توزيع مراقب على الصالة
-                    // ===============================
-
                     var blockLeader = poolLeaders.FirstOrDefault();
-
                     if (blockLeader != null)
                     {
                         finalAssignments.Add(new CommitteesAssignment
@@ -387,51 +328,44 @@ namespace projectweb.Services
                             RoleType = "مراقب",
                             RoleId = blockLeader.RoleId
                         });
-
                         poolLeaders.Remove(blockLeader);
                     }
 
-                    // ===============================
-                    // توزيع الملاحظين على اللجان
-                    // ===============================
-
-                    var committees = await _context.ExamLocations
-                        .Where(c =>
-                            c.ParentLocationId == block.LocationId &&
-                            c.Type == LocationType.Committee)
+                    var committeesInBlock = await _context.ExamLocations
+                        .Where(c => c.ParentLocationId == block.LocationId && c.Type == LocationType.Committee)
                         .OrderBy(c => c.LocationName)
                         .ToListAsync();
 
-                    foreach (var committee in committees)
+                    foreach (var com in committeesInBlock)
                     {
-                        var observer = poolObservers
-                            .FirstOrDefault(p =>
-                                !yesterdayAssignments.Any(y =>
-                                    y.PersonId == p.PersonId &&
-                                    y.LocationId == committee.LocationId));
+                        var obs = poolObservers
+                            .FirstOrDefault(p => !yesterdayAssignments.Any(y => y.PersonId == p.PersonId && y.LocationId == com.LocationId));
 
-                        observer ??= poolObservers.FirstOrDefault();
+                        if (obs == null) obs = poolObservers.FirstOrDefault();
 
-                        if (observer == null)
-                            continue;
-
-                        finalAssignments.Add(new CommitteesAssignment
+                        if (obs != null)
                         {
-                            PersonId = observer.PersonId,
-                            ExamScheduleId = examScheduleId,
-                            LocationId = committee.LocationId,
-                            AssignmentType = "Auto",
-                            RoleType = "ملاحظ لجنة",
-                            RoleId = observer.RoleId
-                        });
-
-                        poolObservers.Remove(observer);
+                            finalAssignments.Add(new CommitteesAssignment
+                            {
+                                PersonId = obs.PersonId,
+                                ExamScheduleId = examScheduleId,
+                                LocationId = com.LocationId,
+                                AssignmentType = "Auto",
+                                RoleType = "ملاحظ لجنة",
+                                RoleId = obs.RoleId
+                            });
+                            poolObservers.Remove(obs);
+                        }
                     }
                 }
             }
 
-            // 5. توزيع الملاحظين الاحتياطيين بنسبة 5%
+            // توزيع الملاحظين الاحتياطيين بالصالات بنسبة 5% بعد الفراغ من التغطية الهرمية
             int distributedReserves = 0;
+            int totalCommitteesCount = activeCommitteeIds.Count;
+            int requiredReserveObserversCount = (int)Math.Ceiling(totalCommitteesCount * 0.05);
+            if (requiredReserveObserversCount < 1) requiredReserveObserversCount = 1;
+
             while (distributedReserves < requiredReserveObserversCount && poolObservers.Any())
             {
                 foreach (var block in activeBlocks)

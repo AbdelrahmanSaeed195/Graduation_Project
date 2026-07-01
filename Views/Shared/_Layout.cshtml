@@ -1,3 +1,4 @@
+@model dynamic
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
@@ -10,7 +11,7 @@
     <title>@ViewData["Title"] - إدارة لجان الامتحانات</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght=200..1000&family=Tajawal:wght=200;300;400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
@@ -52,7 +53,7 @@
 
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button">
-                                أماكن الامتحانات 
+                                أماكن الامتحانات
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" asp-controller="ExamLocations" asp-action="Index"><i class="bi bi-layers-half me-2"></i> استعراض الهيكل الموحد</a></li>
@@ -68,9 +69,12 @@
                                 إعداد الامتحانات
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" asp-controller="Exams" asp-action="Index"> الامتحانات</a></li>
-                                <li><a class="dropdown-item" asp-controller="ExamSchedules" asp-action="Index"> جدول توزيع اللجان </a></li>
-                                <li><a class="dropdown-item" asp-controller="Subjects" asp-action="Index"> المواد الدراسية</a></li>
+                                <li><a class="dropdown-item" asp-controller="Exams" asp-action="Index"><i class="bi bi-file-earmark-text me-2"></i> الامتحانات</a></li>
+                                <li><a class="dropdown-item" asp-controller="ExamSchedules" asp-action="Index"><i class="bi bi-calendar-event me-2"></i> جدول توزيع اللجان </a></li>
+                                <li><a class="dropdown-item" asp-controller="Subjects" asp-action="Index"><i class="bi bi-book me-2"></i> المواد الدراسية</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                @* ✅ إضافة الرابط الأول هنا داخل قائمة الإعدادات الامتحانية *@
+                                <li><a class="dropdown-item fw-bold text-dark" asp-controller="AssignmentSettings" asp-action="Manage"><i class="bi bi-sliders text-danger me-2"></i> سقوف التكليفات السنوية</a></li>
                             </ul>
                         </li>
                         <li class="nav-item">
@@ -105,6 +109,13 @@
                                         @User.Identity?.Name
                                     </div>
                                 </li>
+                                @* ✅ إضافة الرابط البديل الثاني هنا داخل خيارات حساب المستخدم للوصول السريع للأدمن *@
+                                <li>
+                                    <a class="dropdown-item py-2 small fw-bold d-flex align-items-center gap-2" asp-controller="AssignmentSettings" asp-action="Manage">
+                                        <i class="bi bi-gear-fill text-secondary"></i> إعدادات السقوف الإدارية
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form asp-controller="Account" asp-action="Logout" method="post" class="px-2">
                                         <button type="submit" class="dropdown-item text-danger py-2 d-flex align-items-center gap-2 rounded-2">
@@ -114,10 +125,6 @@
                                 </li>
                             </ul>
                         </div>
-                    }
-                    else
-                    {
-                        @* <a class="btn btn-light btn-sm px-4 me-2" asp-controller="Account" asp-action="Login">تسجيل دخول</a> *@
                     }
                 </div>
             </div>

@@ -220,6 +220,33 @@ namespace projectweb.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("projectweb.Models.AssignmentSettings", b =>
+                {
+                    b.Property<int>("SettingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SettingId"));
+
+                    b.Property<string>("AcademicYearCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("JobRole")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxAssignmentsLimit")
+                        .HasColumnType("int");
+
+                    b.HasKey("SettingId");
+
+                    b.HasIndex("AcademicYearCode", "JobRole")
+                        .IsUnique();
+
+                    b.ToTable("AssignmentSettings");
+                });
+
             modelBuilder.Entity("projectweb.Models.CommitteesAssignment", b =>
                 {
                     b.Property<int>("AssignmentId")

@@ -5,15 +5,15 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="row justify-content-center" dir="rtl">
-    <div class="col-lg-8">
+<div class="row justify-content-center" dir="rtl" style="text-align: right;">
+    <div class="col-lg-8 mt-4">
         <div class="card academic-card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
 
-            <div class="card-header p-4 d-flex justify-content-between align-items-center" style="background-color: #1a2c4e; border-bottom: 4px solid #00a8ff;">
+            <div class="card-header p-4 d-flex justify-content-between align-items-center" style="background-color: #1a2c4e; border-bottom: 4px solid #28a745;">
                 <h4 class="mb-0 fw-bold text-white">
-                    <i class="bi bi-megaphone-fill me-2"></i> إعداد نطاق التوزيع التلقائي الموحد
+                    <i class="bi bi-robot me-2"></i> تهيئة محرك التوزيع التلقائي الذكي
                 </h4>
-                <span class="badge bg-info text-dark px-3 py-2">نظام إدارة الامتحانات</span>
+                <span class="badge bg-light text-dark px-3 py-2 fw-bold">الكنترول العام</span>
             </div>
 
             <div class="card-body p-5 bg-white">
@@ -21,10 +21,15 @@
                 @if (TempData["Error"] != null)
                 {
                     <div class="alert alert-danger border-0 shadow-sm mb-4 d-flex align-items-center" style="border-radius: 8px;">
-                        <i class="bi bi-exclamation-octagon-fill fs-4 me-3"></i>
-                        <div>@TempData["Error"]</div>
+                        <i class="bi bi-exclamation-octagon-fill fs-4 me-3 text-danger"></i>
+                        <div class="fw-bold">@TempData["Error"]</div>
                     </div>
                 }
+
+                <div class="alert alert-info border-0 shadow-sm mb-4 small rounded-3" style="background-color: #f0f7ff; color: #1e40af;">
+                    <i class="bi bi-info-circle-fill me-1 text-primary"></i>
+                    <strong>تنبيه النظام:</strong> سيقوم المحرك بفحص موانع الأقارب، تعارضات الوقت، و**سقوف التكليفات السنوية** المعتمدة ديناميكياً لفئة الأساتذة قبل تسكين طاقم العمل بداخل الجراش.
+                </div>
 
                 <form asp-action="RunAutoAssign" method="post">
                     @Html.AntiForgeryToken()
@@ -32,22 +37,22 @@
                     <div class="row g-4">
                         <div class="col-md-6">
                             <div class="p-4 rounded border h-100 shadow-sm" style="background-color: #f8f9fa;">
-                                <label class="small fw-bold mb-3 d-block" style="color: #6c757d;">
-                                    <i class="bi bi-building me-1"></i> اختر الجراش الرئيسي :
+                                <label class="small fw-bold mb-3 d-block text-secondary">
+                                    <i class="bi bi-building me-1 text-primary"></i> المقر المستهدف (الجراش الرئيسي):
                                 </label>
-                                <select name="locationId" class="form-select form-select-lg fw-bold" style="color: #1a2c4e; border-color: #dee2e6;" asp-items="ViewBag.Halls" required>
-                                    <option value="">-- حدد الجراش الرئيسي --</option>
+                                <select name="locationId" class="form-select form-select-lg fw-bold" style="color: #1a2c4e; border-color: #dee2e6; border-radius: 8px;" asp-items="ViewBag.Halls" required>
+                                    <option value="">-- اختر الجراش الرئيسي --</option>
                                 </select>
                             </div>
                         </div>
 
                         <div class="col-md-6">
                             <div class="p-4 rounded border h-100 shadow-sm" style="background-color: #f8f9fa;">
-                                <label class="small fw-bold mb-3 d-block" style="color: #6c757d;">
-                                    <i class="bi bi-book me-1"></i> اختر الامتحان المستهدف:
+                                <label class="small fw-bold mb-3 d-block text-secondary">
+                                    <i class="bi bi-book me-1 text-success"></i> الجلسة الامتحانية المستهدفة:
                                 </label>
-                                <select name="examId" class="form-select form-select-lg fw-bold" style="color: #1a2c4e; border-color: #dee2e6;" asp-items="ViewBag.ExamsList" required>
-                                    <option value="">-- حدد المادة --</option>
+                                <select name="examId" class="form-select form-select-lg fw-bold" style="color: #1a2c4e; border-color: #dee2e6; border-radius: 8px;" asp-items="ViewBag.ExamsList" required>
+                                    <option value="">-- حدد المادة والدور الحالي --</option>
                                 </select>
                             </div>
                         </div>
@@ -55,13 +60,13 @@
 
                     <div class="mt-5 pt-4 border-top text-center d-flex justify-content-center gap-3">
                         <button type="submit" class="btn btn-lg px-5 fw-bold text-white shadow-sm"
-                                style="background-color: #28a745; border-radius: 10px; transition: 0.3s;">
-                            <i class="bi bi-play-circle me-1"></i> بدء التوزيع الذكي الآن
+                                style="background-color: #28a745; border: none; border-radius: 10px; transition: 0.3s;">
+                            <i class="bi bi-play-circle-fill me-1"></i> تشغيل ماكينة التوزيع التلقائي
                         </button>
 
                         <a asp-action="Index" class="btn btn-lg btn-outline-secondary px-5 fw-bold shadow-sm"
                            style="border-radius: 10px;">
-                            إلغاء وتراجع
+                            إلغance وتراجع
                         </a>
                     </div>
                 </form>
@@ -73,15 +78,25 @@
 <style>
     .academic-card {
         border-top: 5px solid #1a2c4e;
+        transition: box-shadow 0.3s ease;
     }
 
-    .btn-lg:hover {
-        opacity: 0.9;
-        transform: translateY(-2px);
+        .academic-card:hover {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important;
+        }
+
+    .btn-lg {
+        font-size: 1.05rem;
+        transition: all 0.2s ease;
     }
+
+        .btn-lg:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
 
     .form-select-lg {
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         padding: 0.75rem 1rem;
     }
 </style>

@@ -1,0 +1,106 @@
+﻿@model List<projectweb.Models.AssignmentSettings>
+@using projectweb.Models
+
+@{
+    ViewData["Title"] = "إعدادات سقوف التكليفات";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center mt-4" dir="rtl" style="text-align: right;">
+    <div class="col-xl-8">
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 10px;">
+                <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 10px;">
+                <i class="bi bi-exclamation-octagon-fill me-2"></i> @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+            <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #1a2c4e 0%, #2e5a88 100%);">
+                <h4 class="mb-0 fw-bold">
+                    <i class="bi bi-sliders me-2"></i>
+                    التحكم في سقوف التكليفات السنوية (ديناميكي)
+                </h4>
+                <p class="small text-white-50 mb-0 mt-1">تحديد الحد الأقصى لتكليفات أساتذة الكلية للسنة الجامعية الحالية: @ViewBag.AcademicYearCode</p>
+            </div>
+
+            <div class="card-body p-4 bg-white">
+                <form asp-action="SaveSettings" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="alert alert-info border-0 shadow-sm mb-4 small rounded-3">
+                        <i class="bi bi-info-circle-fill me-1 text-primary"></i>
+                        <strong>ملاحظة إدارية:</strong> الأرقام المحددة هنا سيلتزم بها محرك التوزيع التلقائي الذكي فوراً لمنع تخطي أي أستاذ للسقف المحدد له خلال امتحانات هذه السنة.
+                    </div>
+
+                    <div class="table-responsive rounded border shadow-sm mb-4">
+                        <table class="table align-middle mb-0 text-center">
+                            <thead class="table-lightfw-bold" style="background-color: #f8f9fa;">
+                                <tr>
+                                    <th class="py-3" style="font-weight: 700;">الفئة المستهدفة (الوظيفة)</th>
+                                    <th class="py-3" style="font-weight: 700; width: 250px;">الحد الأقصى للتكليفات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Count; i++)
+                                {
+                                    <tr>
+                                        <td class="fw-bold text-dark text-start ps-4">
+                                            <i class="bi bi-person-badge text-primary me-2"></i>
+                                            <input type="hidden" asp-for="@Model[i].SettingId" />
+                                            <input type="hidden" asp-for="@Model[i].AcademicYearCode" />
+                                            <input type="hidden" asp-for="@Model[i].JobRole" />
+
+                                            @switch (Model[i].JobRole)
+                                            {
+                                                case JobTitle.Professor:
+                                                    <span>أستاذ</span>
+                                                    break;
+                                                case JobTitle.AssistantProfessor:
+                                                    <span>أستاذ مساعد</span>
+                                                    break;
+                                                case JobTitle.ProfessorEmeritus:
+                                                    <span>أستاذ متفرغ</span>
+                                                    break;
+                                                default:
+                                                    <span>@Model[i].JobRole.ToString()</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="input-group justify-content-center">
+                                                <input asp-for="@Model[i].MaxAssignmentsLimit"
+                                                       type="number"
+                                                       class="form-control text-center fw-bold text-primary shadow-sm"
+                                                       style="max-width: 120px; border-radius: 8px;"
+                                                       min="1" max="50" />
+                                                <span class="input-group-text bg-light small">تكليفات</span>
+                                            </div>
+                                            <span asp-validation-for="@Model[i].MaxAssignmentsLimit" class="text-danger small d-block mt-1"></span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4 pt-3 border-top justify-content-start">
+                        <button type="submit" class="btn px-5 fw-bold text-white shadow-sm" style="background-color: #1a2c4e; border-radius: 8px;">
+                            <i class="bi bi-save-fill me-1"></i> حفظ القواعد الحالية
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

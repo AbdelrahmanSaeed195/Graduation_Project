@@ -25,7 +25,7 @@ namespace projectweb.Controllers
         public async Task<IActionResult> Index()
         {
             var examSchedules = _context.ExamSchedules
-                .Include(e => e.ExamLocation)
+                .Include(e => e.ExamLocation) // جلب بيانات الجراش الرئيسي مباشرة
                 .Include(e => e.Exam).ThenInclude(ex => ex.Subject)
                 .OrderBy(e => e.Exam.ExamDate)
                 .ThenBy(e => e.Exam.StartTime);
@@ -60,7 +60,7 @@ namespace projectweb.Controllers
         }
 
         // =====================================
-        // 4. دالة تفاعلية: جلب الصالات المتاحة وقت الامتحان
+        // 4. دالة تفاعلية: جلب الجراشات المتاحة وقت الامتحان (تم التعديل إلى Hall)
         // =====================================
         [HttpGet]
         public async Task<IActionResult> GetAvailableLocations(int examId)
@@ -68,6 +68,7 @@ namespace projectweb.Controllers
             var selectedExam = await _context.Exams.FindAsync(examId);
             if (selectedExam == null) return Json(new List<object>());
 
+            // جلب الجراشات المشغولة في هذا الوقت والتاريخ
             var busyLocationIds = await _context.ExamSchedules
                 .Include(es => es.Exam)
                 .Where(es => es.Exam.ExamDate.Date == selectedExam.ExamDate.Date
@@ -76,13 +77,13 @@ namespace projectweb.Controllers
                 .Select(es => es.LocationId)
                 .ToListAsync();
 
+            // فحص وجلب الأماكن التي نوعها "جراش" فقط وغير مشغولة
             var availableLocations = await _context.ExamLocations
-                .Include(l => l.ParentLocation)
-                .Where(l => l.Type == LocationType.Block && !busyLocationIds.Contains(l.LocationId))
+                .Where(l => l.Type == LocationType.Hall && !busyLocationIds.Contains(l.LocationId))
                 .Select(l => new
                 {
                     id = l.LocationId,
-                    name = "صالة: " + l.LocationName + " (جراش: " + (l.ParentLocation != null ? l.ParentLocation.LocationName : "غير محدد") + ")"
+                    name = "جراش: " + l.LocationName + " (الدور: " + (l.Floor.HasValue ? l.Floor.Value.ToString() : "غير محدد") + ")"
                 })
                 .OrderBy(l => l.name)
                 .ToListAsync();
@@ -101,6 +102,7 @@ namespace projectweb.Controllers
             {
                 var currentExam = await _context.Exams.FindAsync(examSchedule.ExamId);
 
+                // التحقق من إشغال الجراش المحدد في نفس الفترة الزمنية
                 bool isBusy = await _context.ExamSchedules
                     .Include(es => es.Exam)
                     .AnyAsync(es => es.LocationId == examSchedule.LocationId
@@ -109,13 +111,13 @@ namespace projectweb.Controllers
 
                 if (isBusy)
                 {
-                    ModelState.AddModelError("", "هذه الصالة محجوزة بالكامل في هذا الوقت لامتحان آخر.");
+                    ModelState.AddModelError("", "هذا الجراش محجوز بالكامل في هذا الوقت لامتحان آخر.");
                 }
                 else
                 {
                     _context.Add(examSchedule);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "تم تخصيص الصالة للجلسة بنجاح.";
+                    TempData["SuccessMessage"] = "تم تخصيص الجراش للجلسة بنجاح.";
                     return RedirectToAction(nameof(Index));
                 }
             }
@@ -166,14 +168,14 @@ namespace projectweb.Controllers
 
                     if (isBusy)
                     {
-                        ModelState.AddModelError("", "عفواً، هذه الصالة مشغولة حالياً في هذا التوقيت.");
+                        ModelState.AddModelError("", "عفواً، هذا الجراش مشغول حالياً في هذا التوقيت.");
                         await PopulateDropdownsAsync(examSchedule.ExamId, examSchedule.LocationId);
                         return View(examSchedule);
                     }
 
                     _context.Update(examSchedule);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "تم تحديث توزيع الصالة بنجاح.";
+                    TempData["SuccessMessage"] = "تم تحديث توزيع الجراش بنجاح.";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -213,17 +215,16 @@ namespace projectweb.Controllers
             {
                 _context.ExamSchedules.Remove(examSchedule);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "تم حذف جلسة توزيع الصالة بنجاح.";
+                TempData["SuccessMessage"] = "تم حذف جلسة توزيع الجراش بنجاح.";
             }
             return RedirectToAction(nameof(Index));
         }
 
         // =====================================
-        // 9. دالة تعبئة القوائم المنسدلة الموحدة 
+        // 9. دالة تعبئة القوائم المنسدلة (تم التعديل إلى Hall)
         // =====================================
         private async Task PopulateDropdownsAsync(object selectedExam = null, object selectedLocation = null)
         {
-            // جلب الامتحانات
             var exams = await _context.Exams
                 .Include(e => e.Subject)
                 .AsNoTracking()
@@ -237,16 +238,16 @@ namespace projectweb.Controllers
                     : $"امتحان #{e.ExamId} - {e.ExamDate.ToString("yyyy/MM/dd")}"
             }).ToList();
 
+            // الفلترة هنا أصبحت لجلب الـ Hall مباشرة كجذر أساسي للمكان
             var locationsList = await _context.ExamLocations
-                .Include(l => l.ParentLocation) 
-                .Where(l => l.Type == LocationType.Block)
+                .Where(l => l.Type == LocationType.Hall)
                 .AsNoTracking()
                 .ToListAsync();
 
             var locationsQuery = locationsList.Select(l => new
             {
                 Id = l.LocationId,
-                Name = $"صالة: {l.LocationName} (جراش: {l.ParentLocation?.LocationName ?? "غير محدد"})"
+                Name = $"جراش: {l.LocationName} (الدور: {l.Floor?.ToString() ?? "غير محدد"})"
             }).ToList();
 
             ViewData["ExamId"] = new SelectList(examsQuery, "Id", "Name", selectedExam);

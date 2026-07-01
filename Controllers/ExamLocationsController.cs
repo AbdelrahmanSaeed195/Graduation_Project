@@ -36,6 +36,7 @@ namespace projectweb.Controllers
                     statuses = new List<string> { "نشطة", "مغلقة", "تحت الإعداد", "محجوزة" };
                     break;
                 case LocationType.Hall:
+                case LocationType.Row:
                 case LocationType.Block:
                 default:
                     statuses = new List<string> { "نشطة", "مغلقة", "تحت الإعداد" };
@@ -71,7 +72,7 @@ namespace projectweb.Controllers
             var location = await db.ExamLocations
                 .Include(l => l.ParentLocation)
                 .Include(l => l.SubLocations)
-                .FirstOrDefaultAsync(l => l.LocationId == id);
+                .FirstOrDefaultAsync(l => id == l.LocationId);
 
             if (location == null) return NotFound();
             return View(location);
@@ -111,13 +112,11 @@ namespace projectweb.Controllers
 
                 if (parent == null)
                 {
-                    // ✅ key فاضي عشان يظهر في validation-summary
                     ModelState.AddModelError("", "المكان الرئيسي غير موجود.");
                 }
                 else if (parent.SubLocations != null && parent.MaxSubLocations > 0
                          && parent.SubLocations.Count >= parent.MaxSubLocations)
                 {
-                    // ✅ key فاضي عشان يظهر في validation-summary
                     ModelState.AddModelError("",
                         $"عفواً، المكان الرئيسي ({parent.LocationName}) استوفى الحد الأقصى ({parent.MaxSubLocations}) ولا يمكن إضافة المزيد.");
                 }
@@ -182,7 +181,6 @@ namespace projectweb.Controllers
                     existingLocation.StudentCapacity = location.StudentCapacity;
                     existingLocation.Status = location.Status;
                     existingLocation.ParentLocationId = location.ParentLocationId;
-                    
 
                     await db.SaveChangesAsync();
                     TempData["SuccessMessage"] = "تم تحديث البيانات بنجاح.";
@@ -209,7 +207,7 @@ namespace projectweb.Controllers
 
             var location = await db.ExamLocations
                 .Include(l => l.SubLocations)
-                .FirstOrDefaultAsync(l => l.LocationId == id);
+                .FirstOrDefaultAsync(l => id == l.LocationId);
 
             if (location == null) return NotFound();
 
@@ -255,7 +253,6 @@ namespace projectweb.Controllers
                     l.LocationName,
                     l.ParentLocationId,
                     l.MaxSubLocations,
-                    // ✅ بنجيب العدد الحالي عشان الـ JS يقدر يعرض تحذير
                     CurrentSubCount = db.ExamLocations.Count(s => s.ParentLocationId == l.LocationId)
                 })
                 .OrderBy(l => l.LocationName)
