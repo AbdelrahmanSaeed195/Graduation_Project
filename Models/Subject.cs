@@ -23,6 +23,10 @@ namespace projectweb.Models
         [Display(Name = "السنة الدراسية")]
         public AcademicLevel AcademicYear { get; set; }
 
+        [Required(ErrorMessage = "يجب تحديد التخصص")]
+        [Display(Name = "التخصص")]
+        public StudentSpecialization Specialization { get; set; } = StudentSpecialization.General;
+
         // ========================================================
         // Navigation properties
         // ========================================================

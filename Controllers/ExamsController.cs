@@ -76,14 +76,29 @@ namespace projectweb.Controllers
                 ModelState.AddModelError("EndTime", "يجب أن يكون وقت الانتهاء بعد وقت البدء.");
             }
 
-            // شرط التداخل الزمني المحدث
-            bool isOverlapping = await _context.Exams.AsNoTracking().AnyAsync(e =>
-                e.ExamDate.Date == exam.ExamDate.Date &&
-                (exam.StartTime < e.EndTime && exam.EndTime > e.StartTime));
+            // جلب فرقة المادة الحالية
+            var currentSubject = await _context.Subjects.AsNoTracking()
+                .FirstOrDefaultAsync(s => s.SubjectId == exam.SubjectID);
+
+            // التداخل الزمني يتحقق فقط لو نفس الفرقة (AcademicYear) ومن المستوى الأول أو الثاني
+            bool isOverlapping = false;
+            if (currentSubject != null)
+            {
+                if (currentSubject.AcademicYear == AcademicLevel.FirstYear ||
+                    currentSubject.AcademicYear == AcademicLevel.SecondYear)
+                {
+                    isOverlapping = await _context.Exams.AsNoTracking()
+                        .Include(e => e.Subject)
+                        .AnyAsync(e =>
+                            e.ExamDate.Date == exam.ExamDate.Date &&
+                            e.Subject.AcademicYear == currentSubject.AcademicYear &&
+                            (exam.StartTime < e.EndTime && exam.EndTime > e.StartTime));
+                }
+            }
 
             if (isOverlapping)
             {
-                ModelState.AddModelError("", "تنبيه: يوجد امتحان آخر مسجل في نفس الفترة الزمنية. يرجى مراجعة الجدول.");
+                ModelState.AddModelError("", "تنبيه: يوجد امتحان آخر لنفس الفرقة مسجل في نفس الفترة الزمنية. يرجى مراجعة الجدول.");
             }
 
             if (ModelState.IsValid)
@@ -142,15 +157,29 @@ namespace projectweb.Controllers
                 ModelState.AddModelError("EndTime", "يجب أن يكون وقت الانتهاء بعد وقت البدء.");
             }
 
-            // شرط التداخل الزمني المحدث مع استثناء الامتحان الحالي
-            bool isOverlapping = await _context.Exams.AsNoTracking().AnyAsync(e =>
-                e.ExamId != exam.ExamId &&
-                e.ExamDate.Date == exam.ExamDate.Date &&
-                (exam.StartTime < e.EndTime && exam.EndTime > e.StartTime));
+            var currentSubject = await _context.Subjects.AsNoTracking()
+                .FirstOrDefaultAsync(s => s.SubjectId == exam.SubjectID);
+
+            // التداخل الزمني مع استثناء الامتحان الحالي، ويتحقق فقط لو نفس الفرقة ومن المستوى الأول أو الثاني
+            bool isOverlapping = false;
+            if (currentSubject != null)
+            {
+                if (currentSubject.AcademicYear == AcademicLevel.FirstYear ||
+                    currentSubject.AcademicYear == AcademicLevel.SecondYear)
+                {
+                    isOverlapping = await _context.Exams.AsNoTracking()
+                        .Include(e => e.Subject)
+                        .AnyAsync(e =>
+                            e.ExamId != exam.ExamId &&
+                            e.ExamDate.Date == exam.ExamDate.Date &&
+                            e.Subject.AcademicYear == currentSubject.AcademicYear &&
+                            (exam.StartTime < e.EndTime && exam.EndTime > e.StartTime));
+                }
+            }
 
             if (isOverlapping)
             {
-                ModelState.AddModelError("", "هذا التعديل قد يتسبب في تداخل زمني مع امتحان آخر مسجل.");
+                ModelState.AddModelError("", "هذا التعديل قد يتسبب في تداخل زمني مع امتحان آخر لنفس الفرقة.");
             }
 
             if (ModelState.IsValid)
@@ -247,15 +276,30 @@ namespace projectweb.Controllers
         }
 
         [HttpGet]
-        public async Task<JsonResult> CheckConstraints(DateTime date, TimeSpan start, TimeSpan end, int? excludeId)
+        public async Task<JsonResult> CheckConstraints(DateTime date, TimeSpan start, TimeSpan end, int subjectId, int? excludeId)
         {
             var durationMinutes = (end - start).TotalMinutes;
             var isValidDuration = durationMinutes > 0 && durationMinutes <= 180;
 
-            bool isOverlapping = await _context.Exams.AsNoTracking().AnyAsync(e =>
-                (excludeId == null || e.ExamId != excludeId) &&
-                e.ExamDate.Date == date.Date &&
-                (start < e.EndTime && end > e.StartTime));
+            var currentSubject = await _context.Subjects.AsNoTracking()
+                .FirstOrDefaultAsync(s => s.SubjectId == subjectId);
+
+            bool isOverlapping = false;
+            if (currentSubject != null)
+            {
+                // التحقق الفوري عبر الـ Ajax من التداخل فقط للمستويين الأول والثاني
+                if (currentSubject.AcademicYear == AcademicLevel.FirstYear ||
+                    currentSubject.AcademicYear == AcademicLevel.SecondYear)
+                {
+                    isOverlapping = await _context.Exams.AsNoTracking()
+                        .Include(e => e.Subject)
+                        .AnyAsync(e =>
+                            (excludeId == null || e.ExamId != excludeId) &&
+                            e.ExamDate.Date == date.Date &&
+                            e.Subject.AcademicYear == currentSubject.AcademicYear &&
+                            (start < e.EndTime && end > e.StartTime));
+                }
+            }
 
             return Json(new { isValidDuration = isValidDuration, isOverlapping = isOverlapping });
         }
