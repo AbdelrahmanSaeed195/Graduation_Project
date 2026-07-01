@@ -8,193 +8,193 @@
     <meta charset="utf-8" />
     <title>استمارة التحكم والمراقبة الرسمية</title>
     <style>
-        @@page {
-            size: auto;
-            margin: 0mm;
-        }
-
-        body {
-            font-family: 'Times New Roman', serif;
-            padding: 0;
-            direction: rtl;
-            background: white;
-            color: black;
-            margin: 0;
-        }
-
-        .page-container {
-            padding: 25px 30px;
-            box-sizing: border-box;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-        }
-
-        .outer-frame {
-            border: 2px solid black;
-            padding: 15px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            flex-grow: 1;
-        }
-
-        .header-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            font-weight: bold;
-            font-size: 13pt;
-            line-height: 1.5;
-        }
-
-        .logo-placeholder {
-            width: 75px;
-            height: 75px;
-            text-align: center;
-        }
-
-        .main-title {
-            text-align: center;
-            font-size: 18pt;
-            font-weight: bold;
-            margin: 5px 0;
-            text-decoration: underline;
-        }
-
-        .info-grid {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-            font-weight: bold;
-            font-size: 13pt;
-        }
-
-        .right-info {
-            width: 50%;
-            line-height: 1.8;
-        }
-
-        .left-info {
-            width: 45%;
-            line-height: 1.8;
-            text-align: right;
-        }
-
-        .info-line {
-            margin-bottom: 3px;
-        }
-
-        .line-draw {
-            border-bottom: 1px dotted black;
-            display: inline-block;
-            min-width: 190px;
-            text-align: center;
-            padding: 0 5px;
-            font-weight: normal;
-        }
-
-        .main-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 5px;
-            table-layout: auto;
-        }
-
-            .main-table th, .main-table td {
-                border: 1px solid black;
-                padding: 8px 6px;
-                text-align: center;
-                font-size: 12pt;
+            @@page {
+                size: auto;
+                margin: 0mm;
             }
 
-            .main-table th {
-                font-weight: bold;
-                background-color: #f5f5f5;
-            }
-
-        .col-committee {
-            width: 15%;
-        }
-
-        .col-observer {
-            width: 40%;
-            text-align: right !important;
-            padding-right: 15px !important;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .col-booklets {
-            width: 12%;
-        }
-
-        .col-signature {
-            width: 18%;
-        }
-
-        .col-notes {
-            width: 15%;
-        }
-
-        .bottom-container {
-            display: flex;
-            justify-content: space-between;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .section-box {
-            border: 1px solid black;
-            padding: 10px;
-            width: 49%;
-            box-sizing: border-box;
-        }
-
-        .reserve-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 11pt;
-        }
-
-        .footer-sigs {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 30px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 13pt;
-            padding: 0 20px;
-        }
-
-        .sig-item {
-            width: 30%;
-        }
-
-        @@media print {
-            .no-print {
-                display: none !important;
+            body {
+                font-family: 'Times New Roman', serif;
+                padding: 0;
+                direction: rtl;
+                background: white;
+                color: black;
+                margin: 0;
             }
 
             .page-container {
-                page-break-after: always;
+                padding: 25px 30px;
+                box-sizing: border-box;
                 min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                position: relative;
             }
 
-                .page-container:last-child {
-                    page-break-after: avoid;
+            .outer-frame {
+                border: 2px solid black;
+                padding: 15px;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                flex-grow: 1;
+            }
+
+            .header-section {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                font-weight: bold;
+                font-size: 13pt;
+                line-height: 1.5;
+            }
+
+            .logo-placeholder {
+                width: 75px;
+                height: 75px;
+                text-align: center;
+            }
+
+            .main-title {
+                text-align: center;
+                font-size: 18pt;
+                font-weight: bold;
+                margin: 5px 0;
+                text-decoration: underline;
+            }
+
+            .info-grid {
+                display: flex;
+                justify-content: space-between;
+                margin: 10px 0;
+                font-weight: bold;
+                font-size: 13pt;
+            }
+
+            .right-info {
+                width: 50%;
+                line-height: 1.8;
+            }
+
+            .left-info {
+                width: 45%;
+                line-height: 1.8;
+                text-align: right;
+            }
+
+            .info-line {
+                margin-bottom: 3px;
+            }
+
+            .line-draw {
+                border-bottom: 1px dotted black;
+                display: inline-block;
+                min-width: 190px;
+                text-align: center;
+                padding: 0 5px;
+                font-weight: normal;
+            }
+
+            .main-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 5px;
+                table-layout: auto;
+            }
+
+                .main-table th, .main-table td {
+                    border: 1px solid black;
+                    padding: 8px 6px;
+                    text-align: center;
+                    font-size: 12pt;
                 }
 
-            body {
-                padding: 0;
-                margin: 0;
+                .main-table th {
+                    font-weight: bold;
+                    background-color: #f5f5f5;
+                }
+
+            .col-committee {
+                width: 15%;
             }
-        }
+
+            .col-observer {
+                width: 40%;
+                text-align: right !important;
+                padding-right: 15px !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .col-booklets {
+                width: 12%;
+            }
+
+            .col-signature {
+                width: 18%;
+            }
+
+            .col-notes {
+                width: 15%;
+            }
+
+            .bottom-container {
+                display: flex;
+                justify-content: space-between;
+                gap: 15px;
+                margin-top: 15px;
+            }
+
+            .section-box {
+                border: 1px solid black;
+                padding: 10px;
+                width: 49%;
+                box-sizing: border-box;
+            }
+
+            .reserve-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 5px;
+                font-size: 11pt;
+            }
+
+            .footer-sigs {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 30px;
+                text-align: center;
+                font-weight: bold;
+                font-size: 13pt;
+                padding: 0 20px;
+            }
+
+            .sig-item {
+                width: 30%;
+            }
+
+            @@media print {
+                .no-print {
+                    display: none !important;
+                }
+
+                .page-container {
+                    page-break-after: always;
+                    min-height: 100vh;
+                }
+
+                    .page-container:last-child {
+                        page-break-after: avoid;
+                    }
+
+                body {
+                    padding: 0;
+                    margin: 0;
+                }
+            }
     </style>
 </head>
 <body>
@@ -208,164 +208,168 @@
     {
         @foreach (var pageModel in Model)
         {
-            var block = pageModel.Blocks.FirstOrDefault();
-            int rowsCount = 0;
-
-            if (block != null)
+            @* ✅ التعديل الأساسي: بدل ما ناخد أول صالة بس (FirstOrDefault) هنلف على كل الصالات
+               الموجودة في الصف ده، وكل صالة هتاخد صفحة طباعة منفصلة بنفس الشكل بالظبط *@
+            @if (pageModel.Blocks != null)
             {
-                <div class="page-container">
-                    <div class="outer-frame">
+                @foreach (var block in pageModel.Blocks)
+                {
+                    int rowsCount = 0;
 
-                        <div class="header-section">
-                            <div>
-                                جامعة أسيوط<br>
-                                كلية علوم الرياضة<br>
-                                شئون الطلاب
-                            </div>
-                            <div class="logo-placeholder">
-                                <img src="~/images/logo.png" style="width:70px; height:auto;" onerror="this.style.display='none'" />
-                            </div>
-                            <div style="text-align: left;">
-                                نموذج رقم: AU-EX-02<br>
-                                الموقع: (@pageModel.HallName) | صالة (@block.BlockName)
-                            </div>
-                        </div>
+                    <div class="page-container">
+                        <div class="outer-frame">
 
-                        <div class="main-title">امتحانات @pageModel.Semester للعام الجامعي @pageModel.AcademicYear</div>
-
-                        <div class="info-grid">
-                            <div class="right-info">
-                                <div class="info-line">التاريخ: <span class="line-draw">@pageModel.ExamDate</span></div>
-                                <div class="info-line">الفرقة/المستوى: <span class="line-draw">@pageModel.TargetYear</span></div>
-                                <div class="info-line">المادة: <span class="line-draw">@pageModel.SubjectName</span></div>
-                                <div class="info-line">الزمن: <span class="line-draw" style="direction: ltr;">@pageModel.ExamTime</span></div>
+                            <div class="header-section">
+                                <div>
+                                    جامعة أسيوط<br>
+                                    كلية علوم الرياضة<br>
+                                    شئون الطلاب
+                                </div>
+                                <div class="logo-placeholder">
+                                    <img src="~/images/logo.png" style="width:70px; height:auto;" onerror="this.style.display='none'" />
+                                </div>
+                                <div style="text-align: left;">
+                                    نموذج رقم: AU-EX-02<br>
+                                    الموقع: (@pageModel.HallName) | صالة (@block.BlockName)
+                                </div>
                             </div>
-                            <div class="left-info">
-                                <div class="info-line">رئيس القطاع الأول: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead1</span></div>
-                                @if (!string.IsNullOrEmpty(pageModel.MainHead2) && pageModel.MainHead2 != "................")
-                                {
-                                    <div class="info-line">رئيس القطاع الثاني: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead2</span></div>
-                                }
-                                @if (!string.IsNullOrEmpty(pageModel.MainHead3) && pageModel.MainHead3 != "................")
-                                {
-                                    <div class="info-line">رئيس القطاع الثالث: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead3</span></div>
-                                }
-                                <div class="info-line">مراقب الصالة الحالي: <span class="line-draw" style="min-width:240px;">@block.BlockObserverName</span></div>
-                            </div>
-                        </div>
 
-                        <table class="main-table">
-                            <thead>
-                                <tr>
-                                    <th class="col-committee">رقم اللجنة</th>
-                                    <th class="col-observer">اسم الملاحظ</th>
-                                    <th class="col-booklets">الكراسات</th>
-                                    <th class="col-signature">التوقيع بالاستلام</th>
-                                    <th class="col-notes">ملاحظات</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (block.CommitteeObservers != null)
-                                {
-                                    var activeObservers = block.CommitteeObservers.Where(o => o.CommitteeNumber != "احتياطي صالة").ToList();
-                                    @foreach (var obs in activeObservers)
+                            <div class="main-title">امتحانات @pageModel.Semester للعام الجامعي @pageModel.AcademicYear</div>
+
+                            <div class="info-grid">
+                                <div class="right-info">
+                                    <div class="info-line">التاريخ: <span class="line-draw">@pageModel.ExamDate</span></div>
+                                    <div class="info-line">الفرقة/المستوى: <span class="line-draw">@pageModel.TargetYear</span></div>
+                                    <div class="info-line">المادة: <span class="line-draw">@pageModel.SubjectName</span></div>
+                                    <div class="info-line">الزمن: <span class="line-draw" style="direction: ltr;">@pageModel.ExamTime</span></div>
+                                </div>
+                                <div class="left-info">
+                                    <div class="info-line">رئيس القطاع الأول: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead1</span></div>
+                                    @if (!string.IsNullOrEmpty(pageModel.MainHead2) && pageModel.MainHead2 != "................")
                                     {
-                                        rowsCount++;
-                                        <tr>
-                                            <td style="font-weight: bold;">@obs.CommitteeNumber</td>
-                                            <td class="col-observer" style="font-weight: bold;">@obs.ObserverName</td>
-                                            <td style="font-weight: bold;">@(obs.BookletsCount > 0 ? obs.BookletsCount.ToString() : "—")</td>
+                                        <div class="info-line">رئيس القطاع الثاني: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead2</span></div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(pageModel.MainHead3) && pageModel.MainHead3 != "................")
+                                    {
+                                        <div class="info-line">رئيس القطاع الثالث: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead3</span></div>
+                                    }
+                                    <div class="info-line">مراقب الصالة الحالي: <span class="line-draw" style="min-width:240px;">@block.BlockObserverName</span></div>
+                                </div>
+                            </div>
+
+                            <table class="main-table">
+                                <thead>
+                                    <tr>
+                                        <th class="col-committee">رقم اللجنة</th>
+                                        <th class="col-observer">اسم الملاحظ</th>
+                                        <th class="col-booklets">الكراسات</th>
+                                        <th class="col-signature">التوقيع بالاستلام</th>
+                                        <th class="col-notes">ملاحظات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (block.CommitteeObservers != null)
+                                    {
+                                        var activeObservers = block.CommitteeObservers.Where(o => o.CommitteeNumber != "احتياطي صالة").ToList();
+                                        @foreach (var obs in activeObservers)
+                                        {
+                                            rowsCount++;
+                                            <tr>
+                                                <td style="font-weight: bold;">@obs.CommitteeNumber</td>
+                                                <td class="col-observer" style="font-weight: bold;">@obs.ObserverName</td>
+                                                <td style="font-weight: bold;">@(obs.BookletsCount > 0 ? obs.BookletsCount.ToString() : "—")</td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                        }
+                                    }
+
+                                    @* الحفاظ على التنسيق المالي الموحد المكون من 10 أسطر بصرية للكشوف الرسمية *@
+                                    @for (int j = rowsCount; j < 10; j++)
+                                    {
+                                        <tr style="height:36px;">
+                                            <td></td>
+                                            <td class="col-observer"></td>
+                                            <td></td>
                                             <td></td>
                                             <td></td>
                                         </tr>
                                     }
-                                }
+                                </tbody>
+                            </table>
 
-                                @* الحفاظ على التنسيق المالي الموحد المكون من 10 أسطر بصرية للكشوف الرسمية *@
-                                @for (int j = rowsCount; j < 10; j++)
-                                {
-                                    <tr style="height:36px;">
-                                        <td></td>
-                                        <td class="col-observer"></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                            <div class="bottom-container">
+                                <div class="section-box">
+                                    <div style="font-weight: bold; margin-bottom: 8px; text-decoration: underline; font-size: 11pt;">طاقم الإشراف والاحتياطي المعين باللجنة:</div>
 
-                        <div class="bottom-container">
-                            <div class="section-box">
-                                <div style="font-weight: bold; margin-bottom: 8px; text-decoration: underline; font-size: 11pt;">طاقم الإشراف والاحتياطي المعين باللجنة:</div>
-
-                                <div class="reserve-row">
-                                    <div>رئيس جراش احتياطي: <span class="line-draw" style="min-width:140px;">@pageModel.ReserveHead1</span></div>
-                                    <div>التوقيع: .........</div>
-                                </div>
-                                @if (!string.IsNullOrEmpty(pageModel.ReserveHead2) && pageModel.ReserveHead2 != "................")
-                                {
                                     <div class="reserve-row">
-                                        <div>رئيس جراش احتياطي ثانٍ: <span class="line-draw" style="min-width:140px;">@pageModel.ReserveHead2</span></div>
+                                        <div>رئيس جراش احتياطي: <span class="line-draw" style="min-width:140px;">@pageModel.ReserveHead1</span></div>
                                         <div>التوقيع: .........</div>
                                     </div>
-                                }
-
-                                <div class="reserve-row">
-                                    <div>مراقب احتياطي (أول): <span class="line-draw" style="min-width:140px;">@pageModel.ReserveObserver1</span></div>
-                                    <div>التوقيع: .........</div>
-                                </div>
-                                @if (!string.IsNullOrEmpty(pageModel.ReserveObserver2) && pageModel.ReserveObserver2 != "................")
-                                {
-                                    <div class="reserve-row">
-                                        <div>مراقب احتياطي (ثانٍ): <span class="line-draw" style="min-width:140px;">@pageModel.ReserveObserver2</span></div>
-                                        <div>التوقيع: .........</div>
-                                    </div>
-                                }
-
-                                @if (block.CommitteeObservers != null)
-                                {
-                                    var reserveItems = block.CommitteeObservers.Where(o => o.CommitteeNumber == "احتياطي صالة").ToList();
-                                    @foreach (var res in reserveItems)
+                                    @if (!string.IsNullOrEmpty(pageModel.ReserveHead2) && pageModel.ReserveHead2 != "................")
                                     {
                                         <div class="reserve-row">
-                                            <div>ملاحظ احتياطي بالصالة: <span class="line-draw" style="min-width:140px;">@res.ObserverName</span></div>
+                                            <div>رئيس جراش احتياطي ثانٍ: <span class="line-draw" style="min-width:140px;">@pageModel.ReserveHead2</span></div>
                                             <div>التوقيع: .........</div>
                                         </div>
                                     }
-                                }
 
-                                @if (pageModel.GeneralReserveObservers != null)
-                                {
-                                    @foreach (var genRes in pageModel.GeneralReserveObservers)
+                                    <div class="reserve-row">
+                                        <div>مراقب احتياطي (أول): <span class="line-draw" style="min-width:140px;">@pageModel.ReserveObserver1</span></div>
+                                        <div>التوقيع: .........</div>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(pageModel.ReserveObserver2) && pageModel.ReserveObserver2 != "................")
                                     {
                                         <div class="reserve-row">
-                                            <div>احتياطي عام للمقر: <span class="line-draw" style="min-width:140px;">@genRes</span></div>
+                                            <div>مراقب احتياطي (ثانٍ): <span class="line-draw" style="min-width:140px;">@pageModel.ReserveObserver2</span></div>
                                             <div>التوقيع: .........</div>
                                         </div>
                                     }
-                                }
+
+                                    @if (block.CommitteeObservers != null)
+                                    {
+                                        var reserveItems = block.CommitteeObservers.Where(o => o.CommitteeNumber == "احتياطي صالة").ToList();
+                                        @foreach (var res in reserveItems)
+                                        {
+                                            <div class="reserve-row">
+                                                <div>ملاحظ احتياطي بالصالة: <span class="line-draw" style="min-width:140px;">@res.ObserverName</span></div>
+                                                <div>التوقيع: .........</div>
+                                            </div>
+                                        }
+                                    }
+
+                                    @if (pageModel.GeneralReserveObservers != null)
+                                    {
+                                        @foreach (var genRes in pageModel.GeneralReserveObservers)
+                                        {
+                                            <div class="reserve-row">
+                                                <div>احتياطي عام للمقر: <span class="line-draw" style="min-width:140px;">@genRes</span></div>
+                                                <div>التوقيع: .........</div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+
+                                <div class="section-box" style="display: flex; flex-direction: column; justify-content: space-between;">
+                                    <div>
+                                        <div class="info-line" style="margin-top: 3px;">طبيب مقر اللجان: <span class="line-draw" style="min-width:200px;">@pageModel.DoctorName</span></div>
+                                        <div class="info-line" style="margin-top: 8px;">مساعد طبيب المقر: <span class="line-draw" style="min-width:200px;">@pageModel.NurseName</span></div>
+                                    </div>
+                                    <div style="margin-bottom: 5px; font-size: 12pt; font-weight: bold; border-top: 1px dashed black; padding-top: 10px;">
+                                        إجمالي عدد الكراسات المستلمة للصالة: <span style="font-size: 13pt; font-family: 'Arial'; margin-right: 10px; font-weight: bold;">@(block.TotalStudentsInBlock > 0 ? block.TotalStudentsInBlock.ToString() : "........")</span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="section-box" style="display: flex; flex-direction: column; justify-content: space-between;">
-                                <div>
-                                    <div class="info-line" style="margin-top: 3px;">طبيب مقر اللجان: <span class="line-draw" style="min-width:200px;">@pageModel.DoctorName</span></div>
-                                    <div class="info-line" style="margin-top: 8px;">مساعد طبيب المقر: <span class="line-draw" style="min-width:200px;">@pageModel.NurseName</span></div>
-                                </div>
-                                <div style="margin-bottom: 5px; font-size: 12pt; font-weight: bold; border-top: 1px dashed black; padding-top: 10px;">
-                                    إجمالي عدد الكراسات المستلمة للصالة: <span style="font-size: 13pt; font-family: 'Arial'; margin-right: 10px; font-weight: bold;">@(block.TotalStudentsInBlock > 0 ? block.TotalStudentsInBlock.ToString() : "........")</span>
-                                </div>
+                            <div class="footer-sigs">
+                                <div class="sig-item">مسؤول شئون الطلاب<br><br>سارة محمود</div>
+                                <div class="sig-item">مراقب الصالة العام<br><br>@block.BlockObserverName</div>
+                                <div class="sig-item">رئيس لجان الامتحانات<br><br>@pageModel.MainHead1</div>
                             </div>
-                        </div>
 
-                        <div class="footer-sigs">
-                            <div class="sig-item">مسؤول شئون الطلاب<br><br>سارة محمود</div>
-                            <div class="sig-item">مراقب الصالة العام<br><br>@block.BlockObserverName</div>
-                            <div class="sig-item">رئيس لجان الامتحانات<br><br>@pageModel.MainHead1</div>
                         </div>
-
                     </div>
-                </div>
+                }
             }
         }
     }
