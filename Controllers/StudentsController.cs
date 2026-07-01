@@ -253,10 +253,7 @@ namespace projectweb.Controllers
                 student.LocationId = null;
             }
 
-            // الصالات اللي محدد لها سنة دراسية
-            var blocksByYear = await _context.ExamLocations
-                .Where(l => l.Type == LocationType.Block && l.AcademicYear != null)
-                .ToListAsync();
+           
 
             // مصفوفة فحص التعارضات (بدون تغيير)
             var studentConflictMap = new Dictionary<int, HashSet<int>>();
@@ -317,43 +314,7 @@ namespace projectweb.Controllers
             int skippedNoBlockForYear = 0;
             int skippedNoCommitteesInBlock = 0;
 
-            foreach (var student in orderedStudents)
-            {
-                // الصالة بتتحدد مباشرة من سنة الطالب
-                // ملحوظة: لو فيه أكتر من صالة بنفس السنة، التوزيع هيستخدم أول واحدة بس
-                // (لو عايز توزيع على أكتر من صالة لنفس السنة قولي وأضيف منطق التنقل بينهم)
-                var block = blocksByYear.FirstOrDefault(b => b.AcademicYear == student.AcademicYear);
-
-                if (block == null)
-                {
-                    skippedNoBlockForYear++;
-                    continue;
-                }
-
-                var committeesOfBlock = await GetCommitteesForBlockAsync(block.LocationId);
-
-                if (!committeesOfBlock.Any())
-                {
-                    skippedNoCommitteesInBlock++;
-                    continue;
-                }
-
-                foreach (var targetCommittee in committeesOfBlock)
-                {
-                    int currentCount = committeeOccupancy[targetCommittee.LocationId];
-
-                    bool hasConflict = studentConflictMap.ContainsKey(student.StudentId) &&
-                                       studentConflictMap[student.StudentId].Contains(targetCommittee.LocationId);
-
-                    if (currentCount < (targetCommittee.StudentCapacity ?? 0) && !hasConflict)
-                    {
-                        student.LocationId = targetCommittee.LocationId;
-                        committeeOccupancy[targetCommittee.LocationId] = currentCount + 1;
-                        totalAssigned++;
-                        break;
-                    }
-                }
-            }
+           
 
             if (totalAssigned > 0)
             {

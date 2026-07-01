@@ -182,7 +182,7 @@ namespace projectweb.Controllers
                     existingLocation.StudentCapacity = location.StudentCapacity;
                     existingLocation.Status = location.Status;
                     existingLocation.ParentLocationId = location.ParentLocationId;
-                    existingLocation.AcademicYear = location.AcademicYear;
+                    
 
                     await db.SaveChangesAsync();
                     TempData["SuccessMessage"] = "تم تحديث البيانات بنجاح.";

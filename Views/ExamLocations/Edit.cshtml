@@ -76,19 +76,7 @@
                                    style="border-radius: 8px;" />
                         </div>
 
-                        <div class="col-md-3 dependency-field academic-year-field">
-                            <label asp-for="AcademicYear" class="form-label fw-bold">
-                                السنة الدراسية المخصصة لهذه الصالة
-                            </label>
-                            <select asp-for="AcademicYear"
-                                    id="academicYearSelect"
-                                    asp-items="Html.GetEnumSelectList<AcademicLevel>()"
-                                    class="form-select shadow-sm"
-                                    style="border-radius: 8px;">
-                                <option value="">-- بدون تخصيص --</option>
-                            </select>
-                            <span asp-validation-for="AcademicYear" class="text-danger small"></span>
-                        </div>
+                       
 
                         <div class="col-md-6 dependency-field capacity-fields">
                             <label asp-for="MaxSubLocations"
@@ -158,7 +146,7 @@
             }
             else if (val === "2") {
                 // صالة: يظهر المكان الرئيسي (جراش) + الحد الأقصى + السنة الدراسية
-                $(".parent-location-container, .capacity-fields, .academic-year-field").show();
+                $(".parent-location-container, .capacity-fields").show();
                 $("#maxSubLabel").text("أقصى عدد لجان داخل الصالة");
                 allLocations.filter(l => l.Type == 1).forEach(l => {
                     var isSelected = (l.LocationId == selectedParentId) ? "selected" : "";

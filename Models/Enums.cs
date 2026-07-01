@@ -33,7 +33,7 @@ namespace projectweb.Models
     }
     public enum StaffPosition
     {
-        [Display(Name = "رئيس جراش")]
+        [Display(Name = "رئيس لجنة")]
         HallManager = 1,
 
         [Display(Name = "مراقب")]
@@ -92,10 +92,13 @@ namespace projectweb.Models
         [Display(Name = "جراش")]
         Hall = 1,
 
-        [Display(Name = "صالة")]
-        Block = 2,
+        [Display(Name = "صف")]
+        Row = 2,
+
+       [Display(Name = "صالة")]
+        Block = 3,
 
         [Display(Name = "لجنة")]
-        Committee = 3
+        Committee = 4
     }
 }

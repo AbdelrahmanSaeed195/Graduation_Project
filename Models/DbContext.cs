@@ -169,11 +169,6 @@ namespace projectweb.Models
                 .OnDelete(DeleteBehavior.Restrict);
 
 
-            modelBuilder.Entity<ExamLocation>()
-                .HasIndex(l => l.AcademicYear)
-                .IsUnique()
-                .HasFilter("[Type] = 0 AND [AcademicYear] IS NOT NULL");
-            // رقم الـ Type بتاع Hall - غيّره حسب ترتيب الـ enum عندك
         }
     }
 }

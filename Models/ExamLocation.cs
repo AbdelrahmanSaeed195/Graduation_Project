@@ -19,8 +19,6 @@ namespace projectweb.Models
         [Display(Name = "نوع المكان")]
         public LocationType Type { get; set; }
 
-        [Display(Name = "السنة الدراسية المخصصة لهذا الجراش")]
-        public AcademicLevel? AcademicYear { get; set; }
 
 
         [Display(Name = "رقم الدور")]

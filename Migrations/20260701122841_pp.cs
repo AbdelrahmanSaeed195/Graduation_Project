@@ -5,7 +5,7 @@
 namespace projectweb.Migrations
 {
     /// <inheritdoc />
-    public partial class AddSpecializationToSubject : Migration
+    public partial class pp : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

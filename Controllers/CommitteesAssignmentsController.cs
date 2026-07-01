@@ -135,12 +135,26 @@ namespace projectweb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RunAutoAssign(int locationId, int examId)
         {
+            // جميع الصفوف داخل الجراش
+            var rowIds = await _context.ExamLocations
+                .Where(x => x.ParentLocationId == locationId &&
+                            x.Type == LocationType.Row)
+                .Select(x => x.LocationId)
+                .ToListAsync();
+
+            // جميع الصالات داخل الصفوف
+            var blockIds = await _context.ExamLocations
+                .Where(x => rowIds.Contains(x.ParentLocationId.Value) &&
+                            x.Type == LocationType.Block)
+                .Select(x => x.LocationId)
+                .ToListAsync();
+
             var schedule = await _context.ExamSchedules
                 .Include(s => s.Exam)
                 .Include(s => s.ExamLocation)
-                .Where(s => s.ExamId == examId &&
-                           (s.LocationId == locationId || s.ExamLocation.ParentLocationId == locationId))
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(s =>
+                    s.ExamId == examId &&
+                    blockIds.Contains(s.LocationId));
 
             if (schedule == null)
             {

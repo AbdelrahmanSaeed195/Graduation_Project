@@ -12,8 +12,8 @@ using projectweb.Models;
 namespace projectweb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260701094307_AddSpecializationToSubject")]
-    partial class AddSpecializationToSubject
+    [Migration("20260701122841_pp")]
+    partial class pp
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -301,9 +301,6 @@ namespace projectweb.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LocationId"));
 
-                    b.Property<int?>("AcademicYear")
-                        .HasColumnType("int");
-
                     b.Property<int?>("Floor")
                         .HasColumnType("int");
 
@@ -327,10 +324,6 @@ namespace projectweb.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("LocationId");
-
-                    b.HasIndex("AcademicYear")
-                        .IsUnique()
-                        .HasFilter("[Type] = 0 AND [AcademicYear] IS NOT NULL");
 
                     b.HasIndex("ParentLocationId");
 

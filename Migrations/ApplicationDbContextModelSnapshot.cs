@@ -298,9 +298,6 @@ namespace projectweb.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LocationId"));
 
-                    b.Property<int?>("AcademicYear")
-                        .HasColumnType("int");
-
                     b.Property<int?>("Floor")
                         .HasColumnType("int");
 
@@ -324,10 +321,6 @@ namespace projectweb.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("LocationId");
-
-                    b.HasIndex("AcademicYear")
-                        .IsUnique()
-                        .HasFilter("[Type] = 0 AND [AcademicYear] IS NOT NULL");
 
                     b.HasIndex("ParentLocationId");
 
