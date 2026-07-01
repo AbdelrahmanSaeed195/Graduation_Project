@@ -58,12 +58,50 @@ namespace projectweb.Services
         }
 
         // ========================================================================
+        // ✅ جديد: CheckRelativeConflictAsync
+        // يمنع تعيين أي شخص له صلة قرابة (في جدول Relatives) بطالب من نفس الفرقة/المستوى 
+        // الدراسي لمادة الامتحان المطلوب تكليفه فيها، بغض النظر عن المادة أو اللجنة أو الدور.
+        // طول ما فرقة الطالب القريب بتمتحن (أي مادة من مواد الفرقة دي) يُمنع الشخص تماماً.
+        // ========================================================================
+        public async Task<string> CheckRelativeConflictAsync(int personId, int examScheduleId)
+        {
+            var schedule = await _context.ExamSchedules
+                .Include(s => s.Exam).ThenInclude(e => e.Subject)
+                .FirstOrDefaultAsync(s => s.ExamScheduleId == examScheduleId);
+
+            if (schedule == null || schedule.Exam?.Subject == null)
+                return null;
+
+            var targetYear = schedule.Exam.Subject.AcademicYear;
+
+            bool hasConflict = await _context.Relatives
+                .Include(r => r.Student)
+                .AnyAsync(r => r.PersonId == personId && r.Student != null && r.Student.AcademicYear == targetYear);
+
+            if (hasConflict)
+            {
+                string yearName = targetYear switch
+                {
+                    AcademicLevel.FirstYear => "المستوى الأول",
+                    AcademicLevel.SecondYear => "المستوى الثاني",
+                    AcademicLevel.ThirdYear => "المستوى الثالث",
+                    AcademicLevel.FourthYear => "المستوى الرابع",
+                    _ => "هذا المستوى"
+                };
+
+                return $"عفواً، لا يمكن تعيين هذا الشخص لأن لديه صلة قرابة بطالب في ({yearName})، ولا يجوز تكليفه في أي دور أو لجنة أو جراش بهذه الفرقة بالكامل مهما اختلفت المادة.";
+            }
+
+            return null;
+        }
+
+        // ========================================================================
         // 2. RunAssignmentAsync: ماكينة التوزيع الذكية الشجرية المتوافقة مع السقوف الديناميكية
         // ========================================================================
         public async Task<bool> RunAssignmentAsync(int examScheduleId)
         {
             var currentSchedule = await _context.ExamSchedules
-                .Include(s => s.Exam)
+                .Include(s => s.Exam).ThenInclude(e => e.Subject)
                 .Include(s => s.ExamLocation)
                 .FirstOrDefaultAsync(s => s.ExamScheduleId == examScheduleId);
 
@@ -115,17 +153,19 @@ namespace projectweb.Services
                 .Select(x => x.LocationId)
                 .ToListAsync();
 
-            // حصر الطلاب وموانع الأقارب والتعارضات التزامية
-            var studentIdsInHall = await _context.Students
-                .Where(s => (s.LocationId != null && activeCommitteeIds.Contains(s.LocationId.Value)) || s.ExamScheduleId == examScheduleId)
-                .Select(s => s.StudentId)
-                .ToListAsync();
+            // ✅ تصحيح جوهري: استبعاد أي موظف له صلة قرابة بأي طالب في نفس فرقة/مستوى مادة 
+            // الامتحان الحالية بالكامل، مش بس طلاب نفس الجراش أو نفس اللجنة.
+            // يعني لو قريبه في المستوى التاني، يتمنع من كل تكليف في المستوى التاني كله 
+            // بغض النظر عن الجراش أو المادة أو اللجنة.
+            var targetAcademicYear = currentSchedule.Exam.Subject?.AcademicYear;
 
-            var excludedPersonIdsDueToRelatives = await _context.Relatives
-                .Where(r => studentIdsInHall.Contains(r.StudentId))
-                .Select(r => r.PersonId)
-                .Distinct()
-                .ToListAsync();
+            var excludedPersonIdsDueToRelatives = targetAcademicYear.HasValue
+                ? await _context.Relatives
+                    .Where(r => r.Student != null && r.Student.AcademicYear == targetAcademicYear.Value)
+                    .Select(r => r.PersonId)
+                    .Distinct()
+                    .ToListAsync()
+                : new List<int>();
 
             var busyPersonIds = await _context.CommitteesAssignments
                 .Include(a => a.ExamSchedule)
