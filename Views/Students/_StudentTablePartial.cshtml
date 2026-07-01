@@ -36,26 +36,7 @@
                                 @academicLevel
                             </span>
                         </td>
-                        <td>
-                            @{
-                                string specializationName = s.Specialization switch
-                                {
-                                    projectweb.Models.StudentSpecialization.General => "عام",
-                                    projectweb.Models.StudentSpecialization.Management => "إدارة",
-                                    projectweb.Models.StudentSpecialization.Teaching => "تدريس",
-                                    projectweb.Models.StudentSpecialization.Training => "تدريب",
-                                    _ => s.Specialization.ToString()
-                                };
-                            }
-                            <span class="badge bg-light text-secondary border px-2 py-2" style="font-weight: 600;">
-                                @specializationName
-                            </span>
-                        </td>
-                        <td>
-                            <span class="fw-bold" style="color: var(--accent-blue); font-size: 1.05rem;">
-                                @(s.SeatNumber > 0 ? s.SeatNumber.ToString() : "-")
-                            </span>
-                        </td>
+                  
                         <td>
                             @if (s.ExamLocation != null)
                             {

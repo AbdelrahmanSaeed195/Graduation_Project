@@ -46,34 +46,9 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded bg-light bg-opacity-50">
-                            <div class="small text-muted mb-1 fw-bold">التخصص / القسم</div>
-                            <div class="fw-bold text-secondary">
-                                @{
-                                    string specializationName = Model.Specialization switch
-                                    {
-                                        projectweb.Models.StudentSpecialization.General => "عام / بدون تخصص",
-                                        projectweb.Models.StudentSpecialization.Management => "إدارة",
-                                        projectweb.Models.StudentSpecialization.Teaching => "تدريس",
-                                        projectweb.Models.StudentSpecialization.Training => "تدريب",
-                                        _ => Model.Specialization.ToString()
-                                    };
-                                }
-                                @specializationName
-                            </div>
-                        </div>
-                    </div>
+                 
 
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded bg-light bg-opacity-50">
-                            <div class="small text-muted mb-1 fw-bold">رقم الجلوس</div>
-                            <div class="fw-bold fs-5 text-info">
-                                @(Model.SeatNumber > 0 ? Model.SeatNumber.ToString() : "لم يحدد بعد (انتظار التوزيع)")
-                            </div>
-                        </div>
-                    </div>
-
+                   
                     <div class="col-md-12">
                         <div class="p-3 border rounded bg-light bg-opacity-50">
                             <div class="small text-muted mb-1 fw-bold">اللجنة التابع لها طوال العام</div>

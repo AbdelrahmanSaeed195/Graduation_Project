@@ -23,7 +23,7 @@ namespace projectweb.Models
         [Display(Name = "رقم الهاتف")]
         public string Phone { get; set; }
 
-        [Required(ErrorMessage = "الرقم القومي مطلوب")]
+       
         [StringLength(14, MinimumLength = 14, ErrorMessage = "الرقم القومي يجب أن يكون 14 رقماً")]
         [Display(Name = "الرقم القومي")]
         [RegularExpression(@"^[0-9]{14}$", ErrorMessage = "الرقم القومي يجب أن يتكون من 14 رقماً فقط")]

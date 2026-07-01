@@ -181,7 +181,7 @@ namespace projectweb.Controllers
             var students = dbStudents.Select(s => new
             {
                 ID = s.StudentId,
-                Name = $"{s.FullName} (رقم جلوس: {s.SeatNumber})"
+                Name = $"{s.FullName}"
             }).ToList();
 
             var dbReports = await _context.Reports

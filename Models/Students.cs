@@ -18,7 +18,7 @@ namespace projectweb.Models
         [Display(Name = "اسم الطالب")]
         public string FullName { get; set; }
 
-        [Required(ErrorMessage = "الرقم القومي مطلوب")]
+        
         [StringLength(14, MinimumLength = 14, ErrorMessage = "الرقم القومي يجب أن يكون 14 رقم")]
         [Display(Name = "الرقم القومي")]
         [RegularExpression(@"^\d{14}$", ErrorMessage = "الرقم القومي يجب أن يتكون من 14 رقم فقط")]
@@ -28,12 +28,9 @@ namespace projectweb.Models
         [Display(Name = "السنة الدراسية")]
         public AcademicLevel AcademicYear { get; set; }
 
-        [Display(Name = "رقم الجلوس")]
-        public int SeatNumber { get; set; } = 0;
+       
 
-        [Required(ErrorMessage = "يجب تحديد التخصص")]
-        [Display(Name = "التخصص")]
-        public StudentSpecialization Specialization { get; set; } = StudentSpecialization.General;
+       
 
         // ========================================================
         // navigation properties

@@ -69,24 +69,16 @@ namespace projectweb.Controllers
             if (selectedExam == null) return Json(new List<object>());
 
             // جلب الجراشات المشغولة في هذا الوقت والتاريخ
-            var busyLocationIds = await _context.ExamSchedules
-                .Include(es => es.Exam)
-                .Where(es => es.Exam.ExamDate.Date == selectedExam.ExamDate.Date
-                          && selectedExam.StartTime < es.Exam.EndTime
-                          && selectedExam.EndTime > es.Exam.StartTime)
-                .Select(es => es.LocationId)
-                .ToListAsync();
-
-            // فحص وجلب الأماكن التي نوعها "جراش" فقط وغير مشغولة
             var availableLocations = await _context.ExamLocations
-                .Where(l => l.Type == LocationType.Hall && !busyLocationIds.Contains(l.LocationId))
-                .Select(l => new
-                {
-                    id = l.LocationId,
-                    name = "جراش: " + l.LocationName + " (الدور: " + (l.Floor.HasValue ? l.Floor.Value.ToString() : "غير محدد") + ")"
-                })
-                .OrderBy(l => l.name)
-                .ToListAsync();
+     .Where(l => l.Type == LocationType.Hall)
+     .Select(l => new
+     {
+         id = l.LocationId,
+         name = "جراش: " + l.LocationName + " (الدور: " +
+                (l.Floor.HasValue ? l.Floor.Value.ToString() : "غير محدد") + ")"
+     })
+     .OrderBy(l => l.name)
+     .ToListAsync();
 
             return Json(availableLocations);
         }
@@ -100,26 +92,11 @@ namespace projectweb.Controllers
         {
             if (ModelState.IsValid)
             {
-                var currentExam = await _context.Exams.FindAsync(examSchedule.ExamId);
+                _context.Add(examSchedule);
+                await _context.SaveChangesAsync();
 
-                // التحقق من إشغال الجراش المحدد في نفس الفترة الزمنية
-                bool isBusy = await _context.ExamSchedules
-                    .Include(es => es.Exam)
-                    .AnyAsync(es => es.LocationId == examSchedule.LocationId
-                                 && es.Exam.ExamDate.Date == currentExam.ExamDate.Date
-                                 && (currentExam.StartTime < es.Exam.EndTime && currentExam.EndTime > es.Exam.StartTime));
-
-                if (isBusy)
-                {
-                    ModelState.AddModelError("", "هذا الجراش محجوز بالكامل في هذا الوقت لامتحان آخر.");
-                }
-                else
-                {
-                    _context.Add(examSchedule);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "تم تخصيص الجراش للجلسة بنجاح.";
-                    return RedirectToAction(nameof(Index));
-                }
+                TempData["SuccessMessage"] = "تم تخصيص الجراش للجلسة بنجاح.";
+                return RedirectToAction(nameof(Index));
             }
 
             await PopulateDropdownsAsync(examSchedule.ExamId, examSchedule.LocationId);

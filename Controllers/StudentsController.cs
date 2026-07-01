@@ -42,7 +42,7 @@ namespace projectweb.Controllers
 
             var students = await query
                 .OrderBy(s => s.AcademicYear)
-                .ThenBy(s => s.Specialization)
+              
                 .ThenBy(s => s.FullName)
                 .ToListAsync();
 
@@ -107,19 +107,16 @@ namespace projectweb.Controllers
                     FullName = model.FullName,
                     NationalId = model.NationalId,
                     AcademicYear = model.AcademicYear,
-                    Specialization = model.Specialization,
+                    
                     LocationId = model.LocationId, // التغيير هنا لـ LocationId
-                    SeatNumber = 0,
+                    
                     ExamScheduleId = null
                 };
 
                 _context.Add(student);
                 await _context.SaveChangesAsync();
 
-                if (student.LocationId.HasValue)
-                {
-                    await RecalculateSeatNumbersByCommittee(student.LocationId.Value);
-                }
+               
 
                 return RedirectToAction(nameof(Index));
             }
@@ -142,7 +139,7 @@ namespace projectweb.Controllers
                 FullName = student.FullName,
                 NationalId = student.NationalId,
                 AcademicYear = student.AcademicYear,
-                Specialization = student.Specialization,
+               
                 LocationId = student.LocationId // التغيير هنا لـ LocationId
             };
 
@@ -179,19 +176,13 @@ namespace projectweb.Controllers
                 student.FullName = model.FullName;
                 student.NationalId = model.NationalId;
                 student.AcademicYear = model.AcademicYear;
-                student.Specialization = model.Specialization;
+                
                 student.LocationId = model.LocationId; 
 
                 _context.Update(student);
                 await _context.SaveChangesAsync();
 
-                if (oldLocationId != student.LocationId)
-                {
-                    if (oldLocationId.HasValue)
-                        await RecalculateSeatNumbersByCommittee(oldLocationId.Value);
-                    if (student.LocationId.HasValue)
-                        await RecalculateSeatNumbersByCommittee(student.LocationId.Value);
-                }
+              
 
                 return RedirectToAction(nameof(Index));
             }
@@ -229,8 +220,7 @@ namespace projectweb.Controllers
             _context.Students.Remove(student);
             await _context.SaveChangesAsync();
 
-            if (locationId.HasValue)
-                await RecalculateSeatNumbersByCommittee(locationId.Value);
+          
 
             return RedirectToAction(nameof(Index));
         }
@@ -348,7 +338,7 @@ namespace projectweb.Controllers
                 StudentId = student.StudentId,
                 FullName = student.FullName,
                 AcademicYear = student.AcademicYear,
-                SeatNumber = student.SeatNumber,
+               
                 LocationId = student.ExamLocation?.LocationId ?? 0,
                 LocationName = student.ExamLocation?.LocationName ?? "غير محدد",
                 StudentCapacity = student.ExamLocation?.StudentCapacity ?? 0
@@ -427,8 +417,6 @@ namespace projectweb.Controllers
                     FullName = fullName,
                     NationalId = nationalId,
                     AcademicYear = academicYear,
-                    Specialization = specialization,
-                    SeatNumber = seatNumber,
                     LocationId = null, 
                     ExamScheduleId = null
                 });
@@ -443,18 +431,7 @@ namespace projectweb.Controllers
         // =====================================
         // 10. مساعد: إعادة ترقيم المقاعد
         // =====================================
-        private async Task RecalculateSeatNumbersByCommittee(int locationId)
-        {
-            var studentsInCommittee = await _context.Students
-                .Where(s => s.LocationId == locationId)
-                .OrderBy(s => s.FullName)
-                .ToListAsync();
-
-            for (int i = 0; i < studentsInCommittee.Count; i++)
-                studentsInCommittee[i].SeatNumber = i + 1;
-
-            await _context.SaveChangesAsync();
-        }
+       
 
         [HttpPost]
         [ValidateAntiForgeryToken]

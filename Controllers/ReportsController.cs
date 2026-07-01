@@ -337,7 +337,7 @@ namespace projectweb.Controllers
                     .Select(s => new {
                         s.StudentId,
                         s.FullName,
-                        s.SeatNumber
+                       
                     })
                     .ToListAsync();
 
@@ -346,7 +346,7 @@ namespace projectweb.Controllers
                     students.Add(new
                     {
                         id = s.StudentId,
-                        name = s.FullName + " (جلوس: " + s.SeatNumber.ToString() + ")"
+                        name = s.FullName 
                     });
                 }
             }
