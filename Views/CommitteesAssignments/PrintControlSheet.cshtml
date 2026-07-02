@@ -244,15 +244,7 @@
                                     <div class="info-line">الزمن: <span class="line-draw" style="direction: ltr;">@pageModel.ExamTime</span></div>
                                 </div>
                                 <div class="left-info">
-                                    <div class="info-line">رئيس القطاع الأول: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead1</span></div>
-                                    @if (!string.IsNullOrEmpty(pageModel.MainHead2) && pageModel.MainHead2 != "................")
-                                    {
-                                        <div class="info-line">رئيس القطاع الثاني: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead2</span></div>
-                                    }
-                                    @if (!string.IsNullOrEmpty(pageModel.MainHead3) && pageModel.MainHead3 != "................")
-                                    {
-                                        <div class="info-line">رئيس القطاع الثالث: <span class="line-draw" style="min-width:240px;">@pageModel.MainHead3</span></div>
-                                    }
+                                    <div class="info-line">رئيس القطاع: <span class="line-draw" style="min-width:240px;">@pageModel.RowMainHead</span></div>
                                     <div class="info-line">مراقب الصالة الحالي: <span class="line-draw" style="min-width:240px;">@block.BlockObserverName</span></div>
                                 </div>
                             </div>
@@ -364,7 +356,7 @@
                             <div class="footer-sigs">
                                 <div class="sig-item">مسؤول شئون الطلاب<br><br>سارة محمود</div>
                                 <div class="sig-item">مراقب الصالة العام<br><br>@block.BlockObserverName</div>
-                                <div class="sig-item">رئيس لجان الامتحانات<br><br>@pageModel.MainHead1</div>
+                                <div class="sig-item">رئيس لجان الامتحانات<br><br>@pageModel.RowMainHead</div>
                             </div>
 
                         </div>

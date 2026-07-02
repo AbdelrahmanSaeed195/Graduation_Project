@@ -15,10 +15,14 @@ namespace projectweb.Models.ViewModels
 
         // --- طاقم إدارة الموقع (دعم ديناميكي مبني على عدد الصفوف والأدوار) ---
 
-        // الحقول الأساسية لأساتذة إدارة الصفوف (تعمل في كل الحالات)
+        // ✅ جديد: رئيس القطاع المسؤول عن هذا الصف بالتحديد فقط (وليس كل القطاعات مع بعض)
+        // صف 1 -> قطاع أول | صف 2 -> قطاع ثاني | صف 3 -> قطاع ثالث ... إلخ
+        public string RowMainHead { get; set; }
+
+        // الحقول القديمة (لسه موجودة لو محتاجينها في أي مكان تاني بالنظام)
         public string MainHead1 { get; set; }
         public string MainHead2 { get; set; }
-        public string? MainHead3 { get; set; } // يُستخدم كـ قطاع ثالث في حالة الدورين (3 صفوف)
+        public string? MainHead3 { get; set; }
 
         // طاقم الاحتياطي الإداري (يُستخدم لتعويض غيابات رؤساء القطاعات)
         public string ReserveHead1 { get; set; }

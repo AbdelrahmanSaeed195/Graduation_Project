@@ -5,20 +5,41 @@
 }
 
 <div class="row justify-content-center mt-4" dir="rtl" style="text-align: right;">
-    <div class="col-lg-7">
+    <div class="col-lg-8">
         <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
             <div class="card-header p-4 text-white" style="background-color: #1a2c4e; border-bottom: 4px solid #17a2b8;">
                 <h4 class="mb-0 fw-bold"><i class="bi bi-printer-fill me-2"></i> طباعة كشوف الهياكل الهندسية للجراشات</h4>
             </div>
             <div class="card-body p-5 bg-white">
+
+                <div class="alert alert-info d-flex align-items-start" style="border-radius: 8px;">
+                    <i class="bi bi-info-circle-fill me-2 mt-1"></i>
+                    <div>
+                        <strong>ملحوظة الكنترول:</strong> اختيار المادة / الامتحان مطلوب عشان الاستمارة تعرضلك تحت كل صف اسم رئيسه، وتحت كل صالة اسم مراقبها، وتحت كل لجنة اسم ملاحظها بالكامل.
+                    </div>
+                </div>
+
                 <form asp-action="PrintHallStructureSheet" method="post" target="_blank">
                     @Html.AntiForgeryToken()
 
-                    <div class="p-4 rounded border mb-4 shadow-sm" style="background-color: #f8f9fa;">
-                        <label class="form-label fw-bold text-secondary mb-3">اختر الجراش الرئيسي المراد طباعة إحصائيات صالاته ولجانه:</label>
-                        <select name="locationId" class="form-select form-select-lg fw-bold" style="border-radius: 8px;" asp-items="ViewBag.Halls" required>
-                            <option value="">-- حدد الجراش المستهدف --</option>
-                        </select>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="p-4 rounded border h-100 shadow-sm" style="background-color: #f8f9fa;">
+                                <label class="form-label fw-bold text-secondary mb-3"><i class="bi bi-building-fill me-1"></i> اختر الجراش الرئيسي المستهدف:</label>
+                                <select name="locationId" class="form-select form-select-lg fw-bold" style="border-radius: 8px;" asp-items="ViewBag.Halls" required>
+                                    <option value="">-- حدد الجراش المستهدف --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-4 rounded border h-100 shadow-sm" style="background-color: #f8f9fa;">
+                                <label class="form-label fw-bold text-secondary mb-3"><i class="bi bi-journal-bookmark-fill me-1"></i> اختر الامتحان / المادة المستهدفة:</label>
+                                <select name="examId" class="form-select form-select-lg fw-bold" style="border-radius: 8px;" asp-items="ViewBag.Exams" required>
+                                    <option value="">-- حدد المادة الدراسية --</option>
+                                </select>
+                            </div>
+                            
+                        </div>
                     </div>
 
                     <div class="d-flex gap-3 justify-content-center pt-3 border-top">

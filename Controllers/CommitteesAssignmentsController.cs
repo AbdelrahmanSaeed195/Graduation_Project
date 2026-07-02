@@ -1156,6 +1156,13 @@ namespace projectweb.Controllers
 
             bool hasTwoFloors = (hall.Floor == 2);
 
+            // ✅ جديد: قائمة الأسماء العربية الترتيبية لتوليد اسم القطاع المطابق لترتيب الصف
+            // (لازم تكون مطابقة تماماً لقيم SubRoleType المخزنة عند التوزيع التلقائي/اليدوي: "قطاع أول", "قطاع ثاني"...)
+            string[] sectorOrdinals = { "أول", "ثاني", "ثالث", "رابع", "خامس", "سادس", "سابع", "ثامن" };
+
+            // ✅ جديد: عداد لترتيب الصف الحالي (0 = الصف الأول، 1 = الصف الثاني...)
+            int rowIndex = 0;
+
             foreach (var r in rowsInHall)
             {
                 var blocksInRow = await _context.ExamLocations
@@ -1197,6 +1204,15 @@ namespace projectweb.Controllers
                     });
                 }
 
+                // ✅ جديد: تحديد اسم القطاع المطابق لترتيب الصف الحالي، وجلب رئيسه فقط
+                string sectorLabel = rowIndex < sectorOrdinals.Length
+                    ? $"قطاع {sectorOrdinals[rowIndex]}"
+                    : $"قطاع {rowIndex + 1}";
+
+                string rowMainHeadName = allAssignments
+                    .FirstOrDefault(a => a.RoleType == "رئيس جراش" && a.SubRoleType == sectorLabel)?.Person?.FullName
+                    ?? "................";
+
                 var pageModel = new ExamControlSheetViewModel
                 {
                     SubjectName = exam.Subject?.SubjectName ?? "---",
@@ -1206,6 +1222,10 @@ namespace projectweb.Controllers
                     ExamTime = $"{DateTime.Today.Add(exam.StartTime):hh:mm tt} - {DateTime.Today.Add(exam.EndTime):hh:mm tt}",
                     HallName = $"{hall.LocationName} - {r.LocationName}",
 
+                    // ✅ جديد: رئيس القطاع الخاص بهذا الصف فقط
+                    RowMainHead = rowMainHeadName,
+
+                    // الحقول القديمة لسه بتتحسب زي ما هي لو محتاجينها في مكان تاني
                     MainHead1 = allAssignments.FirstOrDefault(a => a.RoleType == "رئيس جراش" && a.SubRoleType == "قطاع أول")?.Person?.FullName ?? "................",
                     MainHead2 = allAssignments.FirstOrDefault(a => a.RoleType == "رئيس جراش" && a.SubRoleType == "قطاع ثاني")?.Person?.FullName ?? "................",
                     MainHead3 = hasTwoFloors ? (allAssignments.FirstOrDefault(a => a.RoleType == "رئيس جراش" && a.SubRoleType == "قطاع ثالث")?.Person?.FullName ?? "................") : null,
@@ -1230,12 +1250,14 @@ namespace projectweb.Controllers
                 };
 
                 pagesList.Add(pageModel);
+                rowIndex++; // ✅ ننتقل لترتيب الصف التالي
             }
 
             return View(pagesList);
         }
+
         // ============================================================
-        // 10. PrintHallStructureSheet (GET) - شاشة اختيار الجراش لمعاينة هيكله
+        // 10. PrintHallStructureSheet (GET) - شاشة اختيار الجراش والمادة لمعاينة هيكله
         // ============================================================
         [HttpGet]
         public async Task<IActionResult> PrepareHallStructurePrint()
@@ -1246,20 +1268,36 @@ namespace projectweb.Controllers
                 .ToListAsync();
 
             ViewBag.Halls = new SelectList(mainHalls, "LocationId", "LocationName");
+
+            // ✅ جديد: قائمة الامتحانات/المواد عشان نعرف نجيب أسماء الرؤساء والمراقبين والملاحظين الفعليين
+            var exams = await _context.Exams
+                .Include(e => e.Subject)
+                .OrderByDescending(e => e.ExamDate)
+                .ToListAsync();
+
+            ViewBag.Exams = new SelectList(exams, "ExamId", "Subject.SubjectName");
+
             return View();
         }
 
         // ============================================================
         // 11. PrintHallStructureSheet (POST) - توليد كشف الهيكل الإحصائي للجراش
+        // ✅ جديد: مربوط دلوقتي بامتحان معين، وبيجيب اسم رئيس كل صف + مراقب كل صالة + ملاحظ كل لجنة
         // ============================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PrintHallStructureSheet(int locationId)
+        public async Task<IActionResult> PrintHallStructureSheet(int locationId, int examId)
         {
             var hall = await _context.ExamLocations
                 .FirstOrDefaultAsync(l => l.LocationId == locationId && l.Type == LocationType.Hall);
 
             if (hall == null) return NotFound();
+
+            var exam = await _context.Exams
+                .Include(e => e.Subject)
+                .FirstOrDefaultAsync(e => e.ExamId == examId);
+
+            if (exam == null) return NotFound();
 
             // 1. سحب الصفوف داخل الجراش
             var rows = await _context.ExamLocations
@@ -1283,17 +1321,59 @@ namespace projectweb.Controllers
                 .OrderBy(l => l.LocationName)
                 .ToListAsync();
 
+            var committeeIds = committees.Select(c => c.LocationId).ToList();
+
+            // ✅ جديد: سحب كل تكليفات الامتحان ده الخاصة بالجراش وفروعه (رؤساء الصفوف + مراقبي الصالات + ملاحظي اللجان)
+            var allAssignments = await _context.CommitteesAssignments
+                .Include(a => a.Person)
+                .Include(a => a.ExamSchedule)
+                .Where(a => a.ExamSchedule.ExamId == examId &&
+                            (a.LocationId == locationId ||
+                             (a.LocationId != null && blockIds.Contains(a.LocationId.Value)) ||
+                             (a.LocationId != null && committeeIds.Contains(a.LocationId.Value))))
+                .ToListAsync();
+
+            // ✅ جديد: حساب اسم رئيس كل صف بنفس منطق ترتيب القطاعات (صف 1 = قطاع أول، صف 2 = قطاع ثاني...)
+            string[] sectorOrdinals = { "أول", "ثاني", "ثالث", "رابع", "خامس", "سادس", "سابع", "ثامن" };
+            var rowHeadsDict = new Dictionary<int, string>();
+            for (int i = 0; i < rows.Count; i++)
+            {
+                string sectorLabel = i < sectorOrdinals.Length ? $"قطاع {sectorOrdinals[i]}" : $"قطاع {i + 1}";
+                string headName = allAssignments
+                    .FirstOrDefault(a => a.RoleType == "رئيس جراش" && a.SubRoleType == sectorLabel)?.Person?.FullName
+                    ?? "................";
+                rowHeadsDict[rows[i].LocationId] = headName;
+            }
+
+            // ✅ جديد: حساب اسم مراقب كل صالة
+            var blockObserversDict = blocks.ToDictionary(
+                b => b.LocationId,
+                b => allAssignments.FirstOrDefault(a => a.LocationId == b.LocationId && a.RoleType == "مراقب")?.Person?.FullName ?? "................"
+            );
+
+            // ✅ جديد: حساب اسم ملاحظ كل لجنة
+            var committeeObserversDict = committees.ToDictionary(
+                c => c.LocationId,
+                c => allAssignments.FirstOrDefault(a => a.LocationId == c.LocationId && a.RoleType == "ملاحظ لجنة")?.Person?.FullName ?? "................"
+            );
+
             // تمرير البيانات للـ View عبر الـ ViewBag بشكل منظم
             ViewBag.Hall = hall;
+            ViewBag.Exam = exam;
             ViewBag.Rows = rows;
             ViewBag.Blocks = blocks;
             ViewBag.Committees = committees;
+            ViewBag.RowHeadsDict = rowHeadsDict;
+            ViewBag.BlockObserversDict = blockObserversDict;
+            ViewBag.CommitteeObserversDict = committeeObserversDict;
 
             // حساب إجمالي السعة الشاملة للجراش بالكامل
             ViewBag.TotalHallCapacity = committees.Sum(c => c.StudentCapacity ?? 0);
 
             return View();
         }
+
+        // 1. سحب الصفوف داخل الجراش var rows = await _context.ExamLocations .Where(l => l.ParentLocationId == locationId && l.Type == LocationType.Row) .OrderBy(l => l.LocationName) .ToListAsync(); var rowIds = rows.Select(r => r.LocationId).ToList(); // 2. سحب الصالات داخل هذه الصفوف var blocks = await _context.ExamLocations .Where(l => l.ParentLocationId != null && rowIds.Contains(l.ParentLocationId.Value) && l.Type == LocationType.Block) .OrderBy(l => l.LocationName) .ToListAsync(); var blockIds = blocks.Select(b => b.LocationId).ToList(); // 3. سحب اللجان الدقيقة داخل الصالات var committees = await _context.ExamLocations .Where(l => l.ParentLocationId != null && blockIds.Contains(l.ParentLocationId.Value) && l.Type == LocationType.Committee) .OrderBy(l => l.LocationName) .ToListAsync(); // تمرير البيانات للـ View عبر الـ ViewBag بشكل منظم ViewBag.Hall = hall; ViewBag.Rows = rows; ViewBag.Blocks = blocks; ViewBag.Committees = committees; // حساب إجمالي السعة الشاملة للجراش بالكامل ViewBag.TotalHallCapacity = committees.Sum(c => c.StudentCapacity ?? 0); return View(); }
         // ============================================================
         // 12. Ajax Helpers
         // ============================================================
